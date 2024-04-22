@@ -1,0 +1,20 @@
+{
+    // Recommended extensions for this project
+    "recommendations": [
+        "esbenp.prettier-vscode",
+        "formulahendry.auto-close-tag",
+        "formulahendry.auto-rename-tag",
+        "msjsdiag.vscode-react-native",
+        "dbaeumer.vscode-eslint",
+        "burkeholland.simple-react-snippets",
+        "shd101wyy.markdown-preview-enhanced",
+        "pranaygp.vscode-css-peek",
+        "ecmel.vscode-html-css",
+        "xabikos.javascriptsnippets",
+        "ms-vscode.live-server",
+        "mongodb.mongodb-vscode",
+        "postman.postman-for-vscode",
+        "tomoki1207.pdf",
+        "bradlc.vscode-tailwindcss"
+    ]
+}
