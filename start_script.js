@@ -52,8 +52,25 @@ function installDependencies(packageJsonPath, message, callback) {
     );
 }
 
+function isDisiMachine() {
+    let ret_string;
+    const hostname = os.hostname()
+    console.log('Hostname:', hostname)
+    // Il regex corrisponde a nomi di host che sono stringhe esadecimali di 12 caratteri
+    const disiRegex = /^[0-9a-f]{12}$/
+    
+    if (disiRegex.test(hostname)) {
+        ret_string = "production"
+    }
+    else {
+        ret_string = "development"
+    }
+
+    return ret_string
+}
+
 function DevOrProd() {
-    const NODE_ENV = process.env.NODE_ENV;
+    const NODE_ENV = isDisiMachine();
     if (NODE_ENV === "production") {
         startProductionMode();
     } else {
