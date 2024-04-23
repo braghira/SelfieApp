@@ -47,4 +47,4 @@ In ordine di importanza:
 - [x] definire una struttura della directory di progetto
 - [x] decidere quale framework usare per l'app frontend  (React-vite + Tailwind?)
 - [x] creare uno script in Nodejs per installare le dependencies leggendo i package.json
-- [ ] creare uno script per avviare la modalità dev o prod in base a quale macchina ospita il server
+- [x] creare uno script per avviare la modalità dev o prod in base a quale macchina ospita il server
