@@ -9,7 +9,7 @@ const cors = require("cors");
 const workoutRoutes = require("./routes/workouts");
 const utils = require("./utils/environmentDetector");
 // useful variables
-const mongouri = process.env.privateDB_URI;
+const mongouri = process.env.DB_URI;
 const appPath = path.resolve(__dirname, '..', 'selfie', 'dist');
 
 // express app

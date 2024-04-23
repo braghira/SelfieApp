@@ -1,6 +1,7 @@
 const { exec } = require("child_process");
 const path = require("path");
 const fs = require("fs");
+const os = require('os');
 const readline = require("readline");
 
 // Percorso della root directory del progetto
@@ -54,19 +55,18 @@ function installDependencies(packageJsonPath, message, callback) {
 
 function isDisiMachine() {
     let ret_string;
-    const hostname = os.hostname()
-    console.log('Hostname:', hostname)
-    // Il regex corrisponde a nomi di host che sono stringhe esadecimali di 12 caratteri
-    const disiRegex = /^[0-9a-f]{12}$/
+    const hostname = os.hostname();
+    console.log('Hostname:', hostname);
     
-    if (disiRegex.test(hostname)) {
+    // TODO-braghira: Aggiungere l'array con i nomi di tutte le macchine del DISI
+    if (hostname === "zuniga") {
         ret_string = "production"
     }
     else {
         ret_string = "development"
     }
-
-    return ret_string
+    console.log(ret_string);
+    return ret_string;
 }
 
 function DevOrProd() {
