@@ -1,5 +1,6 @@
 // config method will attach .env variables to the "process" global variable
 require("dotenv").config();
+console.log(process.env);   // remove this when you're sure it works
 // npm modules
 const express = require("express");
 const path = require('path');
@@ -43,7 +44,7 @@ mongoose
     .connect(mongouri, { dbName: "SelfieDB" })
     .then(() => {
         // listen for requests
-        app.listen(process.env.PORT, () => {
+        app.listen(process.env.PORT || 8000, () => {
             console.log(
                 `DB connected and listening on port ${process.env.PORT}`
             );

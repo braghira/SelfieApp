@@ -1,0 +1,16 @@
+services:
+  selfie:
+    image: node:20-bookworm
+    container_name: selfie
+    networks:
+      - selfie
+    volumes:
+      - ./:/SelfieApp
+    ports:
+      - "8000:8000"
+    environment:
+      - NODE_ENV=production
+      - PORT=8000
+      - MONGO_URI=mongodb://andrea.venturoli5:Mohwo0Oo@mongo_andrea.venturoli5?authSource=admin&writeConcern=majority
+    restart: unless-stopped
+    command: ["node", "/app/backend/server.js"]  # Imposta il comando di avvio corretto
