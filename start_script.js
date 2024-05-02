@@ -1,11 +1,13 @@
 const { exec } = require("child_process");
 const path = require("path");
 const fs = require("fs");
-const os = require('os');
-const readline = require("readline");
+const os = require("os");
 
 // Percorso della root directory del progetto
 const rootDirectory = process.cwd();
+
+// Versione di node da usare durante lo sviluppo (coincide con quella delle macchine DISI)
+const disiVersion = "v20.0.0";
 
 // Percorsi dei file package.json
 const backendPackageJsonPath = path.join(
@@ -56,16 +58,14 @@ function installDependencies(packageJsonPath, message, callback) {
 function isDisiMachine() {
     let ret_string;
     const hostname = os.hostname();
-    console.log('Hostname:', hostname);
-    
+    console.log("\nHostname:", hostname);
+
     // TODO-braghira: Aggiungere l'array con i nomi di tutte le macchine del DISI
     if (hostname === "zuniga") {
-        ret_string = "production"
+        ret_string = "production";
+    } else {
+        ret_string = "development";
     }
-    else {
-        ret_string = "development"
-    }
-    console.log(ret_string);
     return ret_string;
 }
 
@@ -83,7 +83,7 @@ function startDevelopmentMode() {
     console.log(`Development Mode Ready.\n`);
     console.log(`You'll have to start both frontend and backend servers manually. `);
     console.log(`Start backend server by running 'cd backend && npm run dev'`);
-    console.log(`Then, open a new terminal and run 'npm run dev' in directory /selfie\n`);
+    console.log(`Then, open a new terminal, navigate to the selfie directory and run 'npm run dev'\n`);
     // exec("npm run dev", { cwd: path.join(__dirname, "backend")});
     // exec("npm run dev", { cwd: path.join(__dirname, "selfie")});
 }
@@ -108,40 +108,25 @@ function startProductionMode() {
     );
 }
 
-// Funzione per controllare la versione di Node.js
+// Controlla la versione di Node.js
 function startMenu() {
     const nodeVersion = process.version;
-    const rl = readline.createInterface({
-        input: process.stdin,
-        output: process.stdout,
-    });
 
-    rl.question(
-        `Current Node Version: ${nodeVersion}
-Suggested Node Version: v20.0.0\n
-Are you using the correct Node version? (y/n) `,
-        (answer) => {
-            if (answer.toLowerCase() === "y") {
-                rl.close();
-                // Avvia il controllo delle dipendenze e la modalità appropriata
-                installDependencies(backendPackageJsonPath, "backend", () => {
-                    installDependencies(selfiePackageJsonPath, "selfie app", DevOrProd);
-                });
-            } else if (answer.toLowerCase() === "n") {
-                console.log("\nYou can change Node version with 'nvm use <version>'");
-                console.log("\nTerminating script.");
-                rl.close();
-                process.exit(0);
-            } else {
-                console.log(
-                    "Invalid answer. Please input 'y' for yes or 'n' for no."
-                );
-                rl.close();
-                startMenu();
-            }
-        }
-    );
+    console.log(`Current Node Version: ${nodeVersion}`);
+    console.log(`Suggested Node Version: ${disiVersion}\n`);
+
+    if (nodeVersion === disiVersion) {
+        // Avvia il controllo delle dipendenze e la modalità appropriata
+        installDependencies(backendPackageJsonPath, "backend", () => {
+            installDependencies(selfiePackageJsonPath, "selfie app", DevOrProd);
+        });
+    } else {
+        console.log(`You are using a different Node version.`);
+        console.log(`You can change Node version with 'nvm use <version>'\n`);
+        console.log(`Terminating script.`);
+        process.exit(0);
+    }
 }
 
-// Avvia il controllo della versione di Node.js
+// Avvia lo script
 startMenu();

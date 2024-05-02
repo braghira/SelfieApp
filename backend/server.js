@@ -1,9 +1,9 @@
 // npm modules
 const fs = require('fs');
-const express = require("express");
+const express = require('express');
 const path = require('path');
-const mongoose = require("mongoose");
-const cors = require("cors");
+const mongoose = require('mongoose');
+const cors = require('cors');
 require('dotenv').config({ path: path.resolve(__dirname, '.env') }) // config method will attach .env variables to the "process" global variable
 console.log(__dirname);   // remove this when you're sure it works
 // our modules

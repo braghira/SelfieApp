@@ -9,12 +9,18 @@
         "burkeholland.simple-react-snippets",
         "shd101wyy.markdown-preview-enhanced",
         "pranaygp.vscode-css-peek",
-        "ecmel.vscode-html-css",
         "xabikos.javascriptsnippets",
         "ms-vscode.live-server",
         "mongodb.mongodb-vscode",
         "postman.postman-for-vscode",
         "tomoki1207.pdf",
-        "bradlc.vscode-tailwindcss"
+        "bradlc.vscode-tailwindcss",
+        "mikestead.dotenv",
+        "visualstudioexptteam.intellicode-api-usage-examples",
+        "ecmel.vscode-html-css",
+        "ms-vscode.vscode-typescript-next",
+        "visualstudioexptteam.vscodeintellicode",
+        "christian-kohler.npm-intellisense",
+        "christian-kohler.path-intellisense"
     ]
 }
