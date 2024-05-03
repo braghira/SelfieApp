@@ -2,7 +2,13 @@ const { exec } = require("child_process");
 const path = require("path");
 const fs = require("fs");
 const os = require("os");
-require('dotenv').config({ path: path.resolve(__dirname, './backend', '.env') });
+
+/**
+ * QUESTO SCRIPT FA USO DEL NOME DELLA MACCHINA HOST SU CUI VIENE ESEGUITO PER CAPIRE SE ATTIVARE LA MODALITA 
+ * SVILUPPO O PRODUZIONE. SE IL VOSTRO PC HA UNO DI QUESTI NOMI, RIMUOVETELO E RILANCIATE LO SCRIPT. SE 
+ * STATE TESTANDO IL PROGETTO SU UNA MACCHINA DEL DISI, ACCERTATEVI CHE SIA UNA DI QUESTE.
+ */
+const DISImachines = ['amneris', 'gualtiero', 'hansel', 'morales', 'zuniga'];
 
 // Percorso della root directory del progetto
 const rootDirectory = process.cwd();
@@ -46,7 +52,7 @@ function installDependencies(packageJsonPath, message, callback) {
             }
             console.log(stdout);
             console.error(stderr);
-            console.log(message + ": Updated dependencies");
+            console.log(message + ": Updated dependencies\n");
 
             // Richiama la callback solo se è definita
             if (callback) {
@@ -57,9 +63,7 @@ function installDependencies(packageJsonPath, message, callback) {
 }
 
 function DevOrProd() {
-    console.log("\nHostname:", os.hostname());
-
-    if (process.env.NODE_ENV === "production") {
+    if (DISImachines.includes(os.hostname())) {
         startProductionMode();
     } else {
         startDevelopmentMode();
@@ -71,7 +75,7 @@ function startDevelopmentMode() {
     console.log(`Development Mode Ready.\n`);
     console.log(`You'll have to start both frontend and backend servers manually. `);
     console.log(`Start backend server by running 'cd backend && npm run dev'`);
-    console.log(`Then, open a new terminal, navigate to the selfie directory and run 'npm run dev'\n`);
+    console.log(`Then, open a new terminal, navigate to the 'selfie' directory and run 'npm run dev'\n`);
     // exec("npm run dev", { cwd: path.join(__dirname, "backend")});
     // exec("npm run dev", { cwd: path.join(__dirname, "selfie")});
 }
@@ -100,11 +104,13 @@ function startProductionMode() {
 function startMenu() {
     const nodeVersion = process.version;
 
+    console.log("Make sure your hostname isn't in the disi machines list. \nHostname:", os.hostname());
     console.log(`Current Node Version: ${nodeVersion}`);
     console.log(`Suggested Node Version: ${disiVersion}\n`);
 
     if (nodeVersion === disiVersion) {
         // Avvia il controllo delle dipendenze e la modalità appropriata
+        console.log('Updating dependencies...')
         installDependencies(backendPackageJsonPath, "backend", () => {
             installDependencies(selfiePackageJsonPath, "selfie app", DevOrProd);
         });
