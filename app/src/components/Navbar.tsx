@@ -1,6 +1,7 @@
-import { Link } from 'react-router-dom'
+import React from 'react';
+import { Link } from 'react-router-dom';
 
-function Navbar() {
+const Navbar: React.FC = () => {
     return (
         <header>
             <div className="container">
@@ -9,7 +10,7 @@ function Navbar() {
                 </Link>
             </div>
         </header>
-      );
-}
+    );
+};
 
 export default Navbar;

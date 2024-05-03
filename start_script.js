@@ -4,11 +4,11 @@ const fs = require("fs");
 const os = require("os");
 
 /**
- * QUESTO SCRIPT FA USO DEL NOME DELLA MACCHINA HOST SU CUI VIENE ESEGUITO PER CAPIRE SE ATTIVARE LA MODALITA 
- * SVILUPPO O PRODUZIONE. SE IL VOSTRO PC HA UNO DI QUESTI NOMI, RIMUOVETELO E RILANCIATE LO SCRIPT. SE 
- * STATE TESTANDO IL PROGETTO SU UNA MACCHINA DEL DISI, ACCERTATEVI CHE SIA UNA DI QUESTE.
+ * Questo script fa uso del nome della macchina host su cui viene eseguito per capire se attivare la modalità
+ * SVILUPPO o PRODUZIONE. Se il vostro PC ha uno di questi nomi, rimuovete la stringa dall'array e rilanciate lo
+ * script. Se state testando il progetto su una macchina del DISI, accertatevi che sia una di queste o aggiungetela a mano.
  */
-const DISImachines = ['amneris', 'gualtiero', 'hansel', 'morales', 'zuniga'];
+const DISImachines = ["amneris", "gualtiero", "hansel", "morales", "zuniga"];
 
 // Percorso della root directory del progetto
 const rootDirectory = process.cwd();
@@ -22,16 +22,12 @@ const backendPackageJsonPath = path.join(
     "backend",
     "package.json"
 );
-const selfiePackageJsonPath = path.join(
-    rootDirectory,
-    "selfie",
-    "package.json"
-);
+const appPackageJsonPath = path.join(rootDirectory, "app", "package.json");
 
 // Verifica se esistono i file package.json
 if (
     !fs.existsSync(backendPackageJsonPath) ||
-    !fs.existsSync(selfiePackageJsonPath)
+    !fs.existsSync(appPackageJsonPath)
 ) {
     console.error("File package.json wasn't found in the specified directory");
     process.exit(1);
@@ -73,11 +69,15 @@ function DevOrProd() {
 // Funzione per avviare la modalità di sviluppo
 function startDevelopmentMode() {
     console.log(`Development Mode Ready.\n`);
-    console.log(`You'll have to start both frontend and backend servers manually. `);
+    console.log(
+        `You'll have to start both frontend and backend servers manually. `
+    );
     console.log(`Start backend server by running 'cd backend && npm run dev'`);
-    console.log(`Then, open a new terminal, navigate to the 'selfie' directory and run 'npm run dev'\n`);
+    console.log(
+        `Then, open a new terminal, navigate to the 'app' directory and run 'npm run dev'\n`
+    );
     // exec("npm run dev", { cwd: path.join(__dirname, "backend")});
-    // exec("npm run dev", { cwd: path.join(__dirname, "selfie")});
+    // exec("npm run dev", { cwd: path.join(__dirname, "app")});
 }
 
 // Funzione per avviare la modalità di produzione
@@ -85,7 +85,7 @@ function startProductionMode() {
     console.log("Generating Production Build");
     exec(
         "npm run build",
-        { cwd: path.join(__dirname, "selfie") },
+        { cwd: path.join(__dirname, "app") },
         (error, stdout, stderr) => {
             if (error) {
                 console.error(
@@ -104,15 +104,18 @@ function startProductionMode() {
 function startMenu() {
     const nodeVersion = process.version;
 
-    console.log("Make sure your hostname isn't in the disi machines list. \nHostname:", os.hostname());
+    console.log(
+        "Make sure your hostname isn't in the disi machines list. \nHostname:",
+        os.hostname()
+    );
     console.log(`Current Node Version: ${nodeVersion}`);
     console.log(`Suggested Node Version: ${disiVersion}\n`);
 
     if (nodeVersion === disiVersion) {
         // Avvia il controllo delle dipendenze e la modalità appropriata
-        console.log('Updating dependencies...')
+        console.log("Updating dependencies...");
         installDependencies(backendPackageJsonPath, "backend", () => {
-            installDependencies(selfiePackageJsonPath, "selfie app", DevOrProd);
+            installDependencies(appPackageJsonPath, "app", DevOrProd);
         });
     } else {
         console.log(`You are using a different Node version.`);

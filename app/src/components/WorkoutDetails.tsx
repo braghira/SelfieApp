@@ -1,6 +1,11 @@
-import PropTypes from "prop-types";
+import React from 'react';
+import { Workout } from '@/lib/utils';
 
-const WorkoutDetails = ({ workout }) => {
+type WorkoutDetailsProps = {
+    workout: Workout;
+}
+
+const WorkoutDetails: React.FC<WorkoutDetailsProps> = ({ workout }) => {
     return (
         <div className="workout-details flex justify-start">
             <div className="block max-w-[18rem] rounded-lg border border-blue-800 bg-surface-dark shadow-slate-950">
@@ -19,15 +24,6 @@ const WorkoutDetails = ({ workout }) => {
             </div>
         </div>
     );
-};
-
-WorkoutDetails.propTypes = {
-    workout: PropTypes.shape({
-        title: PropTypes.string.isRequired,
-        load: PropTypes.number.isRequired,
-        reps: PropTypes.number.isRequired,
-        createdAt: PropTypes.string.isRequired,
-    }).isRequired,
 };
 
 export default WorkoutDetails;

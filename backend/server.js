@@ -13,7 +13,7 @@ const utils = require(path.resolve(__dirname, "utils", "environmentDetector"));
 const port = process.env.PORT;
 const mongouri = process.env.DB_URI;
 const node_env = process.env.NODE_ENV;
-const appPath = path.resolve(__dirname, '..', 'selfie', 'dist');
+const appPath = path.resolve(__dirname, '..', 'app', 'dist');
 
 // express app
 const app = express();
