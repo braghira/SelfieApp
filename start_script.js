@@ -2,6 +2,7 @@ const { exec } = require("child_process");
 const path = require("path");
 const fs = require("fs");
 const os = require("os");
+require('dotenv').config({ path: path.resolve(__dirname, './backend', '.env') });
 
 // Percorso della root directory del progetto
 const rootDirectory = process.cwd();
@@ -55,23 +56,10 @@ function installDependencies(packageJsonPath, message, callback) {
     );
 }
 
-function isDisiMachine() {
-    let ret_string;
-    const hostname = os.hostname();
-    console.log("\nHostname:", hostname);
-
-    // TODO-braghira: Aggiungere l'array con i nomi di tutte le macchine del DISI
-    if (hostname === "zuniga") {
-        ret_string = "production";
-    } else {
-        ret_string = "development";
-    }
-    return ret_string;
-}
-
 function DevOrProd() {
-    const NODE_ENV = isDisiMachine();
-    if (NODE_ENV === "production") {
+    console.log("\nHostname:", os.hostname());
+
+    if (process.env.NODE_ENV === "production") {
         startProductionMode();
     } else {
         startDevelopmentMode();
