@@ -1,78 +1,79 @@
-import React, { useState, FormEvent } from "react";
+import { useState, FormEvent } from "react";
 import { Workout } from "@/lib/utils";
 
-type WorkoutProps = {
-    addWorkout: (workout: Workout) => void;
+interface FormProps {
+  addWorkout: (workout: Workout) => void;
 }
 
-const WorkoutForm: React.FC<WorkoutProps> = ({ addWorkout }) => {
-    const [title, setTitle] = useState("");
-    const [load, setLoad] = useState(0);
-    const [reps, setReps] = useState(0);
-    const [error, setError] = useState<string | null>(null);
+export default function WorkoutForm({ addWorkout }: FormProps) {
+  const [title, setTitle] = useState("");
+  const [load, setLoad] = useState(0);
+  const [reps, setReps] = useState(0);
+  const [error, setError] = useState<string | null>(null);
 
-    const handleSubmit = async (e: FormEvent) => {
-        e.preventDefault();
+  async function handleSubmit(e: FormEvent) {
+    e.preventDefault();
 
-        const workout: Workout = { title, load, reps };
+    const workout: Workout = { title, load, reps };
 
-        try {
-            const response = await fetch(`${import.meta.env.VITE_BASE_URL}/api/workouts`, {
-                method: 'POST',
-                body: JSON.stringify(workout),
-                mode: 'cors',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            });
-            const json = await response.json();
-
-            if (!response.ok) {
-                setError(json.error);
-            } else {
-                addWorkout(json);
-                // reset the form
-                setTitle("");
-                setLoad(0);
-                setReps(0);
-                setError(null);
-                console.log("new workout added", json);
-            }
-        } catch (error) {
-            console.error("An error occurred:", error);
-            setError("An error occurred while adding the workout.");
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_BASE_URL}/api/workouts`,
+        {
+          method: "POST",
+          body: JSON.stringify(workout),
+          mode: "cors",
+          headers: {
+            "Content-Type": "application/json",
+          },
         }
-    };
+      );
+      const json = await response.json();
 
-    return (
-        <form className="create" onSubmit={handleSubmit}>
-            <h3>Add a new workout</h3>
+      if (!response.ok) {
+        setError(json.error);
+      } else {
+        addWorkout(json);
+        // reset the form
+        setTitle("");
+        setLoad(0);
+        setReps(0);
+        setError(null);
+        console.log("new workout added", json);
+      }
+    } catch (error) {
+      console.error("An error occurred:", error);
+      setError("An error occurred while adding the workout.");
+    }
+  }
 
-            <label>Exercise Name:</label>
-            <input
-                type="text"
-                onChange={(e) => setTitle(e.target.value)}
-                value={title}
-            />
+  return (
+    <form className="create" onSubmit={handleSubmit}>
+      <h3>Add a new workout</h3>
 
-            <label>Load in kg:</label>
-            <input
-                type="number"
-                onChange={(e) => setLoad(e.target.valueAsNumber)}
-                value={load}
-            />
+      <label>Exercise Name:</label>
+      <input
+        type="text"
+        onChange={(e) => setTitle(e.target.value)}
+        value={title}
+      />
 
-            <label>Reps:</label>
-            <input
-                type="number"
-                onChange={(e) => setReps(e.target.valueAsNumber)}
-                value={reps}
-            />
+      <label>Load in kg:</label>
+      <input
+        type="number"
+        onChange={(e) => setLoad(e.target.valueAsNumber)}
+        value={load}
+      />
 
-            <button>Add Workout</button>
-            {error && <div className="error">{error}</div>}
-        </form>
-    );
-};
+      <label>Reps:</label>
+      <input
+        type="number"
+        onChange={(e) => setReps(e.target.valueAsNumber)}
+        value={reps}
+      />
 
-export default WorkoutForm;
+      <button>Add Workout</button>
+      {error && <div className="error">{error}</div>}
+    </form>
+  );
+}
