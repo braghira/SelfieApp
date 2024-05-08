@@ -54,7 +54,7 @@ export default function WorkoutForm({ addWorkout }: FormProps) {
       <label>Exercise Name:</label>
       <input
         type="text"
-        onChange={(e) => setTitle(e.target.value)}
+        onChange={(e) => setTitle(e.target.value.trim())}
         value={title}
       />
 

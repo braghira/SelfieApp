@@ -32,7 +32,7 @@ export default function WorkoutDetails({
 
   return (
     <div className="workout-details flex justify-start">
-      <div className="block max-w-[18rem] rounded-lg border border-blue-800 bg-surface-dark shadow-slate-950">
+      <div className="block max-w-[18rem] rounded-lg border border-blue-800 bg-primary-500 shadow-slate-950">
         <div className="border-b-2 border-neutral-100 px-6 py-3 text-surface dark:border-white/10 dark:text-white">
           {workout.title}
         </div>
