@@ -11,21 +11,19 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { SigninValidation } from "../lib/utils";
+import { LoginType, LoginSchema } from "../lib/utils";
 import Loader from "./Loader";
 
 export default function Login() {
-  const isLoading: boolean = true;
-
-  const form = useForm({
-    resolver: zodResolver(SigninValidation),
+  const form = useForm<LoginType>({
+    resolver: zodResolver(LoginSchema),
     defaultValues: {
-      username: "",
+      email: "",
       password: "",
     },
   });
 
-  function onSubmit(values: unknown) {
+  function onSubmit(values: LoginType) {
     // Fai qualcosa con i valori del form.
     // ✅ Questo sarà tipo-safe e validato.
     console.log(values);
@@ -41,7 +39,7 @@ export default function Login() {
         />
         <h2 className="h3-bold md:h2-bold pt-5 sm:pt-12">Login</h2>
         <p className="text-light-3 small-medium md:base-regular mt-2">
-          Connect, Share, Squeal
+          Organise your life with Selfie!
         </p>
         <Button
           type="submit"
@@ -60,7 +58,7 @@ export default function Login() {
         >
           <FormField
             control={form.control}
-            name="username"
+            name="email"
             render={({ field }) => (
               <FormItem>
                 <FormLabel className="shad-form_label">Email</FormLabel>
@@ -88,11 +86,11 @@ export default function Login() {
             type="submit"
             className="shad-button_primary flex flex-col gap-5 w-full mt-4"
           >
-            {isLoading ? <Loader /> : "Login"}
+            {form.formState.isSubmitting ? <Loader /> : "Login"}
           </Button>
           <Link
             to="/forgot-password"
-            className="text-small-regular text-light-2 text-link hover:underline cursor-pointer"
+            className="text-light-3 small md:base-regular mt-2 text-link hover:underline cursor-pointer"
           >
             Forgot Password?
           </Link>
@@ -101,29 +99,12 @@ export default function Login() {
             Don't have an account yet?
             <Link
               to="/Register"
-              className="text-primary-500 text-small-semibold ml-0"
+              className="text-primary-500 text-small-semibold ml-1"
             >
               Register
             </Link>
           </p>
         </form>
-
-        <p className="text-light-3 small md:base-regular mt-2">
-          By clicking continue, you agree to our{" "}
-          <Link
-            to="/terms"
-            className="underline underline-offset-4 hover:text-primary"
-          >
-            Terms of Service
-          </Link>{" "}
-          and{" "}
-          <Link
-            to="/privacy"
-            className="underline underline-offset-4 hover:text-primary"
-          >
-            Privacy Policy
-          </Link>
-        </p>
       </div>
     </Form>
   );

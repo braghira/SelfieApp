@@ -1,21 +1,34 @@
-import { useState, FormEvent } from "react";
-import { Workout } from "@/lib/utils";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+// types
+import { WorkoutSchema, WorkoutType } from "@/lib/utils";
+// components
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import Loader from "./Loader";
+import useWorkoutContext from "@/hooks/useWorkoutContext";
 
-interface FormProps {
-  addWorkout: (workout: Workout) => void;
-}
+export default function WorkoutForm() {
+  const { dispatch } = useWorkoutContext();
 
-export default function WorkoutForm({ addWorkout }: FormProps) {
-  const [title, setTitle] = useState("");
-  const [load, setLoad] = useState(0);
-  const [reps, setReps] = useState(0);
-  const [error, setError] = useState<string | null>(null);
+  const form = useForm<WorkoutType>({
+    resolver: zodResolver(WorkoutSchema),
+    defaultValues: {
+      title: "",
+      load: 0,
+      reps: 0,
+    },
+  });
 
-  async function handleSubmit(e: FormEvent) {
-    e.preventDefault();
-
-    const workout: Workout = { title, load, reps };
-
+  async function onSubmit(workout: WorkoutType) {
     try {
       const response = await fetch(
         `${import.meta.env.VITE_BASE_URL}/api/workouts`,
@@ -28,52 +41,97 @@ export default function WorkoutForm({ addWorkout }: FormProps) {
           },
         }
       );
-      const json = await response.json();
+      // ritorna il singolo oggetto appena creato
+      const data = await response.json();
+
+      WorkoutSchema.safeParse(data);
 
       if (!response.ok) {
-        setError(json.error);
+        console.log("Server did not respond");
       } else {
-        addWorkout(json);
-        // reset the form
-        setTitle("");
-        setLoad(0);
-        setReps(0);
-        setError(null);
-        console.log("new workout added", json);
+        dispatch({ type: "CREATE_WORKOUT", payload: [data] });
+        console.log("new workout added", data);
       }
     } catch (error) {
       console.error("An error occurred:", error);
-      setError("An error occurred while adding the workout.");
     }
+    // reset the form
+    form.reset();
   }
 
   return (
-    <form className="create" onSubmit={handleSubmit}>
-      <h3>Add a new workout</h3>
-
-      <label>Exercise Name:</label>
-      <input
-        type="text"
-        onChange={(e) => setTitle(e.target.value.trim())}
-        value={title}
-      />
-
-      <label>Load in kg:</label>
-      <input
-        type="number"
-        onChange={(e) => setLoad(e.target.valueAsNumber)}
-        value={load}
-      />
-
-      <label>Reps:</label>
-      <input
-        type="number"
-        onChange={(e) => setReps(e.target.valueAsNumber)}
-        value={reps}
-      />
-
-      <button>Add Workout</button>
-      {error && <div className="error">{error}</div>}
-    </form>
+    <Form {...form}>
+      <form
+        onSubmit={form.handleSubmit(onSubmit)}
+        className="flex flex-col gap-5 w-full mt-4"
+      >
+        <FormField
+          control={form.control}
+          name="title"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="shad-form_label">Title</FormLabel>
+              <FormControl>
+                <Input
+                  type="text"
+                  placeholder="Title of the workout"
+                  className="shad-input"
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="load"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="shad-form_label">Load</FormLabel>
+              <FormControl>
+                <Input
+                  type="number"
+                  className="shad-input"
+                  placeholder="Input a number"
+                  {...field}
+                  onChange={(e) => {
+                    field.onChange(e.target.valueAsNumber); // Utilizza valueAsNumber
+                  }}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="reps"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="shad-form_label">Reps</FormLabel>
+              <FormControl>
+                <Input
+                  type="number"
+                  className="shad-input"
+                  placeholder="Input a number"
+                  {...field}
+                  onChange={(e) => {
+                    field.onChange(e.target.valueAsNumber); // Utilizza valueAsNumber
+                  }}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <Button
+          type="submit"
+          className="shad-button_primary flex flex-col gap-5 w-full mt-4"
+        >
+          {form.formState.isSubmitting ? <Loader /> : "Add Workout"}
+        </Button>
+      </form>
+    </Form>
   );
 }

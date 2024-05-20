@@ -1,8 +1,10 @@
+import loader from "../assets/loader.svg";
+
 const Loader = () => (
   <div className="flex-center w-full">
     <img
-      src="/app/src/assets/loader.svg"
-      alt="loader"
+      src={loader}
+      alt="loading icon"
       width={24}
       height={24}
       className="animate-spin"

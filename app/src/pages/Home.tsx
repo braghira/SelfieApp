@@ -1,42 +1,31 @@
-import { useState, useEffect } from "react";
-
+import { useEffect } from "react";
+import useWorkoutContext from "@/hooks/useWorkoutContext";
 // components
 import WorkoutDetails from "@/components/WorkoutDetails";
 import WorkoutForm from "@/components/WorkoutForms";
 import Navbar from "@/components/Navbar";
-// types
-import { Workout } from "@/lib/utils";
+import { WorkoutSchema } from "@/lib/utils";
 
 export default function Home() {
-  const [workouts, setWorkouts] = useState<Workout[] | null>(null);
+  const { workouts, dispatch } = useWorkoutContext();
 
   useEffect(() => {
+    // GET
     const fetchWorkouts = async () => {
       const response = await fetch(
         `${import.meta.env.VITE_BASE_URL}/api/workouts`
       );
+      // ritorna un array oppure un singolo oggetto
       const json = await response.json();
+      // parsing come array
+      WorkoutSchema.array().parse(json);
 
       if (response.ok) {
-        setWorkouts(json);
+        dispatch({ type: "SET_WORKOUTS", payload: json });
       }
     };
     fetchWorkouts();
-  }, []);
-
-  function addWorkout(newWorkout: Workout) {
-    // Logica per aggiungere un nuovo workout
-    const updatedWorkouts = [newWorkout, ...(workouts || [])];
-    setWorkouts(updatedWorkouts);
-  }
-
-  function deleteWorkout(delWorkout: Workout) {
-    const updatedWorkouts = workouts?.filter(
-      (workout) => workout._id !== delWorkout._id
-    );
-    if (updatedWorkouts) setWorkouts(updatedWorkouts);
-    else setWorkouts(null);
-  }
+  }, [dispatch]);
 
   return (
     <div className="home">
@@ -45,14 +34,10 @@ export default function Home() {
         {/* Usiamo le parentesi tonde per ritornare un template */}
         {workouts &&
           workouts.map((workout) => (
-            <WorkoutDetails
-              key={workout._id}
-              workout={workout}
-              deleteWorkout={deleteWorkout}
-            />
+            <WorkoutDetails key={workout._id} workout={workout} />
           ))}
       </div>
-      <WorkoutForm addWorkout={addWorkout} />
+      <WorkoutForm />
     </div>
   );
 }

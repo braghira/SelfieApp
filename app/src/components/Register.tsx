@@ -13,14 +13,12 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { SignupValidation } from "../lib/utils";
+import { SignupSchema } from "../lib/utils";
 import Loader from "./Loader";
 
 const Register: React.FC = () => {
-  const isLoading: boolean = true;
-
   const form = useForm({
-    resolver: zodResolver(SignupValidation),
+    resolver: zodResolver(SignupSchema),
     defaultValues: {
       name: "",
       username: "",
@@ -107,13 +105,7 @@ const Register: React.FC = () => {
             )}
           />
           <Button type="submit" className="shad-button_primary">
-            {isLoading ? (
-              <div className="flex-center gap-2">
-                <Loader />
-              </div>
-            ) : (
-              "Sign up"
-            )}
+            {form.formState.isSubmitting ? <Loader /> : "Sign Up"}
           </Button>
           <p className="text-small-regular text-light-2 text-center mt-2">
             Already have an account?

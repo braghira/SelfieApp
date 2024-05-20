@@ -2,32 +2,34 @@ import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 import * as z from "zod";
 
-export interface Workout {
-  title: string;
-  reps: number;
-  load: number;
-  _id?: string;
-  createdAt?: string;
-}
+export const WorkoutSchema = z.object({
+  title: z.string().min(2),
+  reps: z.number().nonnegative(),
+  load: z.number().nonnegative(),
+  _id: z.string().optional(),
+  createdAt: z.string().optional(),
+});
+export type WorkoutType = z.infer<typeof WorkoutSchema>;
 
-export const SignupValidation = z.object({
-  name: z.string().min(2, { message: "Name must be at least 2 characters." }),
-  username: z
-    .string()
-    .min(2, { message: "Name must be at least 2 characters." }),
+export const SignupSchema = z.object({
+  name: z.string().min(2),
+  username: z.string().min(2),
   email: z.string().email(),
   password: z
     .string()
     .min(8, { message: "Password must be at least 8 characters." }),
 });
+export type SignupType = z.infer<typeof SignupSchema>;
 
-export const SigninValidation = z.object({
+export const LoginSchema = z.object({
   email: z.string().email(),
   password: z
     .string()
     .min(8, { message: "Password must be at least 8 characters." }),
 });
+export type LoginType = z.infer<typeof LoginSchema>;
 
+// tailwind
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
