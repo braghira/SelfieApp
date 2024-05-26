@@ -2,8 +2,18 @@ import useWorkoutContext from "@/hooks/useWorkoutContext";
 import { WorkoutSchema } from "@/lib/utils";
 // components
 import { Trash2 } from "lucide-react";
+import { Button } from "./ui/button";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "./ui/card";
 // types
 import { WorkoutType } from "@/lib/utils";
+// date fns
+import { formatDistanceToNow } from "date-fns/formatDistanceToNow";
 
 interface WorkoutDetailsProps {
   workout: WorkoutType;
@@ -36,22 +46,29 @@ export default function WorkoutDetails({ workout }: WorkoutDetailsProps) {
   }
 
   return (
-    <div className="workout-details flex justify-start size-full">
-      <div className="block max-w-[18rem] rounded-lg border border-blue-800 bg-primary-500 shadow-slate-950">
-        <div className="flex justify-between gap-3 border-b-2 border-neutral-100 px-6 py-3 text-surface dark:border-white/10 dark:text-white">
-          {workout.title}
-          <Trash2 className="hover:cursor-pointer" onClick={handleDelete} />
+    <Card className="workout-details">
+      <CardHeader className="flex-row justify-between items-center">
+        <CardTitle className="text-primary">{workout.title}</CardTitle>
+        <Button variant="ghost" size={"icon"} onClick={handleDelete}>
+          <Trash2 className="h-6 w-6" />
+        </Button>
+      </CardHeader>
+      <CardContent className="bg-primary-500 flex-col gap-3 justify-center items-center">
+        <div>
+          Load: <span className="base-semibold">{workout.load}</span>
         </div>
-        <div className="p-6">
-          <h5 className="mb-2 text-xl font-medium leading-tight text-primary">
-            {workout.load}
-          </h5>
-          <p className="mb-2 text-xl font-medium leading-tight text-primary">
-            {workout.reps}
-          </p>
-          <p className="flex justify-center">{workout.createdAt}</p>
+        <div>
+          Reps: <span className="base-semibold">{workout.reps}</span>
         </div>
-      </div>
-    </div>
+      </CardContent>
+      <CardFooter className="flex justify-start">
+        <div>
+          {workout.createdAt &&
+            formatDistanceToNow(new Date(workout.createdAt), {
+              addSuffix: true,
+            })}
+        </div>
+      </CardFooter>
+    </Card>
   );
 }

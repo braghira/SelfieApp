@@ -1,11 +1,9 @@
-import "./App.css";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { WorkoutContextProvider } from "./context/WorkoutContext";
 // pages
 import Home from "./pages/Home";
 import AuthLayout from "./components/AuthLayout";
-import Login from "./components/Login";
-import Register from "./components/Register";
+import Login from "./pages/Login";
+import Signup from "./pages/Signup";
 
 function App() {
   return (
@@ -13,15 +11,13 @@ function App() {
       <main className="App">
         <BrowserRouter>
           <div className="pages">
-            <WorkoutContextProvider>
-              <Routes>
-                <Route element={<AuthLayout />}>
-                  <Route path="/login" element={<Login />} />
-                  <Route path="/register" element={<Register />} />
-                </Route>
-                <Route index element={<Home />}></Route>
-              </Routes>
-            </WorkoutContextProvider>
+            <Routes>
+              <Route element={<AuthLayout />}>
+                <Route path="/auth/login" element={<Login />} />
+                <Route path="/auth/signup" element={<Signup />} />
+              </Route>
+              <Route index element={<Home />}></Route>
+            </Routes>
           </div>
         </BrowserRouter>
       </main>

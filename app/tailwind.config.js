@@ -1,4 +1,6 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 /* eslint-disable no-undef */
+
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   darkMode: ["class"],
@@ -8,7 +10,6 @@ module.exports = {
     "./app/**/*.{ts,tsx}",
     "./src/**/*.{ts,tsx}",
   ],
-  prefix: "",
   theme: {
     container: {
       center: true,
@@ -18,20 +19,10 @@ module.exports = {
       },
     },
     extend: {
+      fontFamily: {
+        logo: ["Balsamiq Sans", "sans-serif"],
+      },
       colors: {
-        "primary-500": "#877EFF",
-        "primary-600": "#5D5FEF",
-        "secondary-500": "#FFB620",
-        "off-white": "#D0DFFF",
-        red: "#FF5A5A",
-        "dark-1": "#000000",
-        "dark-2": "#09090A",
-        "dark-3": "#101012",
-        "dark-4": "#1F1F22",
-        "light-1": "#FFFFFF",
-        "light-2": "#EFEFEF",
-        "light-3": "#7878A3",
-        "light-4": "#5C5C7B",
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
@@ -66,16 +57,6 @@ module.exports = {
           foreground: "hsl(var(--card-foreground))",
         },
       },
-      screens: {
-        xs: "480px",
-      },
-      width: {
-        420: "420px",
-        465: "465px",
-      },
-      fontFamily: {
-        inter: ["Inter", "sans-serif"],
-      },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
@@ -83,12 +64,12 @@ module.exports = {
       },
       keyframes: {
         "accordion-down": {
-          from: { height: "0" },
+          from: { height: 0 },
           to: { height: "var(--radix-accordion-content-height)" },
         },
         "accordion-up": {
           from: { height: "var(--radix-accordion-content-height)" },
-          to: { height: "0" },
+          to: { height: 0 },
         },
       },
       animation: {

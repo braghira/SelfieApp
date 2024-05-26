@@ -2,7 +2,7 @@ import { ReactElement, createContext, useReducer } from "react";
 import { WorkoutType } from "@/lib/utils";
 
 // types for the reducer
-export type ActionType = {
+type ActionType = {
   type: "SET_WORKOUTS" | "CREATE_WORKOUT" | "DELETE_WORKOUT";
   payload: WorkoutType[];
 };
@@ -45,7 +45,7 @@ export function WorkoutContextProvider({ children }: WorkoutContextProps) {
   const [state, dispatch] = useReducer(workoutsReducer, []);
 
   return (
-    <WorkoutContext.Provider value={{ workouts: state, dispatch: dispatch }}>
+    <WorkoutContext.Provider value={{ workouts: state, dispatch }}>
       {children}
     </WorkoutContext.Provider>
   );
