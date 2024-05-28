@@ -58,12 +58,28 @@
   body {
     @apply bg-background text-foreground font-sans;
   }
+  nav {
+    @apply max-w-6xl mx-auto my-12;
+  }
+  p {
+    @apply mt-2;
+  }
+  h1 {
+    @apply scroll-m-20 font-extrabold tracking-tight text-5xl;
+  }
+  h2 {
+    @apply scroll-m-20 border-b pb-2 text-3xl font-semibold tracking-tight transition-colors first:mt-0;
+  }
 }
 
 @layer utilities {
   /* TYPOGRAPHY */
-  .logo {
-    @apply font-logo italic text-[52px];
+  .logo-italic-l {
+    @apply font-logo italic text-[48px];
+  }
+
+  .logo-italic-sm {
+    @apply font-logo italic text-[30px];
   }
 
   .h1-bold {
@@ -161,17 +177,4 @@
   .home-container {
     @apply container;
   }
-}
-
-nav {
-  @apply max-w-6xl mx-auto my-12;
-}
-p {
-  @apply mt-2;
-}
-h1 {
-  @apply scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl;
-}
-h2 {
-  @apply scroll-m-20 border-b pb-2 text-3xl font-semibold tracking-tight transition-colors first:mt-0;
 }

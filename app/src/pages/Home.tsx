@@ -5,15 +5,20 @@ import WorkoutDetails from "@/components/WorkoutDetails";
 import WorkoutForm from "@/components/WorkoutForm";
 import Navbar from "@/components/Navbar";
 import { WorkoutSchema } from "@/lib/utils";
+import useAuthContext from "@/hooks/useAuthContext";
 
 export default function Home() {
   const { workouts, dispatch } = useWorkoutContext();
+  const { user } = useAuthContext();
 
   useEffect(() => {
     // GET
     const fetchWorkouts = async () => {
       const response = await fetch(
-        `${import.meta.env.VITE_BASE_URL}/api/workouts`
+        `${import.meta.env.VITE_BASE_URL}/api/workouts`,
+        {
+          headers: { Authorization: `Bearer ${user?.token}` },
+        }
       );
       // ritorna un array oppure un singolo oggetto
       const json = await response.json();
@@ -24,8 +29,10 @@ export default function Home() {
         dispatch({ type: "SET_WORKOUTS", payload: json });
       }
     };
-    fetchWorkouts();
-  }, [dispatch]);
+    if (user) {
+      fetchWorkouts();
+    }
+  }, [dispatch, user]);
 
   return (
     <div className="container">

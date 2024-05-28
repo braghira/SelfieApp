@@ -15,9 +15,11 @@ import {
 } from "@/components/ui/form";
 import Loader from "./Loader";
 import useWorkoutContext from "@/hooks/useWorkoutContext";
+import useAuthContext from "@/hooks/useAuthContext";
 
 export default function WorkoutForm() {
   const { dispatch } = useWorkoutContext();
+  const { user } = useAuthContext();
 
   const form = useForm<WorkoutType>({
     resolver: zodResolver(WorkoutSchema),
@@ -29,6 +31,13 @@ export default function WorkoutForm() {
   });
 
   async function onSubmit(workout: WorkoutType) {
+    if (!user) {
+      form.setError("root.serverError", {
+        type: "You must be logged in",
+      });
+      return;
+    }
+
     try {
       const response = await fetch(
         `${import.meta.env.VITE_BASE_URL}/api/workouts`,
@@ -38,6 +47,7 @@ export default function WorkoutForm() {
           mode: "cors",
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${user?.token}`,
           },
         }
       );
@@ -125,6 +135,11 @@ export default function WorkoutForm() {
             </FormItem>
           )}
         />
+        {form.formState.errors.root && (
+          <FormMessage>
+            {form.formState.errors.root.serverError.type}
+          </FormMessage>
+        )}
         <Button
           type="submit"
           className="shad-button_primary flex flex-col gap-5 mt-4"

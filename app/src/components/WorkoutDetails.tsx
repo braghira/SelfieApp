@@ -14,6 +14,7 @@ import {
 import { WorkoutType } from "@/lib/utils";
 // date fns
 import { formatDistanceToNow } from "date-fns/formatDistanceToNow";
+import useAuthContext from "@/hooks/useAuthContext";
 
 interface WorkoutDetailsProps {
   workout: WorkoutType;
@@ -21,12 +22,20 @@ interface WorkoutDetailsProps {
 
 export default function WorkoutDetails({ workout }: WorkoutDetailsProps) {
   const { dispatch } = useWorkoutContext();
+  const { user } = useAuthContext();
 
   async function handleDelete() {
+    if (!user) {
+      return;
+    }
+
     try {
       const response = await fetch(
         `${import.meta.env.VITE_BASE_URL}/api/workouts/` + workout._id,
-        { method: "DELETE" }
+        {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${user?.token}` },
+        }
       );
 
       // ritorna sempre l'oggetto cancellato

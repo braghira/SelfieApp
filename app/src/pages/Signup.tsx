@@ -1,7 +1,7 @@
 import React from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { Link } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import useSignup from "@/hooks/useSignup";
 import { Button } from "@/components/ui/button";
 import {
@@ -19,7 +19,7 @@ import Loader from "../components/Loader";
 import Background from "../assets/background.jpg";
 
 const Signup: React.FC = () => {
-  const { signup, error } = useSignup();
+  const { signup } = useSignup();
 
   const form = useForm<UserType>({
     resolver: zodResolver(UserSchema),
@@ -121,22 +121,17 @@ const Signup: React.FC = () => {
                   </FormItem>
                 )}
               />
-              {error &&
-                !form.formState.errors.email &&
-                !form.formState.errors.password && (
-                  <div className="text-red-500 text-sm">{error}</div>
-                )}
               <Button type="submit" className="shad-button_primary">
                 {form.formState.isSubmitting ? <Loader /> : "Sign Up"}
               </Button>
               <p className="text-small-regular text-light-2 text-center mt-2">
                 Already have an account?
-                <Link
-                  to="/auth/login"
+                <NavLink
+                  to="/login"
                   className="text-primary text-small-semibold ml-2 hover:underline"
                 >
                   Log in
-                </Link>
+                </NavLink>
               </p>
             </form>
           </div>

@@ -1,7 +1,9 @@
+// hooks
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import useLogin from "@/hooks/useLogin";
 // components
-import { Link } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -19,6 +21,9 @@ import Background from "../assets/background.jpg";
 import Logo from "@/components/Logo";
 
 export default function Login() {
+  const { login } = useLogin();
+  const navigate = useNavigate();
+
   const form = useForm<UserType>({
     resolver: zodResolver(UserSchema),
     defaultValues: {
@@ -27,8 +32,15 @@ export default function Login() {
     },
   });
 
-  function onSubmit(values: UserType) {
-    console.log(values);
+  async function onSubmit(values: UserType) {
+    await login(values.email, values.password, (err) => {
+      if (err.includes("mail")) {
+        form.setError("email", { message: err });
+      } else if (err.includes("assword")) {
+        form.setError("password", { message: err });
+      }
+    });
+    navigate("/");
   }
 
   return (
@@ -48,15 +60,7 @@ export default function Login() {
             <p className="text-light-3 small-medium md:base-regular mt-2">
               Organise your life with Selfie!
             </p>
-            {/* <Button
-              type="submit"
-              className="shad-button_primary flex flex-col gap-5 w-full mt-4"
-            >
-              Continue without login
-            </Button>
-            <p className="bg-background px-3 text-muted-foreground mt-4">
-              or log in with
-            </p> */}
+
             <form
               onSubmit={form.handleSubmit(onSubmit)}
               className="flex flex-col gap-5 w-full mt-4"
@@ -97,21 +101,21 @@ export default function Login() {
               >
                 {form.formState.isSubmitting ? <Loader /> : "Login"}
               </Button>
-              <Link
-                to="/auth/forgot-password"
+              <NavLink
+                to="/forgot-password"
                 className="text-light-3 small md:base-regular mt-2 text-link hover:underline cursor-pointer"
               >
                 Forgot Password?
-              </Link>
+              </NavLink>
 
               <p className="text-small-regular text-light-2 text-center mt-0">
                 Don't have an account yet?
-                <Link
-                  to="/auth/signup"
+                <NavLink
+                  to="/signup"
                   className="text-primary text-small-semibold ml-2 hover:underline"
                 >
-                  Register
-                </Link>
+                  Sign Up
+                </NavLink>
               </p>
             </form>
           </div>

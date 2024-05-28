@@ -1,7 +1,17 @@
 import { UserType } from "@/lib/utils";
-import { ReactElement, createContext, useReducer } from "react";
+import {
+  ReactElement,
+  createContext,
+  useEffect,
+  useReducer,
+  useState,
+} from "react";
 
-type AuthType = UserType | undefined;
+type AuthType =
+  | (UserType & {
+      token: string;
+    })
+  | undefined;
 
 // types for the reducer
 export type ActionType = {
@@ -13,6 +23,7 @@ export type AuthContextType =
   | {
       user: AuthType;
       dispatch: React.Dispatch<ActionType>;
+      loading: boolean;
     }
   | undefined;
 
@@ -41,11 +52,25 @@ interface AuthContextProps {
 
 export function AuthContextProvider({ children }: AuthContextProps) {
   const [state, dispatch] = useReducer(authReducer, undefined);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const item = localStorage.getItem("user");
+    if (item) {
+      const user: AuthType = JSON.parse(item);
+      if (user) {
+        dispatch({ type: "LOGIN", payload: user });
+      } else {
+        console.log("Null user Logged in!");
+      }
+    }
+    setLoading(false);
+  }, []);
 
   console.log("AuthContext state: ", state);
 
   return (
-    <AuthContext.Provider value={{ user: state, dispatch }}>
+    <AuthContext.Provider value={{ user: state, dispatch, loading }}>
       {children}
     </AuthContext.Provider>
   );
