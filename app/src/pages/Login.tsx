@@ -40,7 +40,9 @@ export default function Login() {
         form.setError("password", { message: err });
       }
     });
-    if (form.formState.isSubmitted) {
+    // se non ci sono errori nel form possiamo reinderizzare l'utente alla home page
+    if (JSON.stringify(form.formState.errors) === "{}") {
+      console.log("Im navigating my head");
       navigate("/");
     }
   }
