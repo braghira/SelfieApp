@@ -20,8 +20,9 @@ export default function useLogin() {
     );
     const json = await response.json();
     if (!response.ok) {
-      setError(json.error || "Unknown error occurred");
-      onError(json.error || "Unknown error occurred");
+      setError(json.error);
+      onError(json.error);
+      console.log(json.error);
     } else {
       // save the user to local storage
       localStorage.setItem("user", JSON.stringify(json));

@@ -40,7 +40,9 @@ export default function Login() {
         form.setError("password", { message: err });
       }
     });
-    navigate("/");
+    if (form.formState.isSubmitted) {
+      navigate("/");
+    }
   }
 
   return (

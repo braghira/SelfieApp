@@ -23,9 +23,7 @@ export default function ErrorPage() {
       <h1 className="text-primary text-[70px]">Oops!</h1>
       <h2 className="h3-bold">Sorry, an unexpected error has occurred.</h2>
       <p>
-        <i className="font-medium leading-[140%] text-[30px]">
-          {error.status} {error.statusText || error.message}
-        </i>
+        <i className="font-medium leading-[140%] text-[30px]">404 Not Found</i>
       </p>
       <Button size={"lg"}>
         <NavLink to={"/"}>Go Back</NavLink>

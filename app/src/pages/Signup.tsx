@@ -1,7 +1,6 @@
-import React from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import useSignup from "@/hooks/useSignup";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,8 +17,9 @@ import Logo from "@/components/Logo";
 import Loader from "../components/Loader";
 import Background from "../assets/background.jpg";
 
-const Signup: React.FC = () => {
+export default function Signup() {
   const { signup } = useSignup();
+  const navigate = useNavigate();
 
   const form = useForm<UserType>({
     resolver: zodResolver(UserSchema),
@@ -39,6 +39,9 @@ const Signup: React.FC = () => {
         form.setError("password", { message: err });
       }
     });
+    if (form.formState.isSubmitted) {
+      navigate("/");
+    }
   }
 
   return (
@@ -139,6 +142,4 @@ const Signup: React.FC = () => {
       </div>
     </div>
   );
-};
-
-export default Signup;
+}
