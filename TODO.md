@@ -49,4 +49,5 @@ Dato che siamo in 3, le nostre specifiche obbligatorie sono quelle fino all'este
 
 In ordine di importanza:
 
-- [x] capire come strutturare lo schema UserType
+- [ ] Definire una volta per tutte lo schema per lo user record
+- [ ] Implementare il routing con le best practice di react-router 6.4

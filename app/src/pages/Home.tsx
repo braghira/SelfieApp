@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+// context
 import useWorkoutContext from "@/hooks/useWorkoutContext";
 // components
 import WorkoutDetails from "@/components/WorkoutDetails";
@@ -35,17 +36,19 @@ export default function Home() {
   }, [dispatch, user]);
 
   return (
-    <div className="container">
+    <>
       <Navbar />
-      <div className="grid grid-cols-[3fr_1fr] gap-7">
-        <div className="flex max-w-3xl justify-between flex-col gap-5">
-          {workouts &&
-            workouts.map((workout) => (
-              <WorkoutDetails key={workout._id} workout={workout} />
-            ))}
+      <div className="container mb-8">
+        <div className="grid sm:grid-cols-[3fr_1fr] gap-7">
+          <div className="flex max-w-3xl justify-between flex-col gap-5">
+            {workouts &&
+              workouts.map((workout) => (
+                <WorkoutDetails key={workout._id} workout={workout} />
+              ))}
+          </div>
+          <WorkoutForm />
         </div>
-        <WorkoutForm />
       </div>
-    </div>
+    </>
   );
 }

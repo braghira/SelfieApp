@@ -1,6 +1,6 @@
 import { UserType } from "@/lib/utils";
 import {
-  ReactElement,
+  PropsWithChildren,
   createContext,
   useEffect,
   useReducer,
@@ -46,11 +46,7 @@ function authReducer(state: AuthType, action: ActionType): AuthType {
   }
 }
 
-interface AuthContextProps {
-  children: ReactElement | ReactElement[] | undefined;
-}
-
-export function AuthContextProvider({ children }: AuthContextProps) {
+export function AuthContextProvider({ children }: PropsWithChildren) {
   const [state, dispatch] = useReducer(authReducer, undefined);
   const [loading, setLoading] = useState(true);
 

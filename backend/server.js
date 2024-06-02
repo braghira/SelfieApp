@@ -1,19 +1,18 @@
 // npm modules
-const fs = require("fs");
 const express = require("express");
 const path = require("path");
 const mongoose = require("mongoose");
 const cors = require("cors");
 require("dotenv").config({ path: path.resolve(__dirname, ".env") }); // config method will attach .env variables to the "process" global variable
-console.log(__dirname); // remove this when you're sure it works
 // our modules
 const workoutRoutes = require(path.resolve(__dirname, "routes", "workouts"));
 const authRoutes = require(path.resolve(__dirname, "routes", "users"));
-const utils = require(path.resolve(__dirname, "utils", "environmentDetector"));
 // utilities
-const port = process.env.PORT;
-const mongouri = process.env.DB_URI;
-const node_env = process.env.NODE_ENV;
+const { port, mongouri, node_env } = require(path.resolve(
+  __dirname,
+  "utils",
+  "globalVariables"
+));
 const appPath = path.resolve(__dirname, "..", "app", "dist");
 
 // express app
@@ -47,9 +46,10 @@ if (node_env === "production") {
 mongoose
   .connect(mongouri, { dbName: "SelfieDB" })
   .then(() => {
+    console.log("DB connected");
     // listen for requests
     app.listen(port || 8000, () => {
-      console.log(`DB connected and listening on port ${port}`);
+      console.log(`listening on port ${port}`);
     });
   })
   .catch((error) => {

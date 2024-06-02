@@ -59,27 +59,23 @@
     @apply bg-background text-foreground font-sans;
   }
   nav {
-    @apply max-w-6xl mx-auto my-12;
+    @apply w-screen mb-3 p-5;
   }
   p {
-    @apply mt-2;
+    @apply small-regular sm:base-regular;
   }
   h1 {
-    @apply scroll-m-20 font-extrabold tracking-tight text-5xl;
+    @apply scroll-m-20 font-extrabold tracking-tight transition-colors text-3xl sm:text-5xl;
   }
   h2 {
-    @apply scroll-m-20 border-b pb-2 text-3xl font-semibold tracking-tight transition-colors first:mt-0;
+    @apply scroll-m-20 font-semibold tracking-tight transition-colors text-2xl sm:text-4xl;
   }
 }
 
 @layer utilities {
   /* TYPOGRAPHY */
-  .logo-italic-l {
-    @apply font-logo italic text-[48px];
-  }
-
-  .logo-italic-sm {
-    @apply font-logo italic text-[30px];
+  .logo-italic {
+    @apply font-logo italic text-3xl sm:text-5xl;
   }
 
   .h1-bold {

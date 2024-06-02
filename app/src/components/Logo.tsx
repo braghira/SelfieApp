@@ -7,13 +7,13 @@ interface LogoProps {
 
 export default function Logo({ className }: LogoProps) {
   return (
-    <div className={cn("flex-center gap-3", className)}>
-      <div className="sm:logo-italic-l logo-italic-sm">Selfie</div>
+    <div className={cn("flex-center gap-1", className)}>
       <img
         src={logo}
         alt="logo"
-        className="sm:h-[154px] h-[96px] rounded-full"
+        className="h-[96px] rounded-full sm:h-[154px]"
       />
+      <div className="logo-italic">Selfie</div>
     </div>
   );
 }

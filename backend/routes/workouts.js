@@ -1,4 +1,5 @@
 const express = require("express");
+const requireAuth = require("../middleware/requireAuth");
 const {
   getWorkouts,
   getWorkout,
@@ -6,7 +7,6 @@ const {
   deleteWorkout,
   updateWorkout,
 } = require("../controllers/workoutController");
-const requireAuth = require("../middleware/requireAuth");
 
 const router = express.Router();
 // protect these routes with our middleware

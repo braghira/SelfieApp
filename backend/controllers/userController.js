@@ -1,8 +1,11 @@
 const User = require("../models/userModel");
+const { token_expire_time } = require("../utils/globalVariables");
 const jwt = require("jsonwebtoken");
 
 const createToken = (_id) => {
-  return jwt.sign({ _id }, process.env.JWT_KEY, { expiresIn: "1d" });
+  return jwt.sign({ _id }, process.env.JWT_KEY, {
+    expiresIn: token_expire_time,
+  });
 };
 
 // login user

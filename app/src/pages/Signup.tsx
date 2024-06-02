@@ -47,7 +47,7 @@ export default function Signup() {
   }
 
   return (
-    <div className="flex h-screen">
+    <div className="flex min-h-screen">
       <div className="hidden bg-black xl:flex xl:w-1/2">
         <img
           src={Background}
@@ -55,20 +55,16 @@ export default function Signup() {
           className="w-full h-full object-cover"
         />
       </div>
-      <div className="container flex items-center justify-center xl:w-1/2">
+      <div className="container flex items-center justify-center py-5 xl:w-1/2">
         <Form {...form}>
-          <div className="flex flex-col items-center sm:w-full max-w-md">
-            <Logo />
-            <h1 className="h3-bold md:h2-bold pt-5 sm:pt-12">
-              Create a new account
-            </h1>
-            <p className="text-light-3 small-medium md:base-regular mt-2">
-              To use Selfie, Please enter your details
-            </p>
+          <div className="flex flex-col items-center w-full sm:max-w-md">
+            <Logo className="mb-5" />
+            <h1 className="my-2 text-center">Create a new account</h1>
+            <p className="mb-2">To use Selfie, Please enter your details</p>
 
             <form
               onSubmit={form.handleSubmit(onSubmit)}
-              className="flex flex-col gap-5 w-full mt-4"
+              className="flex flex-col gap-2 w-full"
             >
               <FormField
                 control={form.control}
@@ -126,14 +122,17 @@ export default function Signup() {
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="shad-button_primary">
+              <Button
+                type="submit"
+                className="shad-button_primary shad-button_primary mt-4"
+              >
                 {form.formState.isSubmitting ? <Loader /> : "Sign Up"}
               </Button>
-              <p className="text-small-regular text-light-2 text-center mt-2">
+              <p className="text-center mt-2">
                 Already have an account?
                 <NavLink
                   to="/login"
-                  className="text-primary text-small-semibold ml-2 hover:underline"
+                  className="text-primary ml-2 hover:underline"
                 >
                   Log in
                 </NavLink>
