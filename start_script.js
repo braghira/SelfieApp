@@ -17,19 +17,30 @@ const rootDirectory = process.cwd();
 const disiVersion = "v20.0.0";
 
 // Percorsi dei file package.json
-const backendPackageJsonPath = path.join(
+const serverPackageJsonPath = path.join(
   rootDirectory,
-  "backend",
+  "server",
   "package.json"
 );
-const appPackageJsonPath = path.join(rootDirectory, "app", "package.json");
+const clientPackageJsonPath = path.join(
+  rootDirectory,
+  "client",
+  "package.json"
+);
 
-// Verifica se esistono i file package.json
+const dotenvFrontendPath = path.join(rootDirectory, "client", ".env");
+const dotenvBackendPath = path.join(rootDirectory, "server", ".env");
+
+// Verifica se esistono i file package.json e .env
 if (
-  !fs.existsSync(backendPackageJsonPath) ||
-  !fs.existsSync(appPackageJsonPath)
+  !fs.existsSync(serverPackageJsonPath) ||
+  !fs.existsSync(clientPackageJsonPath) ||
+  !fs.existsSync(dotenvFrontendPath) ||
+  !fs.existsSync(dotenvBackendPath)
 ) {
-  console.error("File package.json wasn't found in the specified directory");
+  console.error(
+    "File package.json or .env wasn't found in the specified directory"
+  );
   process.exit(1);
 }
 
@@ -70,11 +81,11 @@ function DevOrProd() {
 function startDevelopmentMode() {
   console.log(`Development Mode Ready.\n`);
   console.log(
-    `You'll have to start both frontend and backend servers manually. `
+    `You'll have to start both frontend and server servers manually. `
   );
-  console.log(`Start backend server by running 'cd backend && npm run dev'`);
+  console.log(`Start server server by running 'cd server && npm run dev'`);
   console.log(
-    `Then, open a new terminal, navigate to the /app directory and run 'npm run dev'\n`
+    `Then, open a new terminal, navigate to the /client directory and run 'npm run dev'\n`
   );
 }
 
@@ -83,7 +94,7 @@ function startProductionMode() {
   console.log("Generating Production Build");
   exec(
     "npm run build",
-    { cwd: path.join(__dirname, "app") },
+    { cwd: path.join(__dirname, "client") },
     (error, stdout, stderr) => {
       if (error) {
         console.error(`Error while creating production build: ${error}`);
@@ -108,10 +119,10 @@ function startMenu() {
   console.log(`Suggested Node Version: ${disiVersion}\n`);
 
   if (nodeVersion === disiVersion) {
-    // Avvia il controllo delle dipendenze e la modalità appropriata
+    // Avvia il controllo delle dipendenze e la modalità clientropriata
     console.log("Updating dependencies...");
-    installDependencies(backendPackageJsonPath, "backend", () => {
-      installDependencies(appPackageJsonPath, "app", DevOrProd);
+    installDependencies(serverPackageJsonPath, "server", () => {
+      installDependencies(clientPackageJsonPath, "client", DevOrProd);
     });
   } else {
     console.log(`You are using a different Node version.`);

@@ -40,7 +40,7 @@ Dato che siamo in 3, le nostre specifiche obbligatorie sono quelle fino all'este
 ### Home Page e User Login
 
 - [ ] L’utente accede all’app tramite account basato su nome utente e password. Il record di un account contiene sicuramente nome utente, password e nome vero ed una quantità a piacere di informazioni personali (e.g. selfie personale, data del compleanno da aggiungere al calendario).
-- [ ] La Home page serve per navigare tra le view: Calendario, Pomodoro, Note, Progetti. Nell’Home vengono mostrate preview dei contenuti delle singole view: ad esempio gli eventi della settimana/giorno corrente, l’ultima nota creata, le attività imminente, report sull’ultimo pomodoro svolto, scadenze imminenti dei progetti.
+- [ ] La Home page serve per navigare tra le view: Calendario, Pomodoro, Note, <span class='orange'>Progetti</span>. Nell’Home vengono mostrate preview dei contenuti delle singole view: ad esempio gli eventi della settimana/giorno corrente, l’ultima nota creata, le attività imminente, report sull’ultimo pomodoro svolto, <span class='orange'>scadenze imminenti dei progetti</span>.
 - [ ] Estensione 18-24: Gli utenti hanno la possibilità di personalizzare il tipo di preview per ogni view.
 - [ ] Estensione 18-27: Gli utenti possono mandare messaggi e notifiche ad altri utenti (ma non una chat a tutti gli effetti)
 - [ ] <span class="orange">Estensione 18-33: Gli utenti hanno un mini hub dove poter chattare con gli altri utenti.</span>
@@ -49,5 +49,6 @@ Dato che siamo in 3, le nostre specifiche obbligatorie sono quelle fino all'este
 
 In ordine di importanza:
 
-- [ ] Definire una volta per tutte lo schema per lo user record
-- [ ] Implementare il routing con le best practice di react-router 6.4
+- [ ] Definire una volta per tutte la struttura dati user
+- [x] Implementare il routing con le best practice di react-router 6.4
+- [ ] cominciare a sostituire i workouts con le note
