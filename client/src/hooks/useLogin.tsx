@@ -31,7 +31,6 @@ export default function useLogin() {
         console.log(json.error);
       }
     } else {
-      console.log(json);
       // save the user to local storage
       localStorage.setItem("user", JSON.stringify(json));
       // update the auth context

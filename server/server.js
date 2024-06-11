@@ -5,10 +5,12 @@ const path = require("path");
 const mongoose = require("mongoose");
 const cors = require("cors");
 require("dotenv").config({ path: path.resolve(__dirname, ".env") }); // config method will attach .env variables to the "process" global variable
+
 // our modules
 const workoutRoutes = require(path.resolve(__dirname, "routes", "workouts"));
 const authRoutes = require(path.resolve(__dirname, "routes", "users"));
 const corsOptions = require("./utils/corsOptions");
+
 // utilities
 const { port, mongouri, node_env } = require(path.resolve(
   __dirname,

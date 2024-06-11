@@ -16,7 +16,7 @@ const corsOptions = {
       callback(new Error("Not allowed by CORS"));
     }
   },
-  // sets access control allow credentials header
+  // sets access control to allow credentials header
   credentials: true,
   // default success status
   optionsSuccesStatus: 200,

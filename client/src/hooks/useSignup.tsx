@@ -16,6 +16,7 @@ export default function useSignup() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
+        credentials: "include",
       }
     );
     const json = await response.json();

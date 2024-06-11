@@ -35,6 +35,7 @@ export default function WorkoutDetails({ workout }: WorkoutDetailsProps) {
         {
           method: "DELETE",
           headers: { Authorization: `Bearer ${user?.accessToken}` },
+          credentials: "include",
         }
       );
 
