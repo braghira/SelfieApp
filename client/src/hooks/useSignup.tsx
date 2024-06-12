@@ -1,34 +1,41 @@
-import { useState } from "react";
-import useAuthContext from "./useAuthContext";
+import { useContext, useState } from "react";
+import api from "@/lib/axios";
+import axios from "axios";
+import { AuthContext } from "@/context/AuthContext";
 
 export default function useSignup() {
   const [error, setError] = useState<string>("");
-  const { dispatch } = useAuthContext();
+  const { dispatch } = useContext(AuthContext);
 
   async function signup(
     email: string,
     password: string,
     onError: (error: string) => void
   ) {
-    const response = await fetch(
-      `${import.meta.env.VITE_BASE_URL}/auth/signup`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-        credentials: "include",
+    try {
+      const response = await api.post("/auth/signup", { email, password });
+
+      if (response.status === 200) {
+        const user = response.data;
+        // save the user to local storage
+        localStorage.setItem("user", JSON.stringify(user));
+        // update the auth context
+        dispatch({ type: "LOGIN", payload: user });
+        setError("");
+      } else {
+        const errorMessage = response.data.error || "Unknown error occurred";
+        setError(errorMessage);
+        onError(errorMessage);
       }
-    );
-    const json = await response.json();
-    if (!response.ok) {
-      setError(json.error || "Unknown error occurred");
-      onError(json.error || "Unknown error occurred");
-    } else {
-      // save the user to local storage
-      localStorage.setItem("user", JSON.stringify(json));
-      // update the auth context
-      dispatch({ type: "LOGIN", payload: json });
-      setError("");
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response) {
+        const errorMessage = error.response.data;
+        setError(errorMessage);
+        onError(errorMessage);
+      } else {
+        setError("Unknown error occurred");
+        onError("Unknown error occurred");
+      }
     }
   }
 

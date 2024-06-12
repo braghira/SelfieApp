@@ -1,9 +1,9 @@
-import { PropsWithChildren } from "react";
-import { Navigate, useLocation } from "react-router-dom";
-import useAuthContext from "@/hooks/useAuthContext";
+import { AuthContext } from "@/context/AuthContext";
+import { useContext } from "react";
+import { Navigate, Outlet, useLocation } from "react-router-dom";
 
-export default function ProtectedRoutes({ children }: PropsWithChildren) {
-  const { user, loading } = useAuthContext();
+export default function ProtectedRoutes() {
+  const { user, loading } = useContext(AuthContext);
   const location = useLocation();
 
   // controlla che il contesto abbia finito di aggiornarsi
@@ -13,7 +13,5 @@ export default function ProtectedRoutes({ children }: PropsWithChildren) {
     // along to that page after they login, which is a nicer user experience
     // than dropping them off on the home page.
     return <Navigate to="/login" state={{ from: location }} replace />;
-  }
-
-  return children;
+  } else return <Outlet />;
 }

@@ -6,7 +6,7 @@ const {
   refreshToken,
   logoutUser,
 } = require("../controllers/userController");
-const { loginLimiter } = require("../middleware/requireAuth");
+const { loginLimiter } = require("../middleware/auth");
 
 // add a layer of security with rate limiter middleware
 // login route

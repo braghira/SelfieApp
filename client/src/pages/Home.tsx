@@ -1,33 +1,42 @@
-import { useEffect } from "react";
-// context
-import useWorkoutContext from "@/hooks/useWorkoutContext";
+import { useContext, useEffect } from "react";
 // components
 import WorkoutDetails from "@/components/WorkoutDetails";
 import WorkoutForm from "@/components/WorkoutForm";
 import { WorkoutSchema } from "@/lib/utils";
-import useAuthContext from "@/hooks/useAuthContext";
+import api from "@/lib/axios";
+import { WorkoutContext } from "@/context/WorkoutContext";
+import { AuthContext } from "@/context/AuthContext";
 
 export default function Dashboard() {
-  const { workouts, dispatch } = useWorkoutContext();
-  const { user } = useAuthContext();
+  const { workouts, dispatch } = useContext(WorkoutContext);
+  const { user } = useContext(AuthContext);
 
   useEffect(() => {
     // GET
     const fetchWorkouts = async () => {
-      const response = await fetch(
-        `${import.meta.env.VITE_BASE_URL}/api/workouts`,
-        {
+      try {
+        const response = await api.get("/api/workouts", {
           headers: { Authorization: `Bearer ${user?.accessToken}` },
-          credentials: "include",
-        }
-      );
-      // ritorna un array oppure un singolo oggetto
-      const json = await response.json();
-      // parsing come array
-      WorkoutSchema.array().safeParse(json);
+        });
 
-      if (response.ok) {
-        dispatch({ type: "SET_WORKOUTS", payload: json });
+        if (response.status === 200) {
+          const json = response.data;
+          // parsing come array
+          const parsed = WorkoutSchema.array().safeParse(json);
+
+          if (parsed.success) {
+            dispatch({ type: "SET_WORKOUTS", payload: json });
+          } else {
+            console.error("Error parsing workouts:", parsed.error);
+          }
+        } else {
+          console.error("Failed to fetch workouts:", response.statusText);
+        }
+      } catch (error) {
+        console.error(
+          "An error occurred while fetching workouts:",
+          error.message
+        );
       }
     };
     if (user) {

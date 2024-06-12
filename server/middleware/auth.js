@@ -4,7 +4,7 @@ const rateLimit = require("express-rate-limit");
 const { access_key } = require("../utils/globalVariables");
 
 const loginLimiter = rateLimit({
-  windowMs: 2 * 60 * 1000, // 1 minuto
+  windowMs: 60 * 1000, // 1 minuto
   max: 5, // limita ogni IP a 5 richieste login per finestra ogni minuto
   message: {
     error: "Too many login attempts",

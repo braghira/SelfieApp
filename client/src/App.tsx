@@ -20,18 +20,13 @@ const router = createBrowserRouter(
   createRoutesFromElements(
     <Route errorElement={<ErrorPage />}>
       <Route path="/" element={<WelcomePage />} />
-      {/* il layout wrappa tutte le route figlie, quindi basta mettere qui l'autenticazione */}
-      <Route
-        element={
-          <ProtectedRoutes>
-            <DashboardLayout />
-          </ProtectedRoutes>
-        }
-      >
-        <Route path="/home" element={<Home />} />
-        <Route path="/pomodoro" element={<Home />} />
-        <Route path="/calendar" element={<Home />} />
-        <Route path="/notes" element={<Home />} />
+      <Route element={<ProtectedRoutes />}>
+        <Route element={<DashboardLayout />}>
+          <Route path="/home" element={<Home />} />
+          <Route path="/pomodoro" element={<Home />} />
+          <Route path="/calendar" element={<Home />} />
+          <Route path="/notes" element={<Home />} />
+        </Route>
       </Route>
       <Route element={<AuthLayout />}>
         <Route path="/login" element={<Login />} />

@@ -14,12 +14,14 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import Loader from "./Loader";
-import useWorkoutContext from "@/hooks/useWorkoutContext";
-import useAuthContext from "@/hooks/useAuthContext";
+import api from "@/lib/axios";
+import { WorkoutContext } from "@/context/WorkoutContext";
+import { useContext } from "react";
+import { AuthContext } from "@/context/AuthContext";
 
 export default function WorkoutForm() {
-  const { dispatch } = useWorkoutContext();
-  const { user } = useAuthContext();
+  const { dispatch } = useContext(WorkoutContext);
+  const { user } = useContext(AuthContext);
 
   const form = useForm<WorkoutType>({
     resolver: zodResolver(WorkoutSchema),
@@ -39,33 +41,26 @@ export default function WorkoutForm() {
     }
 
     try {
-      const response = await fetch(
-        `${import.meta.env.VITE_BASE_URL}/api/workouts`,
-        {
-          method: "POST",
-          body: JSON.stringify(workout),
-          mode: "cors",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${user?.accessToken}`,
-          },
-          credentials: "include",
-        }
-      );
-      // ritorna il singolo oggetto appena creato
-      const data = await response.json();
+      const response = await api.post("/api/workouts", workout, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${user.accessToken}`,
+        },
+      });
 
-      WorkoutSchema.safeParse(data);
+      // Controlliamo che lo schema sia corretto con zod
+      const parsed = WorkoutSchema.safeParse(response.data);
 
-      if (!response.ok) {
-        console.log("Server did not respond");
+      if (parsed.success) {
+        dispatch({ type: "CREATE_WORKOUT", payload: [response.data] });
+        console.log("new workout added", response.data);
       } else {
-        dispatch({ type: "CREATE_WORKOUT", payload: [data] });
-        console.log("new workout added", data);
+        console.log("Error while validating created workout schema");
       }
     } catch (error) {
       console.error("An error occurred:", error);
     }
+
     // reset the form
     form.reset();
   }

@@ -54,6 +54,7 @@ const loginUser = async (req, res) => {
 
 // signup user
 const signupUser = async (req, res) => {
+  // this will change when we'll modify the user schema
   const { email, password } = req.body;
 
   try {

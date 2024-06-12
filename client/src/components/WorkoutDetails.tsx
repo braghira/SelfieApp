@@ -1,4 +1,3 @@
-import useWorkoutContext from "@/hooks/useWorkoutContext";
 import { WorkoutSchema } from "@/lib/utils";
 // components
 import { Trash2 } from "lucide-react";
@@ -14,15 +13,18 @@ import {
 import { WorkoutType } from "@/lib/utils";
 // date fns
 import { formatDistanceToNow } from "date-fns/formatDistanceToNow";
-import useAuthContext from "@/hooks/useAuthContext";
+import api from "@/lib/axios";
+import { WorkoutContext } from "@/context/WorkoutContext";
+import { useContext } from "react";
+import { AuthContext } from "@/context/AuthContext";
 
 interface WorkoutDetailsProps {
   workout: WorkoutType;
 }
 
 export default function WorkoutDetails({ workout }: WorkoutDetailsProps) {
-  const { dispatch } = useWorkoutContext();
-  const { user } = useAuthContext();
+  const { dispatch } = useContext(WorkoutContext);
+  const { user } = useContext(AuthContext);
 
   async function handleDelete() {
     if (!user) {
@@ -30,28 +32,23 @@ export default function WorkoutDetails({ workout }: WorkoutDetailsProps) {
     }
 
     try {
-      const response = await fetch(
-        `${import.meta.env.VITE_BASE_URL}/api/workouts/` + workout._id,
-        {
-          method: "DELETE",
-          headers: { Authorization: `Bearer ${user?.accessToken}` },
-          credentials: "include",
-        }
-      );
+      const response = await api.delete(`/api/workouts/${workout._id}`, {
+        headers: { Authorization: `Bearer ${user.accessToken}` },
+      });
 
-      // ritorna sempre l'oggetto cancellato
-      const json = await response.json();
-      // controlliamo che lo schema sia corretto con zod
-      WorkoutSchema.safeParse(json);
+      // La risposta dovrebbe contenere l'oggetto cancellato
+      const json = response.data;
+      // Controlliamo che lo schema sia corretto con zod
+      const parsed = WorkoutSchema.safeParse(json);
 
-      if (response.ok) {
+      if (parsed.success) {
         dispatch({ type: "DELETE_WORKOUT", payload: [json] });
-        console.log("item successfully deleted");
+        console.log("Item successfully deleted");
       } else {
-        console.log("error while deleting item");
+        console.log("Error while validating deleted item schema");
       }
     } catch (error) {
-      console.log(`error during deletion of item ${workout._id}: ` + error);
+      console.log(`Error during deletion of item ${workout._id}: `, error);
     }
   }
 
