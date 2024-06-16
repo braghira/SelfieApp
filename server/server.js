@@ -17,7 +17,7 @@ const { port, mongouri, node_env } = require(path.resolve(
   "utils",
   "globalVariables"
 ));
-const appPath = path.resolve(__dirname, "..", "app", "dist");
+const appPath = path.resolve(__dirname, "..", "client", "dist");
 
 // express app
 const app = express();
