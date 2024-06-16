@@ -1,5 +1,4 @@
 import { useState } from "react";
-import api from "@/lib/axios";
 import axios from "axios";
 import { useAuth } from "@/context/AuthContext";
 import useAxiosPrivate from "./useAxiosPrivate";

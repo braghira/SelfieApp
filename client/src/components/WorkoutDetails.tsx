@@ -1,4 +1,4 @@
-import { WorkoutSchema } from "@/lib/utils";
+import { WorkoutSchema, client_log } from "@/lib/utils";
 // components
 import { Trash2 } from "lucide-react";
 import { Button } from "./ui/button";
@@ -16,6 +16,7 @@ import { formatDistanceToNow } from "date-fns/formatDistanceToNow";
 import { useWorkouts } from "@/context/WorkoutContext";
 import { useAuth } from "@/context/AuthContext";
 import useAxiosPrivate from "@/hooks/useAxiosPrivate";
+import { isAxiosError } from "axios";
 
 interface WorkoutDetailsProps {
   workout: WorkoutType;
@@ -43,12 +44,16 @@ export default function WorkoutDetails({ workout }: WorkoutDetailsProps) {
 
       if (parsed.success) {
         dispatch({ type: "DELETE_WORKOUT", payload: [json] });
-        console.log("Item successfully deleted");
+        client_log("Item successfully deleted");
       } else {
-        console.log("Error while validating deleted item schema");
+        client_log("Error while validating deleted item schema");
       }
     } catch (error) {
-      console.log(`Error during deletion of item ${workout._id}: `, error);
+      if (isAxiosError(error)) {
+        client_log(
+          `Error during deletion of item ${workout._id}: ` + error.message
+        );
+      }
     }
   }
 

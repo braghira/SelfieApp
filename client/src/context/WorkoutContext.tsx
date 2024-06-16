@@ -1,5 +1,5 @@
 import { ReactElement, createContext, useContext, useReducer } from "react";
-import { WorkoutType } from "@/lib/utils";
+import { WorkoutType, client_log } from "@/lib/utils";
 
 // types for the reducer
 type ActionType = {
@@ -19,8 +19,8 @@ function workoutsReducer(
   state: WorkoutType[],
   action: ActionType
 ): WorkoutType[] {
-  console.log("state: ", state);
-  console.log("payload: ", action.payload);
+  client_log("state: ", state);
+  client_log("payload: ", action.payload);
   switch (action.type) {
     case "SET_WORKOUTS":
       // potrebbero non esserci documenti nel database, in quel caso il backend restituisce un array vuoto

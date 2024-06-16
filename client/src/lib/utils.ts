@@ -18,8 +18,13 @@ export const UserSchema = z.object({
     .min(8, { message: "Password must be at least 8 characters." }),
   name: z.string().min(2).optional(),
   username: z.string().min(2).optional(),
+  accessToken: z.string().min(2).optional(),
 });
 export type UserType = z.infer<typeof UserSchema>;
+
+export function client_log(message: unknown, ...options: unknown[]) {
+  if (import.meta.env.DEV) console.log(message, ...options);
+}
 
 // tailwind
 export function cn(...inputs: ClassValue[]) {

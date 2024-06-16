@@ -1,5 +1,5 @@
 import useRefreshToken from "@/hooks/useRefreshToken";
-import { UserType } from "@/lib/utils";
+import { UserType, client_log } from "@/lib/utils";
 import {
   PropsWithChildren,
   createContext,
@@ -9,11 +9,7 @@ import {
   useState,
 } from "react";
 
-type AuthType =
-  | (UserType & {
-      accessToken: string;
-    })
-  | undefined;
+type AuthType = UserType | undefined;
 
 // types for the reducer
 export type ActionType = {
@@ -68,17 +64,14 @@ export function AuthContextProvider({ children }: PropsWithChildren) {
     const verifyRefreshToken = async () => {
       try {
         const user = await refresh();
-        if (user?.data) {
-          const userWithToken: AuthType = {
-            email: user.data?.email,
-            password: user.data.password,
-            accessToken: user.accessToken,
-          };
-          dispatch({ type: "LOGIN", payload: userWithToken });
-          setLoading(false);
-        }
+        client_log("user: ", user);
+        if (user === "expired")
+          dispatch({ type: "LOGOUT", payload: undefined });
+        else dispatch({ type: "LOGIN", payload: user });
+
+        setLoading(false);
       } catch (error) {
-        console.error("Couldn't get new access token");
+        client_log("Couldn't get new access token");
       }
       setLoading(false);
     };
@@ -87,7 +80,7 @@ export function AuthContextProvider({ children }: PropsWithChildren) {
     !state?.accessToken ? verifyRefreshToken() : setLoading(false);
   }, []);
 
-  console.log("AuthContext state: ", state);
+  client_log("AuthContext state: ", state);
 
   return (
     <AuthContext.Provider

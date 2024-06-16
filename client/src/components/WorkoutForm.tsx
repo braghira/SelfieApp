@@ -1,7 +1,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 // types
-import { WorkoutSchema, WorkoutType } from "@/lib/utils";
+import { WorkoutSchema, WorkoutType, client_log } from "@/lib/utils";
 // components
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,6 +17,7 @@ import Loader from "./Loader";
 import { useAuth } from "@/context/AuthContext";
 import { useWorkouts } from "@/context/WorkoutContext";
 import useAxiosPrivate from "@/hooks/useAxiosPrivate";
+import { isAxiosError } from "axios";
 
 export default function WorkoutForm() {
   const { dispatch } = useWorkouts();
@@ -48,12 +49,12 @@ export default function WorkoutForm() {
 
       if (parsed.success) {
         dispatch({ type: "CREATE_WORKOUT", payload: [response.data] });
-        console.log("new workout added", response.data);
+        client_log("new workout added ", response.data);
       } else {
-        console.log("Error while validating created workout schema");
+        client_log("Error while validating created workout schema");
       }
     } catch (error) {
-      console.log("An error occurred:", error);
+      if (isAxiosError(error)) client_log("An error occurred:" + error.message);
     }
 
     // reset the form

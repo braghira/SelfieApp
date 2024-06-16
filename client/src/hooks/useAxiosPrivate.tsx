@@ -8,10 +8,13 @@ import {
   InternalAxiosRequestConfig,
   AxiosHeaders,
 } from "axios";
+import useLogout from "./useLogout";
+import { client_log } from "@/lib/utils";
 
 export default function useAxiosPrivate() {
   const { refresh } = useRefreshToken();
-  const { user } = useAuth();
+  const { user, dispatch } = useAuth();
+  const { logout } = useLogout();
 
   interface InternalAxiosRequestConfigExtended
     extends InternalAxiosRequestConfig {
@@ -44,11 +47,31 @@ export default function useAxiosPrivate() {
         // take the previous request with our added property
         const prevRequest = error?.config as InternalAxiosRequestConfigExtended;
 
-        if (error?.response?.status === 401 && !prevRequest?.sent) {
+        // refresh token has expired
+        if (error?.response?.status === 403 && !prevRequest.sent) {
           prevRequest.sent = true;
-          // request a new access token
-          const auth = await refresh();
-          const newAccessToken = auth?.accessToken;
+          logout();
+          return Promise.reject(error);
+        }
+
+        // catch all unauthorized requests
+        if (error?.response?.status === 401 && !prevRequest.sent) {
+          prevRequest.sent = true;
+          // refresh the user with a new request token
+          const user = await refresh();
+
+          client_log("refresh returns: ", user);
+
+          // check if the token is expired first
+          if (user === "expired" || user === undefined) {
+            client_log("breakpoint");
+            logout();
+            return Promise.reject(error);
+          }
+
+          dispatch({ type: "LOGIN", payload: user });
+
+          const newAccessToken = user?.accessToken;
           // this should be a useless check, but TypeScript says it can be undefined so here we are
           if (prevRequest.headers) {
             prevRequest.headers.set(

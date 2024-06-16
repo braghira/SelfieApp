@@ -43,7 +43,7 @@ const loginUser = async (req, res) => {
       httpOnly: true, // accessible only by web server
       secure: node_env === "production", // https
       sameSite: "Strict",
-      maxAge: 7 * 24 * 60 * 60 * 1000, // cookie expire time, matches refresh token expire time
+      maxAge: process.env.NODE_ENV ? 30 * 1000 : 7 * 24 * 60 * 60 * 1000, // cookie expire time, matches refresh token expire time
     });
 
     res.status(200).json({ email, accessToken });
@@ -70,7 +70,7 @@ const signupUser = async (req, res) => {
       httpOnly: true, // accessible only by web server
       secure: node_env === "production", // https
       sameSite: "Strict",
-      maxAge: 7 * 24 * 60 * 60 * 1000, // cookie expire time, matches refresh token expire time
+      maxAge: process.env.NODE_ENV ? 30 * 1000 : 7 * 24 * 60 * 60 * 1000, // cookie expire time, matches refresh token expire time
     });
 
     res.status(200).json({ email, accessToken });
@@ -96,17 +96,17 @@ const refreshToken = async (req, res) => {
 
   if (!cookies?.jwt) {
     console.log("No JWT cookie found");
-    return res.status(401).json({ error: "Unauthorized" });
+    return res.status(403).json({ error: "Forbidden" });
   }
 
   const refreshToken = cookies.jwt;
-  console.log(`refresh refresh token: ${refreshToken}`);
+  console.log(`refresh token: ${refreshToken}`);
 
   try {
     const { _id } = jwt.verify(refreshToken, refresh_key);
     console.log("Refresh token verified, userId:", _id);
 
-    const user = await User.findOne({ _id }).exec();
+    const user = await User.findOne({ _id });
 
     if (!user) {
       console.log("User not found with id:", _id);
@@ -114,11 +114,14 @@ const refreshToken = async (req, res) => {
     }
 
     const accessToken = createAccessToken(user._id);
-    console.log({ ...user, accessToken });
+
+    const ret_value = { ...user._doc, accessToken };
+
+    console.log(ret_value);
     // send user with accessToken
-    res.json({ user, accessToken });
+    res.status(200).json(ret_value);
   } catch (err) {
-    console.error("Error verifying refresh token:", err.message);
+    console.error("Refresh token wrong or expired:", err.message);
     // send a forbidden request error
     res.status(403).json({ error: err.message });
   }

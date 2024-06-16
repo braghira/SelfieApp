@@ -1,5 +1,6 @@
 import api from "@/lib/axios";
-import { UserSchema } from "@/lib/utils";
+import { UserSchema, client_log } from "@/lib/utils";
+import { isAxiosError } from "axios";
 
 export default function useRefreshToken() {
   /**
@@ -10,16 +11,26 @@ export default function useRefreshToken() {
     try {
       const response = await api.get("/auth/refresh");
 
-      if (response.data.accessToken) {
-        console.log(response.data.user);
-        const user = UserSchema.safeParse(response.data.user);
-        const accessToken: string = response.data.accessToken;
-        // return an object with the user and the new access token properties
-        return { ...user, accessToken };
+      client_log("Refresh response: ", response);
+
+      if (response.data) {
+        const parsed = UserSchema.safeParse(response.data);
+        if (parsed.success)
+          // return user object
+          return parsed.data;
+        else {
+          return undefined;
+        }
       }
     } catch (error) {
-      console.log("Bad Refresh Token Request: " + error);
+      if (isAxiosError(error)) {
+        client_log("Bad Refresh Token Request: ", error.message);
+        if (error.status === 403) {
+          return "expired";
+        }
+      }
     }
   }
+
   return { refresh };
 }

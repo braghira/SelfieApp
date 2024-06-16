@@ -1,7 +1,8 @@
 import { useState } from "react";
-import axios from "axios";
+import { isAxiosError } from "axios";
 import { useAuth } from "@/context/AuthContext";
 import useAxiosPrivate from "./useAxiosPrivate";
+import { client_log } from "@/lib/utils";
 
 export default function useLogin() {
   const [error, setError] = useState<string>("");
@@ -19,14 +20,12 @@ export default function useLogin() {
         password,
       });
 
-      // save the user to local storage
-      localStorage.setItem("user", JSON.stringify(response.data));
       // update the auth context
       dispatch({ type: "LOGIN", payload: response.data });
       // resets form errors
       setError("");
     } catch (error) {
-      if (axios.isAxiosError(error) && error.response) {
+      if (isAxiosError(error) && error.response) {
         const json = error.response.data;
         if (json.retryAfter) {
           const limiterMessage = `Too many login attempts, retry in ${json.retryAfter} seconds`;
@@ -35,13 +34,13 @@ export default function useLogin() {
         } else {
           setError(json.error || "An unknown error occurred");
           onError(json.error || "An unknown error occurred");
-          console.log(json.error);
+          client_log(json.error);
         }
       } else {
         const errorMessage = "An unknown error occurred";
         setError(errorMessage);
         onError(errorMessage);
-        console.log(error);
+        isAxiosError(error) && client_log(error.message);
       }
     }
   }
