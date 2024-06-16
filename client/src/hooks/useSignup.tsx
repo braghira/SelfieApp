@@ -1,11 +1,13 @@
-import { useContext, useState } from "react";
+import { useState } from "react";
 import api from "@/lib/axios";
 import axios from "axios";
-import { AuthContext } from "@/context/AuthContext";
+import { useAuth } from "@/context/AuthContext";
+import useAxiosPrivate from "./useAxiosPrivate";
 
 export default function useSignup() {
   const [error, setError] = useState<string>("");
-  const { dispatch } = useContext(AuthContext);
+  const { dispatch } = useAuth();
+  const api = useAxiosPrivate();
 
   async function signup(
     email: string,

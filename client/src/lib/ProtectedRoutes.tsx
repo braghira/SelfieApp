@@ -1,9 +1,8 @@
-import { AuthContext } from "@/context/AuthContext";
-import { useContext } from "react";
+import { useAuth } from "@/context/AuthContext";
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 
 export default function ProtectedRoutes() {
-  const { user, loading } = useContext(AuthContext);
+  const { user, loading } = useAuth();
   const location = useLocation();
 
   // controlla che il contesto abbia finito di aggiornarsi

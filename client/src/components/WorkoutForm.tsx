@@ -14,14 +14,14 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import Loader from "./Loader";
-import api from "@/lib/axios";
-import { WorkoutContext } from "@/context/WorkoutContext";
-import { useContext } from "react";
-import { AuthContext } from "@/context/AuthContext";
+import { useAuth } from "@/context/AuthContext";
+import { useWorkouts } from "@/context/WorkoutContext";
+import useAxiosPrivate from "@/hooks/useAxiosPrivate";
 
 export default function WorkoutForm() {
-  const { dispatch } = useContext(WorkoutContext);
-  const { user } = useContext(AuthContext);
+  const { dispatch } = useWorkouts();
+  const { user } = useAuth();
+  const api = useAxiosPrivate();
 
   const form = useForm<WorkoutType>({
     resolver: zodResolver(WorkoutSchema),
@@ -41,12 +41,7 @@ export default function WorkoutForm() {
     }
 
     try {
-      const response = await api.post("/api/workouts", workout, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${user.accessToken}`,
-        },
-      });
+      const response = await api.post("/api/workouts", workout);
 
       // Controlliamo che lo schema sia corretto con zod
       const parsed = WorkoutSchema.safeParse(response.data);
@@ -58,7 +53,7 @@ export default function WorkoutForm() {
         console.log("Error while validating created workout schema");
       }
     } catch (error) {
-      console.error("An error occurred:", error);
+      console.log("An error occurred:", error);
     }
 
     // reset the form

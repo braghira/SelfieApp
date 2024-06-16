@@ -13,18 +13,18 @@ import {
 import { WorkoutType } from "@/lib/utils";
 // date fns
 import { formatDistanceToNow } from "date-fns/formatDistanceToNow";
-import api from "@/lib/axios";
-import { WorkoutContext } from "@/context/WorkoutContext";
-import { useContext } from "react";
-import { AuthContext } from "@/context/AuthContext";
+import { useWorkouts } from "@/context/WorkoutContext";
+import { useAuth } from "@/context/AuthContext";
+import useAxiosPrivate from "@/hooks/useAxiosPrivate";
 
 interface WorkoutDetailsProps {
   workout: WorkoutType;
 }
 
 export default function WorkoutDetails({ workout }: WorkoutDetailsProps) {
-  const { dispatch } = useContext(WorkoutContext);
-  const { user } = useContext(AuthContext);
+  const { dispatch } = useWorkouts();
+  const { user } = useAuth();
+  const api = useAxiosPrivate();
 
   async function handleDelete() {
     if (!user) {

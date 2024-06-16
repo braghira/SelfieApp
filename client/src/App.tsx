@@ -13,12 +13,13 @@ import WelcomePage from "./pages/WelcomePage";
 import DashboardLayout from "./layouts/DashboardLayout";
 import ProtectedRoutes from "./lib/ProtectedRoutes";
 import ErrorPage from "./pages/ErrorPage";
+import LoadingPage from "./pages/LoadingPage";
 
 // Per come è impostata la nostra app tutte le route devono stare dentro ad una route che fa da
 // padre a tutte le altre senza aggiungere layout o path
 const router = createBrowserRouter(
   createRoutesFromElements(
-    <Route errorElement={<ErrorPage />}>
+    <Route element={<LoadingPage />} errorElement={<ErrorPage />}>
       <Route path="/" element={<WelcomePage />} />
       <Route element={<ProtectedRoutes />}>
         <Route element={<DashboardLayout />}>

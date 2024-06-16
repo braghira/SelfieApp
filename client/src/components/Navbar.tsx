@@ -7,10 +7,6 @@ import Logo from "./Logo";
 export default function Navbar() {
   const { logout } = useLogout();
 
-  const handleClick = () => {
-    logout();
-  };
-
   return (
     <nav>
       <div className="flex-between">
@@ -20,7 +16,7 @@ export default function Navbar() {
 
         <ModeToggle />
 
-        <Button variant={"ghost"} onClick={handleClick}>
+        <Button variant={"ghost"} onClick={() => logout()}>
           Logout
         </Button>
       </div>

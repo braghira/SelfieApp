@@ -1,15 +1,17 @@
-import { useContext, useEffect } from "react";
+import { useEffect } from "react";
 // components
 import WorkoutDetails from "@/components/WorkoutDetails";
 import WorkoutForm from "@/components/WorkoutForm";
 import { WorkoutSchema } from "@/lib/utils";
-import api from "@/lib/axios";
-import { WorkoutContext } from "@/context/WorkoutContext";
-import { AuthContext } from "@/context/AuthContext";
+import { useWorkouts } from "@/context/WorkoutContext";
+import { useAuth } from "@/context/AuthContext";
+import axios from "axios";
+import useAxiosPrivate from "@/hooks/useAxiosPrivate";
 
 export default function Dashboard() {
-  const { workouts, dispatch } = useContext(WorkoutContext);
-  const { user } = useContext(AuthContext);
+  const { workouts, dispatch } = useWorkouts();
+  const { user } = useAuth();
+  const api = useAxiosPrivate();
 
   useEffect(() => {
     // GET
@@ -33,10 +35,12 @@ export default function Dashboard() {
           console.error("Failed to fetch workouts:", response.statusText);
         }
       } catch (error) {
-        console.error(
-          "An error occurred while fetching workouts:",
-          error.message
-        );
+        axios.isAxiosError(error)
+          ? console.error(
+              "An error occurred while fetching workouts:",
+              error.message
+            )
+          : console.error("Uncaught error");
       }
     };
     if (user) {

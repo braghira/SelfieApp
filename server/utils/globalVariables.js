@@ -1,9 +1,7 @@
 require("dotenv").config();
 
-const os = require("os");
-
-const access_token_expire_time = "15m";
-const refresh_token_expire_time = "7d";
+const access_token_expire_time = "10s";
+const refresh_token_expire_time = "30s";
 const port = process.env.PORT;
 const mongouri = process.env.DB_URI;
 const node_env = process.env.NODE_ENV;

@@ -1,11 +1,12 @@
-import { useContext, useState } from "react";
-import api from "@/lib/axios";
+import { useState } from "react";
 import axios from "axios";
-import { AuthContext } from "@/context/AuthContext";
+import { useAuth } from "@/context/AuthContext";
+import useAxiosPrivate from "./useAxiosPrivate";
 
 export default function useLogin() {
   const [error, setError] = useState<string>("");
-  const { dispatch } = useContext(AuthContext);
+  const { dispatch } = useAuth();
+  const api = useAxiosPrivate();
 
   async function login(
     email: string,
@@ -13,14 +14,10 @@ export default function useLogin() {
     onError: (error: string) => void
   ) {
     try {
-      const response = await api.post(
-        "/auth/login",
-        {
-          email,
-          password,
-        },
-        { headers: { "Content-Type": "application/json" } }
-      );
+      const response = await api.post("/auth/login", {
+        email,
+        password,
+      });
 
       // save the user to local storage
       localStorage.setItem("user", JSON.stringify(response.data));

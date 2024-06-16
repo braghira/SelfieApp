@@ -114,10 +114,12 @@ const refreshToken = async (req, res) => {
     }
 
     const accessToken = createAccessToken(user._id);
-
-    res.json({ accessToken });
+    console.log({ ...user, accessToken });
+    // send user with accessToken
+    res.json({ user, accessToken });
   } catch (err) {
     console.error("Error verifying refresh token:", err.message);
+    // send a forbidden request error
     res.status(403).json({ error: err.message });
   }
 };

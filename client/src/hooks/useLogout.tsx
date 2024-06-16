@@ -1,11 +1,11 @@
-import api from "@/lib/axios";
-import { useContext } from "react";
-import { WorkoutContext } from "@/context/WorkoutContext";
-import { AuthContext } from "@/context/AuthContext";
+import { useWorkouts } from "@/context/WorkoutContext";
+import { useAuth } from "@/context/AuthContext";
+import useAxiosPrivate from "./useAxiosPrivate";
 
 export default function useLogout() {
-  const { dispatch } = useContext(AuthContext);
-  const { dispatch: workoutDispatch } = useContext(WorkoutContext);
+  const { dispatch, setLoading } = useAuth();
+  const { dispatch: workoutDispatch } = useWorkouts();
+  const api = useAxiosPrivate();
 
   async function logout() {
     try {
@@ -18,6 +18,7 @@ export default function useLogout() {
         dispatch({ type: "LOGOUT", payload: undefined });
         // reset the workouts to an empty array
         workoutDispatch({ type: "SET_WORKOUTS", payload: [] });
+        setLoading(false);
         console.log("Logout completed successfully");
       } else {
         console.error("Logout didn't complete successfully");

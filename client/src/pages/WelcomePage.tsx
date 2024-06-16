@@ -1,12 +1,11 @@
 import Logo from "@/components/Logo";
 import { ModeToggle } from "@/components/ModeToggle";
 import { Button } from "@/components/ui/button";
-import { AuthContext } from "@/context/AuthContext";
-import { useContext } from "react";
+import { useAuth } from "@/context/AuthContext";
 import { NavLink } from "react-router-dom";
 
 export default function WelcomePage() {
-  const { user } = useContext(AuthContext);
+  const { user } = useAuth();
 
   return (
     <div className="container flex flex-col justify-between gap-10 min-h-screen">

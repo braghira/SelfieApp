@@ -1,4 +1,4 @@
-import { ReactElement, createContext, useReducer } from "react";
+import { ReactElement, createContext, useContext, useReducer } from "react";
 import { WorkoutType } from "@/lib/utils";
 
 // types for the reducer
@@ -35,7 +35,19 @@ function workoutsReducer(
   }
 }
 
-export const WorkoutContext = createContext<WorkoutContextType>(undefined);
+const WorkoutContext = createContext<WorkoutContextType>(undefined);
+
+export function useWorkouts() {
+  const context = useContext(WorkoutContext);
+
+  if (!context) {
+    throw Error(
+      "useWorkoutContext must be used inside a WorkoutContextProvider"
+    );
+  }
+
+  return context;
+}
 
 interface WorkoutContextProps {
   children: ReactElement | ReactElement[] | undefined;
