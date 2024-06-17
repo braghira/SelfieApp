@@ -47,7 +47,7 @@ if (node_env === "production") {
   });
 }
 
-// connect to db
+// connect to db and start server
 mongoose
   .connect(mongouri, { dbName: "SelfieDB" })
   .then(() => {

@@ -43,7 +43,10 @@ const loginUser = async (req, res) => {
       httpOnly: true, // accessible only by web server
       secure: node_env === "production", // https
       sameSite: "Strict",
-      maxAge: process.env.NODE_ENV ? 30 * 1000 : 7 * 24 * 60 * 60 * 1000, // cookie expire time, matches refresh token expire time
+      maxAge:
+        process.env.NODE_ENV === "production"
+          ? 7 * 24 * 60 * 60 * 1000
+          : 30 * 1000, // cookie expire time, matches refresh token expire time
     });
 
     res.status(200).json({ email, accessToken });
@@ -70,7 +73,10 @@ const signupUser = async (req, res) => {
       httpOnly: true, // accessible only by web server
       secure: node_env === "production", // https
       sameSite: "Strict",
-      maxAge: process.env.NODE_ENV ? 30 * 1000 : 7 * 24 * 60 * 60 * 1000, // cookie expire time, matches refresh token expire time
+      maxAge:
+        process.env.NODE_ENV === "production"
+          ? 7 * 24 * 60 * 60 * 1000
+          : 30 * 1000, // cookie expire time, matches refresh token expire time
     });
 
     res.status(200).json({ email, accessToken });

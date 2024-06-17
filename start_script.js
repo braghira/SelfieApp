@@ -59,6 +59,29 @@ function installDependencies(packageJsonPath, message, callback) {
       }
       console.log(stdout);
       console.error(stderr);
+      console.log(message + ": Installed dependencies\n");
+
+      // Richiama la callback solo se è definita
+      if (callback) {
+        callback();
+      }
+    }
+  );
+}
+
+// Funzione per aggiornare le dipendenze
+function updateDependencies(packageJsonPath, message, callback) {
+  // Aggiorna le dipendenze
+  exec(
+    "npm update",
+    { cwd: path.dirname(packageJsonPath) },
+    (error, stdout, stderr) => {
+      if (error) {
+        console.error(`Error during dependency update of ${message}: ${error}`);
+        return;
+      }
+      console.log(stdout);
+      console.error(stderr);
       console.log(message + ": Updated dependencies\n");
 
       // Richiama la callback solo se è definita
@@ -119,10 +142,14 @@ function startMenu() {
   console.log(`Suggested Node Version: ${disiVersion}\n`);
 
   if (nodeVersion === disiVersion) {
-    // Avvia il controllo delle dipendenze e la modalità clientropriata
+    // Avvia il controllo delle dipendenze e la modalità client appropriata
     console.log("Updating dependencies...");
     installDependencies(serverPackageJsonPath, "server", () => {
-      installDependencies(clientPackageJsonPath, "client", DevOrProd);
+      updateDependencies(serverPackageJsonPath, "server", () => {
+        installDependencies(clientPackageJsonPath, "client", () => {
+          updateDependencies(clientPackageJsonPath, "client", DevOrProd);
+        });
+      });
     });
   } else {
     console.log(`You are using a different Node version.`);

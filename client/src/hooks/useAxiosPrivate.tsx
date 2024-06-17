@@ -50,7 +50,8 @@ export default function useAxiosPrivate() {
         // refresh token has expired
         if (error?.response?.status === 403 && !prevRequest.sent) {
           prevRequest.sent = true;
-          logout();
+          // logout only if the user is authenticated
+          user && logout();
           return Promise.reject(error);
         }
 
@@ -58,20 +59,20 @@ export default function useAxiosPrivate() {
         if (error?.response?.status === 401 && !prevRequest.sent) {
           prevRequest.sent = true;
           // refresh the user with a new request token
-          const user = await refresh();
+          const auth = await refresh();
 
-          client_log("refresh returns: ", user);
+          client_log("refresh returns: ", auth);
 
           // check if the token is expired first
-          if (user === "expired" || user === undefined) {
+          if (auth === "expired" || auth === undefined) {
             client_log("breakpoint");
-            logout();
+            user && logout();
             return Promise.reject(error);
           }
 
-          dispatch({ type: "LOGIN", payload: user });
+          dispatch({ type: "LOGIN", payload: auth });
 
-          const newAccessToken = user?.accessToken;
+          const newAccessToken = auth?.accessToken;
           // this should be a useless check, but TypeScript says it can be undefined so here we are
           if (prevRequest.headers) {
             prevRequest.headers.set(

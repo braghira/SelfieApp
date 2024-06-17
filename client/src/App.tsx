@@ -8,12 +8,13 @@ import {
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
-import AuthLayout from "./layouts/AuthLayout";
 import WelcomePage from "./pages/WelcomePage";
-import DashboardLayout from "./layouts/DashboardLayout";
 import ProtectedRoutes from "./lib/ProtectedRoutes";
 import ErrorPage from "./pages/ErrorPage";
 import LoadingPage from "./pages/LoadingPage";
+// layouts
+import DashboardLayout from "./layouts/DashboardLayout";
+import AuthLayout from "./layouts/AuthLayout";
 
 // Per come è impostata la nostra app tutte le route devono stare dentro ad una route che fa da
 // padre a tutte le altre senza aggiungere layout o path
