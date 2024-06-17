@@ -9,9 +9,12 @@ import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import WelcomePage from "./pages/WelcomePage";
-import ProtectedRoutes from "./lib/ProtectedRoutes";
+import ProtectedRoutes from "./components/ProtectedRoutes";
 import ErrorPage from "./pages/ErrorPage";
 import LoadingPage from "./pages/LoadingPage";
+// layouts
+import DashboardLayout from "./layouts/DashboardLayout";
+import AuthLayout from "./layouts/AuthLayout";
 // layouts
 import DashboardLayout from "./layouts/DashboardLayout";
 import AuthLayout from "./layouts/AuthLayout";

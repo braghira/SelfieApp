@@ -1,24 +1,24 @@
 import { useState } from "react";
 import { isAxiosError } from "axios";
 import { useAuth } from "@/context/AuthContext";
-import useAxiosPrivate from "./useAxiosPrivate";
+import api from "@/lib/axios";
 import { client_log } from "@/lib/utils";
 
 export default function useLogin() {
   const [error, setError] = useState<string>("");
   const { dispatch } = useAuth();
-  const api = useAxiosPrivate();
 
   async function login(
-    email: string,
+    username: string,
     password: string,
     onError: (error: string) => void
   ) {
     try {
       const response = await api.post("/auth/login", {
-        email,
+        username,
         password,
       });
+      client_log("login api res: ", response.data);
 
       // update the auth context
       dispatch({ type: "LOGIN", payload: response.data });

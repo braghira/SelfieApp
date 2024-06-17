@@ -25,7 +25,7 @@ export default function useLogout() {
         // reset the workouts to an empty array
         workoutDispatch({ type: "SET_WORKOUTS", payload: [] });
         setLoading(false);
-        console.error("Logout couldn't delete old cookie since it expired");
+        client_log("Logout couldn't delete old cookie since it expired");
       }
     } catch (error) {
       console.error("An error occurred during logout:", error);

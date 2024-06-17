@@ -1,4 +1,4 @@
-const User = require("../models/userModel");
+const { User, validateLogin, validateSignup } = require("../models/userModel");
 const {
   access_token_expire_time,
   access_key,
@@ -10,7 +10,8 @@ const jwt = require("jsonwebtoken");
 
 /**
  * Creates an access Json Web Token given the user id
- * @param _id id of the user to use as the payload of the jwt */
+ * @param _id id of the user to use as the payload of the jwt
+ */
 const createAccessToken = (_id) => {
   return jwt.sign({ _id }, access_key, {
     expiresIn: access_token_expire_time,
@@ -19,19 +20,23 @@ const createAccessToken = (_id) => {
 
 /**
  * Creates a refresh Json Web Token given the user id
- * @param _id id of the user to use as the payload of the jwt */
+ * @param _id id of the user to use as the payload of the jwt
+ */
 const createRefreshToken = (_id) => {
   return jwt.sign({ _id }, refresh_key, {
     expiresIn: refresh_token_expire_time,
   });
 };
 
-// login user
+/**
+ * Needs username and password in the req body
+ * Login the user and responds with username and access token
+ */
 const loginUser = async (req, res) => {
-  const { email, password } = req.body;
+  const { username, password } = req.body;
 
   try {
-    const user = await User.login(email, password);
+    const user = await validateLogin(username, password);
 
     // create access token
     const accessToken = createAccessToken(user._id);
@@ -43,25 +48,37 @@ const loginUser = async (req, res) => {
       httpOnly: true, // accessible only by web server
       secure: node_env === "production", // https
       sameSite: "Strict",
+      // cookie expire time, matches refresh token expire time
       maxAge:
         process.env.NODE_ENV === "production"
           ? 7 * 24 * 60 * 60 * 1000
-          : 30 * 1000, // cookie expire time, matches refresh token expire time
+          : 30 * 1000,
     });
 
-    res.status(200).json({ email, accessToken });
+    res.status(200).json({ username, accessToken });
   } catch (error) {
     res.status(401).json({ error: error.message });
   }
 };
 
-// signup user
+/**
+ * Needs username and password in the request body
+ * Signup user with a default profile picture
+ * Responds with the username and the access token
+ */
 const signupUser = async (req, res) => {
   // this will change when we'll modify the user schema
-  const { email, password } = req.body;
+  const { username, password, email, name, surname, birthday } = req.body;
 
   try {
-    const user = await User.signup(email, password);
+    const user = await validateSignup(
+      username,
+      password,
+      email,
+      name,
+      surname,
+      birthday
+    );
 
     // create access token
     const accessToken = createAccessToken(user._id);
@@ -73,19 +90,22 @@ const signupUser = async (req, res) => {
       httpOnly: true, // accessible only by web server
       secure: node_env === "production", // https
       sameSite: "Strict",
+      // cookie expire time, matches refresh token expire time
       maxAge:
         process.env.NODE_ENV === "production"
           ? 7 * 24 * 60 * 60 * 1000
-          : 30 * 1000, // cookie expire time, matches refresh token expire time
+          : 30 * 1000,
     });
-
-    res.status(200).json({ email, accessToken });
+    res.status(200).json({ username, accessToken });
   } catch (error) {
+    // finisce qui per quale motivo?
     res.status(401).json({ error: error.message });
   }
 };
 
-// logout user
+/**
+ * Logouts the user by deleting the cookie with the jwt refresh token
+ */
 const logoutUser = async (req, res) => {
   const cookies = req.cookies;
   if (!cookies?.jwt)
@@ -96,7 +116,10 @@ const logoutUser = async (req, res) => {
   res.json({ message: "Cookie cleared" });
 };
 
-// refresh jwt
+/**
+ * Needs cookies in the request body to refresh the access token
+ * Sends back the user object with the new access token
+ */
 const refreshToken = async (req, res) => {
   const cookies = req.cookies;
 

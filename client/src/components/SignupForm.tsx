@@ -1,6 +1,6 @@
 // hooks
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import useSignup from "@/hooks/useSignup";
 // components
 import { Button } from "@/components/ui/button";
@@ -18,6 +18,7 @@ import { UserType, UserSchema, client_log } from "@/lib/utils";
 import Loader from "@/components/Loader";
 import Logo from "@/components/Logo";
 import { NavLink, useNavigate } from "react-router-dom";
+import { parseISO } from "date-fns";
 
 export default function SignupForm() {
   const { signup } = useSignup();
@@ -27,19 +28,18 @@ export default function SignupForm() {
     resolver: zodResolver(UserSchema),
     defaultValues: {
       name: "",
-      username: "",
+      surname: "",
       email: "",
+      username: "",
       password: "",
+      birthday: new Date(),
     },
   });
 
   async function onSubmit(values: UserType) {
-    await signup(values.email, values.password, (err) => {
-      if (err.includes("mail")) {
-        form.setError("email", { message: err });
-      } else if (err.includes("assword")) {
-        form.setError("password", { message: err });
-      }
+    client_log(values);
+    await signup(values, (err) => {
+      form.setError("root.serverError", { message: err });
     });
     // se non ci sono errori nel form possiamo reinderizzare l'utente alla home page
     if (JSON.stringify(form.formState.errors) === "{}") {
@@ -52,21 +52,50 @@ export default function SignupForm() {
     <Form {...form}>
       <div className="flex flex-col items-center w-full sm:max-w-md">
         <Logo className="mb-5" />
-        <h1 className="my-2 text-center">Create a new account</h1>
-        <p className="mb-2">To use Selfie, Please enter your details</p>
+
+        <h1 className="my-2 text-center">Sign Up</h1>
+        <p className="mb-5">To use Selfie, Please enter your details</p>
 
         <form
           onSubmit={form.handleSubmit(onSubmit)}
           className="flex flex-col gap-1 w-full"
         >
+          <div className="flex gap-2">
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem className="w-1/2">
+                  <FormLabel>Name</FormLabel>
+                  <FormControl>
+                    <Input type="text" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="surname"
+              render={({ field }) => (
+                <FormItem className="w-1/2">
+                  <FormLabel>Surname</FormLabel>
+                  <FormControl>
+                    <Input type="text" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
           <FormField
             control={form.control}
-            name="name"
+            name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="shad-form_label">Name</FormLabel>
+                <FormLabel>Email</FormLabel>
                 <FormControl>
-                  <Input type="text" className="shad-input" {...field} />
+                  <Input type="text" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -77,22 +106,9 @@ export default function SignupForm() {
             name="username"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="shad-form_label">Username</FormLabel>
+                <FormLabel>Username</FormLabel>
                 <FormControl>
-                  <Input type="text" className="shad-input" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="email"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="shad-form_label">Email</FormLabel>
-                <FormControl>
-                  <Input type="text" className="shad-input" {...field} />
+                  <Input type="text" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -103,18 +119,40 @@ export default function SignupForm() {
             name="password"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="shad-form_label">Password</FormLabel>
+                <FormLabel>Password</FormLabel>
                 <FormControl>
-                  <Input type="password" className="shad-input" {...field} />
+                  <Input type="password" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
-          <Button
-            type="submit"
-            className="shad-button_primary shad-button_primary mt-4"
-          >
+          <FormField
+            control={form.control}
+            name="birthday"
+            render={() => (
+              <FormItem>
+                <FormLabel>Date of birth</FormLabel>
+                <FormControl>
+                  {/* Adding Controller api to make sure the input is passed to the hook form correctly*/}
+                  <Controller
+                    name="birthday"
+                    control={form.control}
+                    render={({ field }) => (
+                      <Input
+                        type="date"
+                        onChange={(e) => {
+                          field.onChange(parseISO(e.target.value));
+                        }}
+                      />
+                    )}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <Button type="submit" className="mt-4">
             {form.formState.isSubmitting ? <Loader /> : "Sign Up"}
           </Button>
           <p className="text-center mt-4">

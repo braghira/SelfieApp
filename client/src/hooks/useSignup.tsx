@@ -1,27 +1,23 @@
 import { useState } from "react";
 import axios from "axios";
 import { useAuth } from "@/context/AuthContext";
-import useAxiosPrivate from "./useAxiosPrivate";
+import api from "@/lib/axios";
+import { UserType, client_log } from "@/lib/utils";
 
 export default function useSignup() {
   const [error, setError] = useState<string>("");
   const { dispatch } = useAuth();
-  const api = useAxiosPrivate();
 
-  async function signup(
-    email: string,
-    password: string,
-    onError: (error: string) => void
-  ) {
+  async function signup(user: UserType, onError: (error: string) => void) {
     try {
-      const response = await api.post("/auth/signup", { email, password });
+      const response = await api.post("/auth/signup", { ...user });
 
       if (response.status === 200) {
-        const user = response.data;
-        // save the user to local storage
-        localStorage.setItem("user", JSON.stringify(user));
+        client_log("signup api res: ", response.data);
+
         // update the auth context
-        dispatch({ type: "LOGIN", payload: user });
+        dispatch({ type: "LOGIN", payload: response.data });
+
         setError("");
       } else {
         const errorMessage = response.data.error || "Unknown error occurred";

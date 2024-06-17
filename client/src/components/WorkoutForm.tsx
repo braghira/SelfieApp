@@ -22,7 +22,7 @@ import { isAxiosError } from "axios";
 export default function WorkoutForm() {
   const { dispatch } = useWorkouts();
   const { user } = useAuth();
-  const api = useAxiosPrivate();
+  const private_api = useAxiosPrivate();
 
   const form = useForm<WorkoutType>({
     resolver: zodResolver(WorkoutSchema),
@@ -42,7 +42,7 @@ export default function WorkoutForm() {
     }
 
     try {
-      const response = await api.post("/api/workouts", workout);
+      const response = await private_api.post("/api/workouts", workout);
 
       // Controlliamo che lo schema sia corretto con zod
       const parsed = WorkoutSchema.safeParse(response.data);
@@ -98,7 +98,7 @@ export default function WorkoutForm() {
                   placeholder="Input a number"
                   {...field}
                   onChange={(e) => {
-                    field.onChange(e.target.valueAsNumber); // Utilizza valueAsNumber
+                    field.onChange(e.target.valueAsNumber); // vanilla react hook form is easier, but this will do
                   }}
                 />
               </FormControl>

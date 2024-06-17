@@ -1,4 +1,3 @@
-import { WorkoutSchema, client_log } from "@/lib/utils";
 // components
 import { Trash2 } from "lucide-react";
 import { Button } from "./ui/button";
@@ -13,47 +12,20 @@ import {
 import { WorkoutType } from "@/lib/utils";
 // date fns
 import { formatDistanceToNow } from "date-fns/formatDistanceToNow";
-import { useWorkouts } from "@/context/WorkoutContext";
 import { useAuth } from "@/context/AuthContext";
-import useAxiosPrivate from "@/hooks/useAxiosPrivate";
-import { isAxiosError } from "axios";
+import useWorkoutsApi from "@/hooks/useWorkoutsApi.tsx";
 
 interface WorkoutDetailsProps {
   workout: WorkoutType;
 }
 
 export default function WorkoutDetails({ workout }: WorkoutDetailsProps) {
-  const { dispatch } = useWorkouts();
   const { user } = useAuth();
-  const api = useAxiosPrivate();
+  const { deleteWorkout } = useWorkoutsApi();
 
   async function handleDelete() {
-    if (!user) {
-      return;
-    }
-
-    try {
-      const response = await api.delete(`/api/workouts/${workout._id}`, {
-        headers: { Authorization: `Bearer ${user.accessToken}` },
-      });
-
-      // La risposta dovrebbe contenere l'oggetto cancellato
-      const json = response.data;
-      // Controlliamo che lo schema sia corretto con zod
-      const parsed = WorkoutSchema.safeParse(json);
-
-      if (parsed.success) {
-        dispatch({ type: "DELETE_WORKOUT", payload: [json] });
-        client_log("Item successfully deleted");
-      } else {
-        client_log("Error while validating deleted item schema");
-      }
-    } catch (error) {
-      if (isAxiosError(error)) {
-        client_log(
-          `Error during deletion of item ${workout._id}: ` + error.message
-        );
-      }
+    if (user) {
+      deleteWorkout(workout);
     }
   }
 

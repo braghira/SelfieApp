@@ -25,17 +25,17 @@ export default function useAxiosPrivate() {
   useEffect(() => {
     // called before we send the request
     const requestIntercept = api.interceptors.request.use(
-      (config: InternalAxiosRequestConfigExtended) => {
-        if (!config.headers?.Authorization) {
-          if (!config.headers) {
-            config.headers = new AxiosHeaders();
+      (request: InternalAxiosRequestConfigExtended) => {
+        if (!request.headers?.Authorization) {
+          if (!request.headers) {
+            request.headers = new AxiosHeaders();
           }
           // add authorization header to the request
-          config.headers.set("Authorization", `Bearer ${user?.accessToken}`);
+          request.headers.set("Authorization", `Bearer ${user?.accessToken}`);
         }
 
         // must return the request
-        return config;
+        return request;
       },
       (error: AxiosError) => Promise.reject(error)
     );
@@ -47,9 +47,10 @@ export default function useAxiosPrivate() {
         // take the previous request with our added property
         const prevRequest = error?.config as InternalAxiosRequestConfigExtended;
 
-        // refresh token has expired
+        // catch requests when token has expired
         if (error?.response?.status === 403 && !prevRequest.sent) {
           prevRequest.sent = true;
+          client_log("JWT token expired, logging out");
           // logout only if the user is authenticated
           user && logout();
           return Promise.reject(error);
@@ -61,17 +62,18 @@ export default function useAxiosPrivate() {
           // refresh the user with a new request token
           const auth = await refresh();
 
-          client_log("refresh returns: ", auth);
-
           // check if the token is expired first
           if (auth === "expired" || auth === undefined) {
-            client_log("breakpoint");
+            client_log("Access token expired");
+            // logout only if the user is authenticated
             user && logout();
             return Promise.reject(error);
           }
 
           dispatch({ type: "LOGIN", payload: auth });
+          dispatch({ type: "LOGIN", payload: auth });
 
+          const newAccessToken = auth?.accessToken;
           const newAccessToken = auth?.accessToken;
           // this should be a useless check, but TypeScript says it can be undefined so here we are
           if (prevRequest.headers) {

@@ -2,69 +2,107 @@ const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 const validator = require("validator");
 
-const Schema = mongoose.Schema;
+const Media = require("./mediaModel");
 
-const userSchema = new Schema({
-  email: {
+const userSchema = new mongoose.Schema({
+  username: {
     type: String,
     required: true,
-    unique: true, // le email devono essere uniche
+    unique: true, // gli username sono richiesti e devono essere unici
   },
   password: {
     type: String,
     required: true,
   },
+  name: String,
+  surname: String,
+  email: {
+    type: String,
+    unique: true, // le email devono essere uniche
+  },
+  profilePic: mongoose.Schema.Types.ObjectId,
+  birthday: Date,
 });
 
-// static signup method
-userSchema.statics.signup = async function (email, password) {
+const User = mongoose.model("User", userSchema);
+
+// signup validation
+async function validateSignup(
+  username,
+  password,
+  email,
+  name,
+  surname,
+  birthday
+) {
   // validation
-  if (!email || !password) {
-    throw Error("All fields must be filled");
+  if (!username || !password) {
+    throw Error("Username and Password required");
   }
-  if (!validator.isEmail(email)) {
-    throw Error("Email not valid");
+  if (name && !validator.isAlpha(name)) {
+    throw Error("Real name not valid");
+  }
+  if (surname && !validator.isAlpha(surname)) {
+    throw Error("Real surname not valid");
   }
   if (!validator.isStrongPassword(password)) {
     throw Error("Password not strong enough");
   }
+  if (email && !validator.isEmail(email)) {
+    throw Error("Email not valid");
+  }
+  if (
+    birthday &&
+    !validator.isDate(new Date(birthday).toISOString().split("T")[0])
+  ) {
+    console.log(birthday);
+    throw Error("Date not valid");
+  }
 
-  // check if email already exists
-  const exists = await this.findOne({ email }); // with 'this' we indicate the userSchema
+  // check if username already exists
+  const exists = await User.findOne({ username });
 
   if (exists) {
-    throw Error("Email already in use");
+    throw Error("Username already in use");
   }
 
   // aggiungere sale qb(10 caratteri)
   const salt = await bcrypt.genSalt(10);
   const hash = await bcrypt.hash(password, salt);
 
-  const user = await this.create({ email, password: hash });
+  const user = await User.create({
+    username,
+    password: hash,
+    email,
+    name,
+    surname,
+    // profilePic: Media.getDefaultPic(),
+    birthday,
+  });
 
   return user;
-};
+}
 
-// static login method
-userSchema.statics.login = async function (email, password) {
+// login data validation
+async function validateLogin(username, password) {
   // validation
-  if (!email || !password) {
-    throw Error("All fields must be filled");
+  if (!username || !password) {
+    throw Error("All required fields must be filled");
   }
 
-  const user = await this.findOne({ email });
+  const user = await User.findOne({ username });
 
   if (!user) {
-    throw Error("Couldn't find user associated with this email");
+    throw Error("Invalid Username or Password");
   }
 
   const match = await bcrypt.compare(password, user.password);
 
   if (!match) {
-    throw Error("Incorrect password");
+    throw Error("Invalid Username or Password");
   }
 
   return user;
-};
+}
 
-module.exports = mongoose.model("User", userSchema);
+module.exports = { User, validateLogin, validateSignup };

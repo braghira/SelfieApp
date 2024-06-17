@@ -78,9 +78,9 @@ export function AuthContextProvider({ children }: PropsWithChildren) {
 
     // if access token doesn't exist already
     !state?.accessToken ? verifyRefreshToken() : setLoading(false);
-  }, []);
 
-  client_log("AuthContext state: ", state);
+    client_log("AuthContext state: ", state);
+  }, []); // check if the user is still logged only when component initially renders
 
   return (
     <AuthContext.Provider

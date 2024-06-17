@@ -26,22 +26,14 @@ export default function LoginForm() {
   const form = useForm<UserType>({
     resolver: zodResolver(UserSchema),
     defaultValues: {
-      email: "",
+      username: "",
       password: "",
     },
   });
 
   async function onSubmit(values: UserType) {
-    await login(values.email, values.password, (err) => {
-      if (err.includes("mail")) {
-        form.setError("email", { message: err });
-      } else if (err.includes("assword")) {
-        form.setError("password", { message: err });
-      }
-      if (err.includes("ogin")) {
-        form.setError("email", { message: "" });
-        form.setError("password", { message: err });
-      }
+    await login(values.username, values.password, (err) => {
+      form.setError("root.serverError", { message: err });
     });
     // se non ci sono errori nel form possiamo reindirizzare l'utente alla home page
     if (JSON.stringify(form.formState.errors) === "{}") {
@@ -56,7 +48,7 @@ export default function LoginForm() {
         <Logo className="mb-5" />
 
         <h1 className="my-2">Login</h1>
-        <p className="mb-2">Organise your life with Selfie!</p>
+        <p className="mb-5">Organise your life with Selfie!</p>
 
         <form
           onSubmit={form.handleSubmit(onSubmit)}
@@ -64,10 +56,10 @@ export default function LoginForm() {
         >
           <FormField
             control={form.control}
-            name="email"
+            name="username"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="shad-form_label">Email</FormLabel>
+                <FormLabel className="shad-form_label">Username</FormLabel>
                 <FormControl>
                   <Input type="text" className="shad-input" {...field} />
                 </FormControl>
@@ -88,6 +80,12 @@ export default function LoginForm() {
               </FormItem>
             )}
           />
+          {/* Server errors */}
+          {form.formState.errors.root && (
+            <div className="text-sm font-medium text-destructive space-y-2">
+              {form.formState.errors.root.serverError.message}
+            </div>
+          )}
           <Button type="submit" className="shad-button_primary mt-4">
             {form.formState.isSubmitting ? <Loader /> : "Login"}
           </Button>

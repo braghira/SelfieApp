@@ -1,5 +1,5 @@
 const jwt = require("jsonwebtoken");
-const User = require("../models/userModel");
+const { User } = require("../models/userModel");
 const rateLimit = require("express-rate-limit");
 const { access_key } = require("../utils/globalVariables");
 

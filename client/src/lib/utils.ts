@@ -11,14 +11,20 @@ export const WorkoutSchema = z.object({
 });
 export type WorkoutType = z.infer<typeof WorkoutSchema>;
 
+// TODO: aggiungere campo per la foto profilo
 export const UserSchema = z.object({
-  email: z.string().email(),
+  username: z
+    .string()
+    .min(3, { message: "Username must be at least 3 characters" }),
   password: z
     .string()
     .min(8, { message: "Password must be at least 8 characters." }),
-  name: z.string().min(2).optional(),
-  username: z.string().min(2).optional(),
-  accessToken: z.string().min(2).optional(),
+  email: z.string().email().optional(),
+  name: z.string().optional(),
+  surname: z.string().optional(),
+  birthday: z.date().optional(),
+  accessToken: z.string().optional(),
+  _id: z.string().optional(),
 });
 export type UserType = z.infer<typeof UserSchema>;
 

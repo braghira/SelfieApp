@@ -11,14 +11,19 @@ export default function useRefreshToken() {
     try {
       const response = await api.get("/auth/refresh");
 
-      client_log("Refresh response: ", response);
+      client_log("Refresh response: ", response.data);
 
       if (response.data) {
+        // json objects return only strings, we make sure to turn it back into a date object
+        response.data.birthday = new Date(response.data.birthday);
+
         const parsed = UserSchema.safeParse(response.data);
+
         if (parsed.success)
           // return user object
           return parsed.data;
         else {
+          client_log("zod parsing wasn't successful");
           return undefined;
         }
       }
