@@ -38,6 +38,14 @@ const loginUser = async (req, res) => {
   try {
     const user = await validateLogin(username, password);
 
+    if (user._doc.profilePic) {
+      console.log("EHI");
+      // put media api endpoint to get the image in the frontend
+      user._doc.profilePic = `/api/media/${user.profilePic}`;
+    }
+
+    console.log("user: ", user._doc);
+
     // create access token
     const accessToken = createAccessToken(user._id);
     // create refresh token
@@ -48,14 +56,14 @@ const loginUser = async (req, res) => {
       httpOnly: true, // accessible only by web server
       secure: node_env === "production", // https
       sameSite: "Strict",
-      // cookie expire time, matches refresh token expire time
+      // cookie expire time, matches refresh token expire time (in ms)
       maxAge:
         process.env.NODE_ENV === "production"
           ? 7 * 24 * 60 * 60 * 1000
-          : 30 * 1000,
+          : 10 * 60 * 1000,
     });
 
-    res.status(200).json({ username, accessToken });
+    res.status(200).json({ ...user._doc, accessToken });
   } catch (error) {
     res.status(401).json({ error: error.message });
   }
@@ -80,6 +88,14 @@ const signupUser = async (req, res) => {
       birthday
     );
 
+    if (user._doc.profilePic) {
+      console.log("EHI");
+      // put media api endpoint to get the image in the frontend
+      user._doc.profilePic = `/api/media/${user.profilePic}`;
+    }
+
+    console.log("user: ", user._doc);
+
     // create access token
     const accessToken = createAccessToken(user._id);
     // create refresh token
@@ -90,15 +106,15 @@ const signupUser = async (req, res) => {
       httpOnly: true, // accessible only by web server
       secure: node_env === "production", // https
       sameSite: "Strict",
-      // cookie expire time, matches refresh token expire time
+      // cookie expire time, matches refresh token expire time (in ms)
       maxAge:
         process.env.NODE_ENV === "production"
           ? 7 * 24 * 60 * 60 * 1000
-          : 30 * 1000,
+          : 10 * 60 * 1000,
     });
-    res.status(200).json({ username, accessToken });
+    res.status(200).json({ ...user._doc, accessToken });
   } catch (error) {
-    // finisce qui per quale motivo?
+    console.log(error.message);
     res.status(401).json({ error: error.message });
   }
 };
@@ -136,6 +152,14 @@ const refreshToken = async (req, res) => {
     console.log("Refresh token verified, userId:", _id);
 
     const user = await User.findOne({ _id });
+
+    if (user._doc.profilePic) {
+      console.log("EHI");
+      // put media api endpoint to get the image in the frontend
+      user._doc.profilePic = `/api/media/${user.profilePic}`;
+    }
+
+    console.log("user: ", user._doc);
 
     if (!user) {
       console.log("User not found with id:", _id);

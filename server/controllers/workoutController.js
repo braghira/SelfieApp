@@ -1,4 +1,4 @@
-const Workout = require("../models/workoutModel");
+const { Workout } = require("../models/workoutModel");
 const mongoose = require("mongoose");
 
 // get all workouts
@@ -33,7 +33,7 @@ const createWorkout = async (req, res) => {
 
   // add document to DB
   try {
-    // we attach user property to the request obkect with middleware
+    // we attach user property to the request object with middleware
     const user_id = req.user._id;
     const workout = await Workout.create({ title, load, reps, user_id });
     res.status(200).json(workout);

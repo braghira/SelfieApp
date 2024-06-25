@@ -110,8 +110,8 @@ La view Pomodoro gestisce il metodo di studio pomodoro per studiare. Organizza i
     - Input: 200 minuti; Output: 5 cicli da 35 minuti di studio e 5 minuti di pausa.
     - Input: 6 ore; output: 8 cicli da 35 minuti di studio e 10 minuti di pausa.
 - [ ] Inizio del tempo di studio/pausa successivo forzato da bottone; 
-- [ ] Tasto ricomincia ciclo; 
-- [ ] Tasto fine ciclo. 
+- [ ] Tasto ricomincia ciclo;
+- [ ] Tasto fine ciclo.
 - [ ] Notifica per inizio ciclo, passaggio da una fase alla successiva, fine ciclo.
 - [ ] Si richiede un’animazione (OBBLIGATORIAMENTE fatta in CSS, non una gif) per lo studio e una per la pausa
 - [ ] Programmare cicli di studio su diverse giornate come Evento su calendario, i.e. cliccando sull’evento si viene rimandati alla view pomodoro; 

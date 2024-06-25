@@ -37,7 +37,7 @@ export default function WorkoutDetails({ workout }: WorkoutDetailsProps) {
           <Trash2 className="h-6 w-6" />
         </Button>
       </CardHeader>
-      <CardContent className="bg-primary-500 flex-col gap-3 justify-center items-center">
+      <CardContent className="flex-col gap-3 justify-center items-center">
         <div>
           Load: <span className="base-semibold">{workout.load}</span>
         </div>

@@ -9,6 +9,7 @@ require("dotenv").config({ path: path.resolve(__dirname, ".env") }); // config m
 // our modules
 const workoutRoutes = require(path.resolve(__dirname, "routes", "workouts"));
 const authRoutes = require(path.resolve(__dirname, "routes", "users"));
+const mediaRoutes = require(path.resolve(__dirname, "routes", "media"));
 const corsOptions = require("./utils/corsOptions");
 
 // utilities
@@ -38,6 +39,7 @@ if (node_env === "production") {
 
 // routes
 app.use("/api/workouts", workoutRoutes);
+app.use("/api/media", mediaRoutes);
 app.use("/auth", authRoutes);
 
 if (node_env === "production") {

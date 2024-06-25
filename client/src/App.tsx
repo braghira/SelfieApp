@@ -15,9 +15,7 @@ import LoadingPage from "./pages/LoadingPage";
 // layouts
 import DashboardLayout from "./layouts/DashboardLayout";
 import AuthLayout from "./layouts/AuthLayout";
-// layouts
-import DashboardLayout from "./layouts/DashboardLayout";
-import AuthLayout from "./layouts/AuthLayout";
+import Pomodoro from "./pages/Pomodoro";
 
 // Per come è impostata la nostra app tutte le route devono stare dentro ad una route che fa da
 // padre a tutte le altre senza aggiungere layout o path
@@ -28,7 +26,7 @@ const router = createBrowserRouter(
       <Route element={<ProtectedRoutes />}>
         <Route element={<DashboardLayout />}>
           <Route path="/home" element={<Home />} />
-          <Route path="/pomodoro" element={<Home />} />
+          <Route path="/pomodoro" element={<Pomodoro />} />
           <Route path="/calendar" element={<Home />} />
           <Route path="/notes" element={<Home />} />
         </Route>

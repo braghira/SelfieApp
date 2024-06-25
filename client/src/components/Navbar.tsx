@@ -1,8 +1,9 @@
 import { NavLink } from "react-router-dom";
 import { ModeToggle } from "./ModeToggle";
-import { Button } from "./ui/button";
+import { Button, buttonVariants } from "./ui/button";
 import useLogout from "@/hooks/useLogout";
 import Logo from "./Logo";
+import ProfilePhoto from "./ProfilePhoto";
 
 export default function Navbar() {
   const { logout } = useLogout();
@@ -14,7 +15,16 @@ export default function Navbar() {
           <Logo />
         </NavLink>
 
+        <NavLink
+          to="/pomodoro"
+          className={buttonVariants({ variant: "ghost" })}
+        >
+          pomodoro
+        </NavLink>
+
         <ModeToggle />
+
+        <ProfilePhoto />
 
         <Button variant={"ghost"} onClick={() => logout()}>
           Logout

@@ -15,14 +15,17 @@ export type WorkoutType = z.infer<typeof WorkoutSchema>;
 export const UserSchema = z.object({
   username: z
     .string()
+    .trim()
     .min(3, { message: "Username must be at least 3 characters" }),
   password: z
     .string()
     .min(8, { message: "Password must be at least 8 characters." }),
   email: z.string().email().optional(),
-  name: z.string().optional(),
-  surname: z.string().optional(),
+  name: z.string().trim().optional(),
+  surname: z.string().trim().optional(),
   birthday: z.date().optional(),
+  /** Contains the string of the endpoint to get the image based on its ID */
+  profilePic: z.string().optional(),
   accessToken: z.string().optional(),
   _id: z.string().optional(),
 });
@@ -32,7 +35,11 @@ export function client_log(message: unknown, ...options: unknown[]) {
   if (import.meta.env.DEV) console.log(message, ...options);
 }
 
-// tailwind
+/**
+ * Merges the inputs classes
+ * @param inputs tailwind classes
+ * @returns tailwind merge string
+ */
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }

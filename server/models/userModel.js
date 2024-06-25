@@ -1,8 +1,7 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 const validator = require("validator");
-
-const Media = require("./mediaModel");
+const { getDefaultPic } = require("../controllers/mediaController");
 
 const userSchema = new mongoose.Schema({
   username: {
@@ -20,7 +19,7 @@ const userSchema = new mongoose.Schema({
     type: String,
     unique: true, // le email devono essere uniche
   },
-  profilePic: mongoose.Schema.Types.ObjectId,
+  profilePic: { type: mongoose.Schema.Types.ObjectId, ref: "Media" },
   birthday: Date,
 });
 
@@ -76,7 +75,7 @@ async function validateSignup(
     email,
     name,
     surname,
-    // profilePic: Media.getDefaultPic(),
+    profilePic: await getDefaultPic(),
     birthday,
   });
 
