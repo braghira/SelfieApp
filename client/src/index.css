@@ -5,7 +5,18 @@
 @tailwind utilities;
 
 @layer base {
+  @property --pomodoro-gradient-value {
+    syntax: "<percentage>";
+    initial-value: 0%;
+    inherits: true;
+  }
+
   :root {
+    /* Variables for pomodoro animation */
+    --pomodoro-size: 350px;
+    --orbit-size: 30px;
+    --pomodoro-container-size: calc(var(--pomodoro-size) + var(--orbit-size));
+    /* Theme Variables */
     --background: 0 0% 100%;
     --foreground: 240 10% 3.9%;
     --card: 352, 40%, 98%;
@@ -114,6 +125,10 @@
     @apply text-[18px] font-medium leading-[140%];
   }
 
+  .timer-medium {
+    @apply text-[30px] font-medium leading-[140%] tracking-wide;
+  }
+
   .small-semibold {
     @apply text-[14px] font-semibold leading-[140%] tracking-tighter;
   }
@@ -188,4 +203,36 @@
 }
 
 @layer components {
+  .pomodoro {
+    @apply h-[--pomodoro-size] w-[--pomodoro-size] top-[calc((var(--pomodoro-container-size)-var(--pomodoro-size))/2)] left-[calc((var(--pomodoro-container-size)-var(--pomodoro-size))/2)] relative overflow-hidden flex justify-center items-center rounded-full animate-timer;
+    background-image: radial-gradient(
+        closest-side,
+        hsl(var(--background)) 98.5%,
+        transparent 98.8% 100%
+      ),
+      conic-gradient(
+        hsl(var(--background)) var(--pomodoro-gradient-value),
+        hsl(var(--primary)) 0
+      );
+  }
+
+  .pulse {
+    @apply relative bg-primary rounded-full h-[calc(var(--pomodoro-size)/2)] w-[calc(var(--pomodoro-size)/2)];
+  }
+
+  .orbit {
+    @apply absolute rounded-full bg-primary w-[--orbit-size] h-[--orbit-size] top-[50%] left-[50%] mt-[calc(2.5px-var(--orbit-size)/2-var(--pomodoro-size)/2)] translate-x-[-50%];
+  }
+
+  .rotating-container {
+    @apply w-[--pomodoro-container-size] h-[--pomodoro-container-size] absolute z-10 top-0 left-0 animate-spin duration-1000 origin-center;
+  }
+
+  .pulse > span:nth-child(1) {
+    @apply absolute w-full h-full bg-inherit rounded-full animate-focus;
+  }
+
+  .pulse > span:nth-child(2) {
+    @apply absolute w-full h-full bg-inherit rounded-full animate-focus delay-1000;
+  }
 }

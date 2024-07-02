@@ -1,9 +1,9 @@
 const { User, validateLogin, validateSignup } = require("../models/userModel");
 const {
-  access_token_expire_time,
+  access_time,
+  refresh_time,
   access_key,
   refresh_key,
-  refresh_token_expire_time,
   node_env,
 } = require("../utils/globalVariables");
 const jwt = require("jsonwebtoken");
@@ -11,20 +11,13 @@ const jwt = require("jsonwebtoken");
 /**
  * Creates an access Json Web Token given the user id
  * @param _id id of the user to use as the payload of the jwt
+ * @param secret_key secret key of the corresponding token
+ * @param expire_time expire time of the corresponding token
+ * @type string
  */
-const createAccessToken = (_id) => {
-  return jwt.sign({ _id }, access_key, {
-    expiresIn: access_token_expire_time,
-  });
-};
-
-/**
- * Creates a refresh Json Web Token given the user id
- * @param _id id of the user to use as the payload of the jwt
- */
-const createRefreshToken = (_id) => {
-  return jwt.sign({ _id }, refresh_key, {
-    expiresIn: refresh_token_expire_time,
+const createToken = (_id, secret_key, expire_time) => {
+  return jwt.sign({ _id }, secret_key, {
+    expiresIn: `${expire_time}ms`,
   });
 };
 
@@ -39,7 +32,6 @@ const loginUser = async (req, res) => {
     const user = await validateLogin(username, password);
 
     if (user._doc.profilePic) {
-      console.log("EHI");
       // put media api endpoint to get the image in the frontend
       user._doc.profilePic = `/api/media/${user.profilePic}`;
     }
@@ -47,9 +39,9 @@ const loginUser = async (req, res) => {
     console.log("user: ", user._doc);
 
     // create access token
-    const accessToken = createAccessToken(user._id);
+    const accessToken = createToken(user._id, access_key, access_time);
     // create refresh token
-    const refreshToken = createRefreshToken(user._id);
+    const refreshToken = createToken(user._id, refresh_key, refresh_time);
     console.log(`login refresh token: ${refreshToken}`);
     // insert the refresh token in the cookie
     res.cookie("jwt", refreshToken, {
@@ -97,9 +89,9 @@ const signupUser = async (req, res) => {
     console.log("user: ", user._doc);
 
     // create access token
-    const accessToken = createAccessToken(user._id);
+    const accessToken = createToken(user._id, access_key, access_time);
     // create refresh token
-    const refreshToken = createRefreshToken(user._id);
+    const refreshToken = createToken(user._id, refresh_key, refresh_time);
     console.log(`login refresh token: ${refreshToken}`);
     // insert the refresh token in the cookie
     res.cookie("jwt", refreshToken, {
@@ -166,7 +158,7 @@ const refreshToken = async (req, res) => {
       return res.status(401).json({ error: "Unauthorized" });
     }
 
-    const accessToken = createAccessToken(user._id);
+    const accessToken = createToken(user._id, access_key, access_time);
 
     const ret_value = { ...user._doc, accessToken };
 

@@ -72,20 +72,27 @@ module.exports = {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: 0 },
         },
-        tomato: {
-          from: {
-            r: "18%",
+        focus: {
+          "50%": {
+            opacity: 0,
+            transform: "scale(2)",
           },
+          "100%": {
+            opacity: 1,
+            transform: "scale(1)",
+          },
+        },
+        timer: {
           to: {
-            r: "100%",
-            cx: "2px",
+            "--pomodoro-gradient-value": "100%",
           },
         },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
-        tomato: "tomato 1s linear infinite",
+        focus: "focus 10s ease-out infinite",
+        timer: "timer 30s linear",
       },
     },
   },
