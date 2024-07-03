@@ -203,8 +203,12 @@
 }
 
 @layer components {
+  .study {
+    @apply relative w-[--pomodoro-container-size] aspect-square overflow-hidden;
+  }
+
   .pomodoro {
-    @apply h-[--pomodoro-size] w-[--pomodoro-size] top-[calc((var(--pomodoro-container-size)-var(--pomodoro-size))/2)] left-[calc((var(--pomodoro-container-size)-var(--pomodoro-size))/2)] relative overflow-hidden flex justify-center items-center rounded-full animate-timer;
+    @apply w-[--pomodoro-size] aspect-square top-[calc((var(--pomodoro-container-size)-var(--pomodoro-size))/2)] left-[calc((var(--pomodoro-container-size)-var(--pomodoro-size))/2)] relative overflow-hidden flex justify-center items-center rounded-full animate-timer;
     background-image: radial-gradient(
         closest-side,
         hsl(var(--background)) 98.5%,
@@ -217,22 +221,22 @@
   }
 
   .pulse {
-    @apply relative bg-primary rounded-full h-[calc(var(--pomodoro-size)/2)] w-[calc(var(--pomodoro-size)/2)];
+    @apply relative bg-primary rounded-full h-[calc(var(--pomodoro-size)/2)] aspect-square;
   }
 
   .orbit {
-    @apply absolute rounded-full bg-primary w-[--orbit-size] h-[--orbit-size] top-[50%] left-[50%] mt-[calc(2.5px-var(--orbit-size)/2-var(--pomodoro-size)/2)] translate-x-[-50%];
+    @apply absolute rounded-full bg-primary w-[--orbit-size] aspect-square top-[50%] left-[50%] mt-[calc(2.5px-var(--orbit-size)/2-var(--pomodoro-size)/2)] translate-x-[-50%];
   }
 
   .rotating-container {
-    @apply w-[--pomodoro-container-size] h-[--pomodoro-container-size] absolute z-10 top-0 left-0 animate-spin duration-1000 origin-center;
+    @apply w-[--pomodoro-container-size] aspect-square absolute z-10 top-0 left-0 animate-spin origin-center;
   }
 
   .pulse > span:nth-child(1) {
-    @apply absolute w-full h-full bg-inherit rounded-full animate-focus;
+    @apply absolute w-full aspect-square bg-inherit rounded-full animate-focus;
   }
 
   .pulse > span:nth-child(2) {
-    @apply absolute w-full h-full bg-inherit rounded-full animate-focus delay-1000;
+    @apply absolute w-full aspect-square bg-inherit rounded-full animate-focus delay-1000;
   }
 }
