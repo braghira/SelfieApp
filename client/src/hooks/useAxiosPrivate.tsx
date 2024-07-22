@@ -71,9 +71,7 @@ export default function useAxiosPrivate() {
           }
 
           dispatch({ type: "LOGIN", payload: auth });
-          dispatch({ type: "LOGIN", payload: auth });
 
-          const newAccessToken = auth?.accessToken;
           const newAccessToken = auth?.accessToken;
           // this should be a useless check, but TypeScript says it can be undefined so here we are
           if (prevRequest.headers) {
