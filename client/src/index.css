@@ -37,6 +37,11 @@
     --input: 240 5.9% 90%;
     --ring: 346.8 77.2% 49.8%;
     --radius: 0.5rem;
+    /* Other colors */
+    --blue-bubble: 221.2 83.2% 53.3%;
+    --shadow-bubble: 221.2 83.2% 33.3%;
+    --sunflower-black: 47.9 95.8% 13.1%;
+    --sunflower-yellow: 47.9 95.8% 53.1%;
   }
 
   .dark {
@@ -203,10 +208,11 @@
 }
 
 @layer components {
-  .study {
+  .animation-container {
     @apply relative w-[--pomodoro-container-size] aspect-square overflow-hidden;
   }
 
+  /* Study Animation Classes */
   .pomodoro {
     @apply w-[--pomodoro-size] aspect-square top-[calc((var(--pomodoro-container-size)-var(--pomodoro-size))/2)] left-[calc((var(--pomodoro-container-size)-var(--pomodoro-size))/2)] relative overflow-hidden flex justify-center items-center rounded-full animate-timer;
     background-image: radial-gradient(
@@ -238,5 +244,34 @@
 
   .pulse > span:nth-child(2) {
     @apply absolute w-full aspect-square bg-inherit rounded-full animate-focus delay-1000;
+  }
+
+  /* Relax Animation Classes */
+  .relax-container {
+    @apply w-[--pomodoro-size] aspect-square top-[calc((var(--pomodoro-container-size)-var(--pomodoro-size))/2)] left-[calc((var(--pomodoro-container-size)-var(--pomodoro-size))/2)] relative overflow-hidden flex justify-center items-center rounded-full animate-timer;
+    background-image: radial-gradient(
+        closest-side,
+        hsl(var(--background)) 98.5%,
+        transparent 98.8% 100%
+      ),
+      conic-gradient(
+        hsl(var(--background)) var(--pomodoro-gradient-value),
+        hsl(var(--sunflower-yellow)) 0
+      );
+  }
+
+  .sunflower {
+    @apply relative rounded-full h-[calc(var(--pomodoro-size)/2)] aspect-square bg-[hsl(var(--sunflower-black))] z-10;
+  }
+
+  .petal {
+    @apply absolute rounded-t-[50%] rounded-b-[30%] h-[80px] w-[30px] bg-[hsl(var(--sunflower-yellow))] origin-center;
+    transition: transform 2s ease-out,
+      opacity 2s cubic-bezier(0, 0.085, 0.68, 0.53);
+  }
+
+  /* Pomodoro Form */
+  #pomodoro-form {
+    transition: all 500ms ease-in;
   }
 }

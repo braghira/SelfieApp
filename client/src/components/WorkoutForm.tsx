@@ -38,6 +38,7 @@ export default function WorkoutForm() {
       form.setError("root.serverError", {
         type: "You must be logged in",
       });
+
       return;
     }
 
@@ -72,7 +73,7 @@ export default function WorkoutForm() {
           name="title"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="shad-form_label">Title</FormLabel>
+              <FormLabel>Title</FormLabel>
               <FormControl>
                 <Input
                   type="text"
@@ -119,7 +120,7 @@ export default function WorkoutForm() {
                   placeholder="Input a number"
                   {...field}
                   onChange={(e) => {
-                    field.onChange(e.target.valueAsNumber); // Utilizza valueAsNumber
+                    field.onChange(e.target.valueAsNumber); // if we don't use this, field is seen as a string
                   }}
                 />
               </FormControl>

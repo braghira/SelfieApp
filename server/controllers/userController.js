@@ -49,10 +49,7 @@ const loginUser = async (req, res) => {
       secure: node_env === "production", // https
       sameSite: "Strict",
       // cookie expire time, matches refresh token expire time (in ms)
-      maxAge:
-        process.env.NODE_ENV === "production"
-          ? 7 * 24 * 60 * 60 * 1000
-          : 10 * 60 * 1000,
+      maxAge: refresh_time,
     });
 
     res.status(200).json({ ...user._doc, accessToken });
@@ -99,10 +96,7 @@ const signupUser = async (req, res) => {
       secure: node_env === "production", // https
       sameSite: "Strict",
       // cookie expire time, matches refresh token expire time (in ms)
-      maxAge:
-        process.env.NODE_ENV === "production"
-          ? 7 * 24 * 60 * 60 * 1000
-          : 10 * 60 * 1000,
+      maxAge: refresh_time,
     });
     res.status(200).json({ ...user._doc, accessToken });
   } catch (error) {

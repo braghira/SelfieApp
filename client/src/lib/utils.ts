@@ -3,7 +3,7 @@ import { twMerge } from "tailwind-merge";
 import * as z from "zod";
 
 export const WorkoutSchema = z.object({
-  title: z.string().min(2),
+  title: z.string().min(2, "Title must be at least 2 characters"),
   reps: z.number().nonnegative(),
   load: z.number().nonnegative(),
   _id: z.string().optional(),
@@ -33,6 +33,52 @@ export type UserType = z.infer<typeof UserSchema>;
 
 export function client_log(message: unknown, ...options: unknown[]) {
   if (import.meta.env.DEV) console.log(message, ...options);
+}
+
+/**
+ * @param time in milliseconds
+ * @returns equivalent time in a HH:MM:SS string format
+ */
+export function msToTime(time: number): string {
+  // Pad to 2 or 3 digits, default is 2
+  function pad(n: number, z: number = 2) {
+    return ("00" + n).slice(-z);
+  }
+
+  const ms = time % 1000;
+  time = (time - ms) / 1000;
+  const secs = time % 60;
+  time = (time - secs) / 60;
+  const mins = time % 60;
+  const hrs = (time - mins) / 60;
+
+  return pad(hrs) + ":" + pad(mins) + ":" + pad(secs);
+}
+
+/**
+ *
+ * @param time time in HH:MM:SS string format
+ * @returns equivalent time in milliseconds
+ */
+export function timeToMs(time: string): number {
+  function pad(n: number, z: number = 1) {
+    return ("00" + n).slice(-z);
+  }
+
+  const secs = parseInt(time.slice(-2));
+  console.log("sec: ", time.slice(-2));
+  time = time.slice(0, 5);
+
+  const mins = parseInt(time.slice(-2));
+  console.log("mins: ", time.slice(-2));
+  time = time.slice(0, 2);
+
+  const hrs = parseInt(time);
+  console.log("hrs: ", time.slice(-2));
+
+  const totsec = secs + mins * 60 + hrs * 60 * 60;
+
+  return 1000 * totsec;
 }
 
 /**

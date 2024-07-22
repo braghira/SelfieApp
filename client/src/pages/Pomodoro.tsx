@@ -1,94 +1,49 @@
+import RelaxAnimation from "@/components/RelaxAnimation";
+import StudyAnimation from "@/components/StudyAnimation";
 import { Button } from "@/components/ui/button";
-import { client_log } from "@/lib/utils";
-import { Play, RotateCcwIcon } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
-
-type TimerType = {
-  initialValue: number;
-  value: number;
-  started: boolean;
-};
+import { useTimer } from "@/hooks/useTimer";
+import { ChevronLast, Play, RotateCcwIcon, SkipForward } from "lucide-react";
+import { useRef } from "react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import PomodoroForm from "@/components/PomodoroForm";
 
 export default function Pomodoro() {
-  // stores the current study timer
-  const [studyTimer, setStudyTimer] = useState<TimerType>({
-    initialValue: 1000 * 17,
-    value: 1000 * 17,
-    started: false,
-  });
-  // stores current relax timer
-  const [relaxTimer, setRelaxTimer] = useState<TimerType>();
-  // stores the number of pomodoro sessions
-  const resto = useRef((studyTimer.initialValue / 1000) % 5);
+  const { timer, dispatch, InitialTimer, setInitialTimer } = useTimer();
+
+  const remainder = useRef((timer.study.initialValue / 1000) % 5);
   const repetitions = useRef(
-    (studyTimer.initialValue / 1000 - resto.current) / 10
+    (timer.study.initialValue / 1000 - remainder.current) / 10
   );
-  const time_diff = useRef(studyTimer.value);
+  const timeDiff = useRef(timer.study.value);
 
-  useEffect(() => {
-    client_log("repetitions: ", repetitions.current);
-    // in case of refresh or user changing views we store the current timer in the local storage
-    const stored_timer = localStorage.getItem("pomodoro_timer");
-    if (stored_timer) {
-      const parsed_timer: TimerType = JSON.parse(stored_timer);
-      resto.current = (parsed_timer.value / 1000) % 5;
-      repetitions.current = (parsed_timer.value / 1000 - resto.current) / 10;
-      time_diff.current = parsed_timer.value;
-      setStudyTimer(parsed_timer);
+  function reset() {
+    dispatch({
+      type: "SET",
+      payload: InitialTimer,
+    });
+
+    const form = document.getElementById("pomodoro-form");
+    if (form) {
+      form.style.opacity = "1";
+      form.style.width = "";
     }
-  }, []);
-
-  useEffect(() => {
-    if (studyTimer.started) {
-      const interval = setInterval(() => {
-        if (studyTimer.value > 0)
-          setStudyTimer((prevTimer) => {
-            const newTimer = {
-              initialValue: prevTimer.initialValue,
-              value: prevTimer.value - 1000,
-              started: prevTimer.started,
-            };
-            localStorage.setItem("pomodoro_timer", JSON.stringify(newTimer));
-            return newTimer;
-          });
-        else {
-          localStorage.removeItem("pomodoro_timer");
-        }
-      }, 1000);
-      return () => {
-        clearInterval(interval);
-      };
-    }
-  }, [studyTimer]);
-
-  function msToTime(s: number) {
-    // Pad to 2 or 3 digits, default is 2
-    function pad(n: number, z: number = 2) {
-      return ("00" + n).slice(-z);
-    }
-
-    const ms = s % 1000;
-    s = (s - ms) / 1000;
-    const secs = s % 60;
-    s = (s - secs) / 60;
-    const mins = s % 60;
-    const hrs = (s - mins) / 60;
-
-    return pad(hrs) + ":" + pad(mins) + ":" + pad(secs);
   }
 
-  const format_timer = msToTime(studyTimer.value);
-
-  function handleRestart() {
-    setStudyTimer({
-      initialValue: studyTimer.initialValue,
-      value: studyTimer.initialValue,
-      started: false,
+  function restartStudy() {
+    dispatch({
+      type: "RESTART",
+      payload: null,
     });
-    localStorage.setItem("pomodoro_timer", JSON.stringify(studyTimer));
-    resto.current = (studyTimer.initialValue / 1000) % 5;
-    repetitions.current = (studyTimer.initialValue / 1000 - resto.current) / 10;
-    time_diff.current = studyTimer.initialValue;
+
+    remainder.current = (timer.study.initialValue / 1000) % 5;
+    repetitions.current =
+      (timer.study.initialValue / 1000 - remainder.current) / 10;
+    timeDiff.current = timer.study.initialValue;
 
     const pulse1 = document.getElementById("pulse1");
     if (pulse1) {
@@ -96,7 +51,7 @@ export default function Pomodoro() {
       pulse1.offsetHeight; // read-only property to trigger a reflow
       pulse1.style.animation = "";
       pulse1.style.animationIterationCount = `${repetitions.current}`;
-      pulse1.style.animationPlayState = studyTimer.started
+      pulse1.style.animationPlayState = timer.study.started
         ? "running"
         : "paused";
     }
@@ -107,7 +62,7 @@ export default function Pomodoro() {
       pulse2.offsetHeight; // read-only property to trigger a reflow
       pulse2.style.animation = "";
       pulse2.style.animationIterationCount = `${repetitions.current}`;
-      pulse2.style.animationPlayState = studyTimer.started
+      pulse2.style.animationPlayState = timer.study.started
         ? "running"
         : "paused";
     }
@@ -117,9 +72,9 @@ export default function Pomodoro() {
       progressbar.style.animation = "none";
       progressbar.offsetHeight; // read-only property to trigger a reflow
       progressbar.style.animation = "";
-      progressbar.style.animationDuration = `${time_diff.current}ms`;
+      progressbar.style.animationDuration = `${timeDiff.current}ms`;
       progressbar.style.animationIterationCount = "1";
-      progressbar.style.animationPlayState = studyTimer.started
+      progressbar.style.animationPlayState = timer.study.started
         ? "running"
         : "paused";
     }
@@ -129,79 +84,142 @@ export default function Pomodoro() {
       orbit.style.animation = "none";
       orbit.offsetHeight; // read-only property to trigger a reflow
       orbit.style.animation = "";
-      orbit.style.animationDuration = `${time_diff.current}ms`;
+      orbit.style.animationDuration = `${timeDiff.current}ms`;
       orbit.style.animationIterationCount = "1";
-      orbit.style.animationPlayState = studyTimer.started
+      orbit.style.animationPlayState = timer.study.started
+        ? "running"
+        : "paused";
+    }
+  }
+
+  function restartRelax() {
+    remainder.current = (timer.relax.initialValue / 1000) % 5;
+    repetitions.current =
+      (timer.relax.initialValue / 1000 - remainder.current) / 10;
+    timeDiff.current = timer.relax.initialValue;
+
+    const sunbar = document.getElementById("sunbar");
+    if (sunbar) {
+      sunbar.style.animation = "none";
+      sunbar.offsetHeight; // read-only property to trigger a reflow
+      sunbar.style.animation = "";
+      sunbar.style.animationDuration = `${timeDiff.current}ms`;
+      sunbar.style.animationIterationCount = "1";
+      sunbar.style.animationPlayState = timer.relax.started
         ? "running"
         : "paused";
     }
   }
 
   return (
-    <div className="container flex-center gap-3">
-      {/* Study Animation */}
-      <div className="study">
-        {/* orbit animation based on timer */}
-        <div
-          className="rotating-container"
-          id="orbit"
-          style={{
-            animationDuration: `${time_diff.current}ms`,
-            animationIterationCount: "1",
-            animationPlayState: studyTimer.started ? "running" : "paused",
-          }}
-        >
-          <div className="orbit"></div>
-        </div>
-        {/* pulse animation with progress circle */}
-        <div
-          className="pomodoro"
-          id="progbar"
-          style={{
-            animationDuration: `${time_diff.current}ms`,
-            animationIterationCount: "1",
-            animationPlayState: studyTimer.started ? "running" : "paused",
-          }}
-        >
-          <div className="pulse">
-            <span
-              id="pulse1"
-              style={{
-                animationIterationCount: repetitions.current,
-                animationPlayState: studyTimer.started ? "running" : "paused",
-              }}
-            ></span>
-            <span
-              id="pulse2"
-              style={{
-                animationIterationCount: repetitions.current,
-                animationPlayState: studyTimer.started ? "running" : "paused",
-              }}
-            ></span>
-            <div className="absolute top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] timer-medium text-red-50">
-              {format_timer}
-            </div>
-          </div>
+    <div className="container sm:flex-center gap-5">
+      <div className="flex-center flex-col gap-5">
+        <h2>Cycles: {timer.cycles}</h2>
+
+        {timer.isStudyCycle ? (
+          <StudyAnimation
+            timer={timer}
+            dispatch={dispatch}
+            remainder={remainder}
+            repetitions={repetitions}
+            timeDiff={timeDiff}
+          />
+        ) : (
+          <RelaxAnimation
+            timer={timer}
+            dispatch={dispatch}
+            remainder={remainder}
+            repetitions={repetitions}
+            timeDiff={timeDiff}
+          />
+        )}
+
+        <div className="flex-center gap-5">
+          <TooltipProvider>
+            {(!timer.study.started || !timer.relax.started) &&
+              timer.totalTime > 0 && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      onClick={() => {
+                        dispatch({
+                          type: "START",
+                          payload: null,
+                        });
+
+                        const form = document.getElementById("pomodoro-form");
+                        if (form) {
+                          form.style.opacity = "0%";
+                          form.style.width = "0px";
+                        }
+                      }}
+                    >
+                      <Play />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Start Timer</TooltipContent>
+                </Tooltip>
+              )}
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  onClick={() =>
+                    timer.totalTime == 0 ? reset() : restartStudy()
+                  }
+                >
+                  <RotateCcwIcon />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                {timer.totalTime == 0 ? "Restart Session" : "Restart Cycle"}
+              </TooltipContent>
+            </Tooltip>
+
+            {timer.totalTime > 0 && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    onClick={() => {
+                      dispatch({
+                        type: "SKIP",
+                        payload: null,
+                      });
+                      restartRelax();
+                    }}
+                  >
+                    <SkipForward />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Skip this timer</TooltipContent>
+              </Tooltip>
+            )}
+
+            {/* Show only when we are not in the last cycle study timer */}
+            {timer.cycles > 0 && (
+              <Tooltip>
+                <TooltipContent>Skip This Cycle</TooltipContent>
+                <TooltipTrigger asChild>
+                  <Button
+                    onClick={() => {
+                      dispatch({ type: "SKIPCYCLE", payload: null });
+                    }}
+                  >
+                    <ChevronLast />
+                  </Button>
+                </TooltipTrigger>
+              </Tooltip>
+            )}
+          </TooltipProvider>
         </div>
       </div>
 
-      <Button onClick={() => handleRestart()}>
-        <RotateCcwIcon />
-      </Button>
-
-      {!studyTimer.started && (
-        <Button
-          onClick={() =>
-            setStudyTimer({
-              initialValue: studyTimer.initialValue,
-              value: studyTimer.value,
-              started: true,
-            })
-          }
-        >
-          <Play />
-        </Button>
-      )}
+      <PomodoroForm
+        timer={timer}
+        dispatch={dispatch}
+        InitialTimer={InitialTimer}
+        setInitialTimer={setInitialTimer}
+      />
     </div>
   );
 }

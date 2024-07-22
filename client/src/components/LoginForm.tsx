@@ -89,6 +89,7 @@ export default function LoginForm() {
           <Button type="submit" className="shad-button_primary mt-4">
             {form.formState.isSubmitting ? <Loader /> : "Login"}
           </Button>
+
           <NavLink
             to="/forgot-password"
             className="mt-2 hover:underline cursor-pointer"

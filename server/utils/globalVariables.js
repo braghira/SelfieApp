@@ -12,7 +12,7 @@ const refresh_key = process.env.REFRESH_JWT_KEY;
 const access_time =
   node_env === "production"
     ? 10 * 60 * 60 * 1000 // 10 hours
-    : 60 * 1000; // 1 minute
+    : 10 * 60 * 1000; // 1 minute
 
 /**
  * Refresh token expire time in ms
@@ -20,7 +20,7 @@ const access_time =
 const refresh_time =
   node_env === "production"
     ? 7 * 24 * 60 * 60 * 1000 // 1 week
-    : 10 * 60 * 1000; // 10 minute
+    : 60 * 60 * 1000; // 10 minute
 
 module.exports = {
   access_time,

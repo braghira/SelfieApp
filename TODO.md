@@ -104,16 +104,16 @@ Una nota è un testo di lunghezza arbitraria(fate prove anche con testi molto lu
 
 ### Pomodoro
 La view Pomodoro gestisce il metodo di studio pomodoro per studiare. Organizza il tempo dello studente in cicli studio-relax secondo una tecnica fissa di 30+5 minuti. La view è composta da:
-- [ ] Form per scegliere il tempo di studio e di pausa. Quello standard è 5 cicli da 
+- [x] Form per scegliere il tempo di studio e di pausa. Quello standard è 5 cicli da 
 30 minuti di studio e 5 minuti di pausa. 
 - [ ] Si possono anche inserire un totale di ore/minuti disponibili e si ottengono una o più proposte di cicli di studio/pausa, per esempio: 
     - Input: 200 minuti; Output: 5 cicli da 35 minuti di studio e 5 minuti di pausa.
     - Input: 6 ore; output: 8 cicli da 35 minuti di studio e 10 minuti di pausa.
-- [ ] Inizio del tempo di studio/pausa successivo forzato da bottone; 
-- [ ] Tasto ricomincia ciclo;
-- [ ] Tasto fine ciclo.
+- [x] Inizio del tempo di studio/pausa successivo forzato da bottone.
+- [x] Tasto ricomincia ciclo.
+- [x] Tasto fine ciclo.
 - [ ] Notifica per inizio ciclo, passaggio da una fase alla successiva, fine ciclo.
-- [ ] Si richiede un’animazione (OBBLIGATORIAMENTE fatta in CSS, non una gif) per lo studio e una per la pausa
+- [x] Si richiede un’animazione (OBBLIGATORIAMENTE fatta in CSS, non una gif) per lo studio e una per la pausa
 - [ ] Programmare cicli di studio su diverse giornate come Evento su calendario, i.e. cliccando sull’evento si viene rimandati alla view pomodoro; 
 - [ ] I cicli previsti e non completati vengono automaticamente passati alle giornate successive e si sommano a quelli previsti per quella giornata.
 - [ ] E' possibile mandare una notifica ad un altro utente che gli rende possibile studiare con le stesse impostazioni.
@@ -135,8 +135,8 @@ Durante la presentazione i docenti non vogliono aspettare tre mesi che si conclu
 
 In ordine di importanza:
 
-- [x] Definire una volta per tutte la struttura dati user
-- [x] Aggiornare la pagina di Login e Sign Up con i campi giusti
+- [x] Aggiungere azione reset per il timer reducer
+- [ ] Rendere i due timer resizable
+- [ ] Modificare la Navbar per accogliere le view
 - [ ] Definire la struttura dati delle note
 - [ ] Transizione dai workouts alle note
-- [ ] Modificare la Navbar per accogliere le view

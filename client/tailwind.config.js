@@ -63,6 +63,10 @@ module.exports = {
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
       },
+      backgroundImage: {
+        bubble:
+          "radial-gradient(75% 75% at 55% 45%, hsl(var(--blue-bubble)) 65%, hsl(var(--shadow-bubble)) 68% 100%)",
+      },
       keyframes: {
         "accordion-down": {
           from: { height: 0 },
@@ -87,12 +91,25 @@ module.exports = {
             "--pomodoro-gradient-value": "100%",
           },
         },
+        bubble: {
+          "0%": {
+            transform: "translateY(0) scale(1)",
+            opacity: 0,
+          },
+          "50%": { opacity: 1 },
+          "90%": { opacity: 1, transform: "translateY(-290px) scale(1)" },
+          "100%": {
+            opacity: 0,
+            transform: "scale(1.2) translateY(-290px)",
+          },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
         focus: "focus 10s ease-out infinite",
         timer: "timer 30s linear",
+        bubble: "bubble 5s  infinite",
       },
     },
   },
