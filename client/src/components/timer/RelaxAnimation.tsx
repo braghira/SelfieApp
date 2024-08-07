@@ -32,14 +32,16 @@ export default function RelaxAnimation({
       timeDiff.current = parsed_timer.relax.value;
 
       dispatch({ payload: parsed_timer, type: "SET" });
-
-      startPlucking(parsed_timer.relax.started);
     }
-  }, []);
+  }, [timer.relax.initialValue]);
+
+  useEffect(() => {
+    startPlucking(timer.relax.started);
+  }, [timer.relax.started]);
 
   useEffect(() => {
     if (timer.relax.started) {
-      if (timer.totalTime == 0) {
+      if (timer.totalTime === 0) {
         timeDiff.current = 0;
         startPlucking(true);
 
@@ -54,8 +56,6 @@ export default function RelaxAnimation({
           },
         });
       }
-
-      // startPlucking(true);
 
       const interval = setInterval(() => {
         if (timer.relax.value > 0) {

@@ -90,10 +90,6 @@
 
 @layer utilities {
   /* TYPOGRAPHY */
-  .logo-italic {
-    @apply font-logo italic text-3xl sm:text-5xl;
-  }
-
   .h1-bold {
     @apply text-[36px] font-bold leading-[140%] tracking-tighter;
   }
@@ -272,6 +268,6 @@
 
   /* Pomodoro Form */
   #pomodoro-form {
-    transition: all 500ms ease-in;
+    transition: all 500ms ease-in-out;
   }
 }

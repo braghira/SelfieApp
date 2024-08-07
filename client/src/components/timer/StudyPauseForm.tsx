@@ -10,10 +10,10 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "./ui/form";
-import { Input } from "./ui/input";
-import { Button } from "./ui/button";
-import Loader from "./Loader";
+} from "../ui/form";
+import { Input } from "../ui/input";
+import { Button } from "../ui/button";
+import Loader from "../Loader";
 
 interface StudyPauseFormProps {
   timer: PomodoroType;

@@ -1,5 +1,5 @@
-import RelaxAnimation from "@/components/RelaxAnimation";
-import StudyAnimation from "@/components/StudyAnimation";
+import RelaxAnimation from "@/components/timer/RelaxAnimation";
+import StudyAnimation from "@/components/timer/StudyAnimation";
 import { Button } from "@/components/ui/button";
 import { useTimer } from "@/hooks/useTimer";
 import { ChevronLast, Play, RotateCcwIcon, SkipForward } from "lucide-react";
@@ -10,7 +10,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import PomodoroForm from "@/components/PomodoroForm";
+import PomodoroForm from "@/components/timer/PomodoroForm";
 
 export default function Pomodoro() {
   const { timer, dispatch, InitialTimer, setInitialTimer } = useTimer();
@@ -21,17 +21,18 @@ export default function Pomodoro() {
   );
   const timeDiff = useRef(timer.study.value);
 
+  function start() {
+    dispatch({
+      type: "START",
+      payload: null,
+    });
+  }
+
   function reset() {
     dispatch({
       type: "SET",
       payload: InitialTimer,
     });
-
-    const form = document.getElementById("pomodoro-form");
-    if (form) {
-      form.style.opacity = "1";
-      form.style.width = "";
-    }
   }
 
   function restartStudy() {
@@ -112,8 +113,27 @@ export default function Pomodoro() {
   }
 
   return (
-    <div className="container sm:flex-center gap-5">
-      <div className="flex-center flex-col gap-5">
+    <div className="container sm:flex-center space-x-5 space-y-5 mb-10">
+      <div className="flex justify-start flex-col gap-5">
+        <h2>
+          Welcome to the <span className="text-primary">Pomodoro</span> View!
+        </h2>
+        <p className="leading-8">
+          Here you can set your pomodoro session in 2 ways:
+          <ul className="list-disc">
+            <li>
+              <b>Timers</b>: Set the study and pause timer exactly how you want,
+              including the number of study/pause cycles;
+            </li>
+            <li>
+              <b>Session</b>: Insert a total session time and choose the option
+              that best fits your needs.
+            </li>
+          </ul>
+        </p>
+      </div>
+
+      <div className="flex-center flex-col gap-5 z-10">
         <h2>Cycles: {timer.cycles}</h2>
 
         {timer.isStudyCycle ? (
@@ -142,16 +162,7 @@ export default function Pomodoro() {
                   <TooltipTrigger asChild>
                     <Button
                       onClick={() => {
-                        dispatch({
-                          type: "START",
-                          payload: null,
-                        });
-
-                        const form = document.getElementById("pomodoro-form");
-                        if (form) {
-                          form.style.opacity = "0%";
-                          form.style.width = "0px";
-                        }
+                        start();
                       }}
                     >
                       <Play />
@@ -214,12 +225,14 @@ export default function Pomodoro() {
         </div>
       </div>
 
-      <PomodoroForm
-        timer={timer}
-        dispatch={dispatch}
-        InitialTimer={InitialTimer}
-        setInitialTimer={setInitialTimer}
-      />
+      {!timer.study.started && (
+        <PomodoroForm
+          timer={timer}
+          dispatch={dispatch}
+          InitialTimer={InitialTimer}
+          setInitialTimer={setInitialTimer}
+        />
+      )}
     </div>
   );
 }

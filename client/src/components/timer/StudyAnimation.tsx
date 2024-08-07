@@ -1,6 +1,6 @@
 import { PomodoroAction, PomodoroType, TimerType } from "@/hooks/useTimer";
 import { msToTime } from "@/lib/utils";
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 
 interface StudyAnimationProps {
   timer: PomodoroType;
@@ -28,7 +28,7 @@ export default function StudyAnimation({
       timeDiff.current = parsed_timer.study.value;
       dispatch({ payload: parsed_timer, type: "SET" });
     }
-  }, []);
+  }, [timer.study.initialValue]);
 
   useEffect(() => {
     if (timer.study.started) {
