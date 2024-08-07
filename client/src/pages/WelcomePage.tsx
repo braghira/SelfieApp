@@ -20,8 +20,7 @@ export default function WelcomePage() {
         <div className="text-center w-full max-w-sm">
           {user === undefined ? (
             <h3 className="my-3">
-              To use the app, first{" "}
-              <span className="base-semibold">Log in</span> as a user
+              Please <span className="base-semibold">Log in</span> as a user
             </h3>
           ) : (
             <h3 className="my-3">Please continue to the app</h3>
