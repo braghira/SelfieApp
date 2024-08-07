@@ -9,9 +9,9 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "./ui/form";
-import { Input } from "./ui/input";
-import { Button } from "./ui/button";
+} from "../ui/form";
+import { Input } from "../ui/input";
+import { Button } from "../ui/button";
 import { useState } from "react";
 
 interface SessionProps {
@@ -213,9 +213,6 @@ export default function SessionForm({
           <div className="grid grid-cols-3 gap-2">
             {session.map((timer) => (
               <Button type="button" onClick={() => setPomodoro(timer)}>
-                {/* {timer?.cycles} {timer.cycles > 1 ? "cycles" : "cycle"}, study:{" "}
-                {timer?.study.initialValue / (1000 * 60)}m, relax:{" "}
-                {timer?.relax.initialValue / (1000 * 60)}m */}
                 {timer.study.initialValue / (1000 * 60)}/
                 {timer.relax.initialValue / (1000 * 60)} x {timer.cycles}
               </Button>

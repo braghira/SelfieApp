@@ -11,9 +11,9 @@ export default function Logo({ className }: LogoProps) {
       <img
         src={logo}
         alt="logo"
-        className="h-[96px] rounded-full sm:h-[154px]"
+        className="h-[69px] rounded-full sm:h-[154px]"
       />
-      <div className="logo-italic">Selfie</div>
+      <div className="font-logo italic text-[29px] sm:text-[48px]">Selfie</div>
     </div>
   );
 }
