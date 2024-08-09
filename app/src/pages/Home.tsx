@@ -1,58 +1,58 @@
 import { useState, useEffect } from "react";
 
 // components
-import WorkoutDetails from "@/components/WorkoutDetails";
-import WorkoutForm from "@/components/WorkoutForms";
+import EventDetails from "@/components/EventDetails";
+import EventForm from "@/components/EventForms";
 import Navbar from "@/components/Navbar";
 // types
-import { Workout } from "@/lib/utils";
+import { Event } from "@/lib/utils";
 
 export default function Home() {
-  const [workouts, setWorkouts] = useState<Workout[] | null>(null);
+  const [events, setEvents] = useState<Event[] | null>(null);
 
   useEffect(() => {
-    const fetchWorkouts = async () => {
+    const fetchEvents = async () => {
       const response = await fetch(
-        `${import.meta.env.VITE_BASE_URL}/api/workouts`
+        `${import.meta.env.VITE_BASE_URL}/api/events`
       );
       const json = await response.json();
 
       if (response.ok) {
-        setWorkouts(json);
+        setEvents(json);
       }
     };
-    fetchWorkouts();
+    fetchEvents();
   }, []);
 
-  function addWorkout(newWorkout: Workout) {
-    // Logica per aggiungere un nuovo workout
-    const updatedWorkouts = [newWorkout, ...(workouts || [])];
-    setWorkouts(updatedWorkouts);
+  function addEvent(newEvent: Event) {
+    // Logica per aggiungere un nuovo evento
+    const updatedEvents = [newEvent, ...(events || [])];
+    setEvents(updatedEvents);
   }
 
-  function deleteWorkout(delWorkout: Workout) {
-    const updatedWorkouts = workouts?.filter(
-      (workout) => workout._id !== delWorkout._id
+  function deleteEvent(delEvent: Event) {
+    const updatedEvents = events?.filter(
+      (event) => event._id !== delEvent._id
     );
-    if (updatedWorkouts) setWorkouts(updatedWorkouts);
-    else setWorkouts(null);
+    if (updatedEvents) setEvents(updatedEvents);
+    else setEvents(null);
   }
 
   return (
     <div className="home">
       <Navbar />
-      <div className="workouts">
+      <div className="events">
         {/* Usiamo le parentesi tonde per ritornare un template */}
-        {workouts &&
-          workouts.map((workout) => (
-            <WorkoutDetails
-              key={workout._id}
-              workout={workout}
-              deleteWorkout={deleteWorkout}
+        {events &&
+          events.map((event) => (
+            <EventDetails
+              key={event._id}
+              event={event}
+              deleteEvent={deleteEvent}
             />
           ))}
       </div>
-      <WorkoutForm addWorkout={addWorkout} />
+      <EventForm addEvent={addEvent} />
     </div>
   );
 }

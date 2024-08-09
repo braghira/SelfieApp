@@ -7,7 +7,7 @@ const cors = require('cors');
 require('dotenv').config({ path: path.resolve(__dirname, '.env') }) // config method will attach .env variables to the "process" global variable
 console.log(__dirname);   // remove this when you're sure it works
 // our modules
-const workoutRoutes = require(path.resolve(__dirname, "routes", "workouts"));
+const eventRoutes = require(path.resolve(__dirname, "routes", "events"));
 const utils = require(path.resolve(__dirname, "utils", "environmentDetector"));
 // utilities
 const port = process.env.PORT;
@@ -32,7 +32,7 @@ if (node_env === "production") {
 }
 
 // routes
-app.use("/api/workouts", workoutRoutes);
+app.use("/api/events", eventRoutes);
 
 if (node_env === "production") {
     // route fallback: reindirizza tutte le altre richieste all'app React
