@@ -2,14 +2,24 @@ import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 import * as z from "zod";
 
-export const WorkoutSchema = z.object({
+const recurrencePatternSchema = z.object({
+  frequency: z.enum(['daily', 'weekly', 'monthly']).optional(),
+  endType: z.enum(['never', 'after', 'until']).optional(),
+  occurrences: z.number().optional(),
+  endDate: z.string().optional(), 
+});
+
+export const EventSchema = z.object({
   title: z.string().min(2, "Title must be at least 2 characters"),
-  reps: z.number().nonnegative(),
-  load: z.number().nonnegative(),
+  date: z.string(), 
+  duration: z.number().nonnegative(),
+  location: z.string().optional(),
+  isRecurring: z.boolean(),
+  recurrencePattern: recurrencePatternSchema.optional(),
   _id: z.string().optional(),
   createdAt: z.string().optional(),
 });
-export type WorkoutType = z.infer<typeof WorkoutSchema>;
+export type EventType = z.infer<typeof EventSchema>;
 
 // TODO: aggiungere campo per la foto profilo
 export const UserSchema = z.object({

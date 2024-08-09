@@ -7,7 +7,7 @@ const cors = require("cors");
 require("dotenv").config({ path: path.resolve(__dirname, ".env") }); // config method will attach .env variables to the "process" global variable
 
 // our modules
-const workoutRoutes = require(path.resolve(__dirname, "routes", "workouts"));
+const eventRoutes = require(path.resolve(__dirname, "routes", "events"));
 const authRoutes = require(path.resolve(__dirname, "routes", "users"));
 const mediaRoutes = require(path.resolve(__dirname, "routes", "media"));
 const corsOptions = require("./utils/corsOptions");
@@ -38,7 +38,7 @@ if (node_env === "production") {
 }
 
 // routes
-app.use("/api/workouts", workoutRoutes);
+app.use("/api/events", eventRoutes);
 app.use("/api/media", mediaRoutes);
 app.use("/auth", authRoutes);
 
