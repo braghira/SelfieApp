@@ -1,21 +1,21 @@
 import { useEffect } from "react";
 // components
-import WorkoutDetails from "@/components/WorkoutDetails";
-import WorkoutForm from "@/components/WorkoutForm";
+import EventDetails from "@/components/EventDetails";
+import EventForm from "@/components/EventForms";
 // context
-import { useWorkouts } from "@/context/WorkoutContext";
+import { useEvents } from "@/context/EventContext";
 import { useAuth } from "@/context/AuthContext";
 // hooks
-import useWorkoutsApi from "@/hooks/useWorkoutsApi.tsx";
+import useEventsApi from "@/hooks/useEventsApi.tsx";
 
 export default function Dashboard() {
-  const { workouts, dispatch } = useWorkouts();
+  const { events, dispatch } = useEvents();
   const { user } = useAuth();
-  const { getWorkouts } = useWorkoutsApi();
+  const { getEvents } = useEventsApi();
 
   useEffect(() => {
     if (user) {
-      getWorkouts();
+      getEvents();
     }
   }, [dispatch, user]); // only re render when an action is performed on a workout
 
@@ -23,12 +23,12 @@ export default function Dashboard() {
     <div className="container mb-8">
       <div className="grid sm:grid-cols-[3fr_1fr] gap-7">
         <div className="flex max-w-3xl justify-between flex-col gap-5">
-          {workouts &&
-            workouts.map((workout) => (
-              <WorkoutDetails key={workout._id} workout={workout} />
+          {events &&
+            events.map((event) => (
+              <EventDetails key={event._id} event={event} />
             ))}
         </div>
-        <WorkoutForm />
+        <EventForm />
       </div>
     </div>
   );

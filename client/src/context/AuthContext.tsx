@@ -1,4 +1,4 @@
-import useRefreshToken from "@/hooks/useRefreshToken";
+import useRefreshToken from "@/hooks/useRefreshToken.tsx";
 import { UserType, client_log } from "@/lib/utils";
 import {
   PropsWithChildren,

@@ -1,4 +1,4 @@
-import { useWorkouts } from "@/context/WorkoutContext";
+import { useEvents } from "@/context/EventContext";
 import { useAuth } from "@/context/AuthContext";
 // importing axios instance without interceptors
 import api from "@/lib/axios";
@@ -6,7 +6,7 @@ import { client_log } from "@/lib/utils";
 
 export default function useLogout() {
   const { dispatch, setLoading } = useAuth();
-  const { dispatch: workoutDispatch } = useWorkouts();
+  const { dispatch: eventDispatch } = useEvents();
 
   async function logout() {
     try {
@@ -16,14 +16,14 @@ export default function useLogout() {
         // dispatch logout action
         dispatch({ type: "LOGOUT", payload: undefined });
         // reset the workouts to an empty array
-        workoutDispatch({ type: "SET_WORKOUTS", payload: [] });
+        eventDispatch({ type: "SET_EVENTS", payload: [] });
         setLoading(false);
         client_log("Logout completed successfully");
       } else {
         // dispatch logout action
         dispatch({ type: "LOGOUT", payload: undefined });
         // reset the workouts to an empty array
-        workoutDispatch({ type: "SET_WORKOUTS", payload: [] });
+        eventDispatch({ type: "SET_EVENTS", payload: [] });
         setLoading(false);
         client_log("Logout couldn't delete old cookie since it expired");
       }

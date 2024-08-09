@@ -4,7 +4,7 @@ import App from "./App.tsx";
 import "./index.css";
 import { disableReactDevTools } from "@fvilers/disable-react-devtools";
 // contexts
-import { WorkoutContextProvider } from "./context/WorkoutContext.tsx";
+import { EventContextProvider } from "./context/EventContext.tsx";
 import { AuthContextProvider } from "./context/AuthContext.tsx";
 import { ThemeProvider } from "./context/ThemeContext.tsx";
 
@@ -16,9 +16,9 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <ThemeProvider>
       <AuthContextProvider>
-        <WorkoutContextProvider>
+        <EventContextProvider>
           <App />
-        </WorkoutContextProvider>
+        </EventContextProvider>
       </AuthContextProvider>
     </ThemeProvider>
   </React.StrictMode>
