@@ -8,7 +8,7 @@ const os = require("os");
  * SVILUPPO o PRODUZIONE. Se il vostro PC ha uno di questi nomi, rimuovete la stringa dall'array e rilanciate lo
  * script. Se state testando il progetto su una macchina del DISI, accertatevi che sia una di queste o aggiungetela a mano.
  */
-const DISImachines = ["amneris", "gualtiero", "hansel", "morales", "zuniga"];
+const DISImachines = ["amneris", "giuseppe", "gualtiero", "hansel", "morales", "zuniga"];
 
 // Percorso della root directory del progetto
 const rootDirectory = process.cwd();
@@ -145,8 +145,8 @@ function startMenu() {
     // Avvia il controllo delle dipendenze e la modalità client appropriata
     console.log("Updating dependencies...");
     installDependencies(serverPackageJsonPath, "server", () => {
-      updateDependencies(serverPackageJsonPath, "server", () => {
-        installDependencies(clientPackageJsonPath, "client", () => {
+      installDependencies(clientPackageJsonPath, "client", () => {
+        updateDependencies(clientPackageJsonPath, "server", () => {
           updateDependencies(clientPackageJsonPath, "client", DevOrProd);
         });
       });
