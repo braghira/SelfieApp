@@ -51,13 +51,14 @@ export default function EventDetails({ event }: EventDetailsProps) {
         )}
         {event.isRecurring && event.recurrencePattern && (
           <div>
-            Recurring: Yes<br />
             Frequency: <span className="base-semibold">{event.recurrencePattern.frequency}</span><br />
             {event.recurrencePattern.endType === 'after' && (
               <span>Repeats: {event.recurrencePattern.occurrences} times</span>
             )}
             {event.recurrencePattern.endType === 'until' && event.recurrencePattern.endDate && (
-              <span>End Date: {new Date(event.recurrencePattern.endDate).toLocaleString()}</span>
+              <div>
+                 End Date: <span className="base-semibold">{format(new Date(event.recurrencePattern.endDate), "dd/MM/yyyy HH:mm")}</span>
+              </div>
             )}
             {event.recurrencePattern.endType === 'never' && (
               <span>Repeats indefinitely</span>

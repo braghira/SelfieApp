@@ -71,10 +71,6 @@ export function msToTime(time: number): string {
  * @returns equivalent time in milliseconds
  */
 export function timeToMs(time: string): number {
-  function pad(n: number, z: number = 1) {
-    return ("00" + n).slice(-z);
-  }
-
   const secs = parseInt(time.slice(-2));
   console.log("sec: ", time.slice(-2));
   time = time.slice(0, 5);
