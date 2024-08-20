@@ -122,7 +122,7 @@ export default function EventForm() {
             name="duration"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="shad-form_label">Duration</FormLabel>
+                <FormLabel className="shad-form_label">Duration (h)</FormLabel>
                 <FormControl>
                   <Input
                     type="number"
@@ -196,9 +196,9 @@ export default function EventForm() {
                   <FormItem>
                     <FormLabel className="shad-form_label">End Type</FormLabel>
                     <FormControl>
-                    <Select>
+                    <Select onValueChange={(value) => {form.setValue("recurrencePattern.endType", value as "never" | "after" | "until")}}>
                         <SelectTrigger className="w-[180px]">
-                            <SelectValue placeholder="Select end" />
+                            <SelectValue placeholder="Select end"/>
                         </SelectTrigger>
                             <SelectContent>
                             <SelectGroup>
