@@ -113,12 +113,12 @@ export default function RelaxAnimation({
       if (!started) {
         element.style.transition = "none";
         element.style.opacity = "1";
-        element.style.transform = `rotate(calc(22.5deg * ${index})) translate(0px, -100px)`;
+        element.style.transform = `rotate(calc(22.5deg * ${index})) translate(0px, var(--petal-transform))`;
       } else {
         const timeoutId = setTimeout(() => {
           element.style.transition =
             "transform 2s ease-out, opacity 2s ease-out";
-          element.style.transform = `rotate(calc(22.5deg * ${index})) translate(0px, -130px)`;
+          element.style.transform = `rotate(calc(22.5deg * ${index})) translate(0px, calc(var(--petal-transform) + (var(--petal-transform) * 0.3))`;
           element.style.opacity = "0";
         }, index * delay); // Delay in milliseconds
 
@@ -146,97 +146,97 @@ export default function RelaxAnimation({
         <div
           className="petal"
           style={{
-            transform: `rotate(calc(22.5deg * ${i++})) translate(0px, -100px)`,
+            transform: `rotate(calc(22.5deg * ${i++})) translate(0px, var(--petal-transform))`,
           }}
         ></div>
         <div
           className="petal"
           style={{
-            transform: `rotate(calc(22.5deg * ${i++})) translate(0px, -100px)`,
+            transform: `rotate(calc(22.5deg * ${i++})) translate(0px, var(--petal-transform))`,
           }}
         ></div>
         <div
           className="petal"
           style={{
-            transform: `rotate(calc(22.5deg * ${i++})) translate(0px, -100px)`,
+            transform: `rotate(calc(22.5deg * ${i++})) translate(0px, var(--petal-transform))`,
           }}
         ></div>
         <div
           className="petal"
           style={{
-            transform: `rotate(calc(22.5deg * ${i++})) translate(0px, -100px)`,
+            transform: `rotate(calc(22.5deg * ${i++})) translate(0px, var(--petal-transform))`,
           }}
         ></div>
         <div
           className="petal"
           style={{
-            transform: `rotate(calc(22.5deg * ${i++})) translate(0px, -100px)`,
+            transform: `rotate(calc(22.5deg * ${i++})) translate(0px, var(--petal-transform))`,
           }}
         ></div>
         <div
           className="petal"
           style={{
-            transform: `rotate(calc(22.5deg * ${i++})) translate(0px, -100px)`,
+            transform: `rotate(calc(22.5deg * ${i++})) translate(0px, var(--petal-transform))`,
           }}
         ></div>
         <div
           className="petal"
           style={{
-            transform: `rotate(calc(22.5deg * ${i++})) translate(0px, -100px)`,
+            transform: `rotate(calc(22.5deg * ${i++})) translate(0px, var(--petal-transform))`,
           }}
         ></div>
         <div
           className="petal"
           style={{
-            transform: `rotate(calc(22.5deg * ${i++})) translate(0px, -100px)`,
+            transform: `rotate(calc(22.5deg * ${i++})) translate(0px, var(--petal-transform))`,
           }}
         ></div>
         <div
           className="petal"
           style={{
-            transform: `rotate(calc(22.5deg * ${i++})) translate(0px, -100px)`,
+            transform: `rotate(calc(22.5deg * ${i++})) translate(0px, var(--petal-transform))`,
           }}
         ></div>
         <div
           className="petal"
           style={{
-            transform: `rotate(calc(22.5deg * ${i++})) translate(0px, -100px)`,
+            transform: `rotate(calc(22.5deg * ${i++})) translate(0px, var(--petal-transform))`,
           }}
         ></div>
         <div
           className="petal"
           style={{
-            transform: `rotate(calc(22.5deg * ${i++})) translate(0px, -100px)`,
+            transform: `rotate(calc(22.5deg * ${i++})) translate(0px, var(--petal-transform))`,
           }}
         ></div>
         <div
           className="petal"
           style={{
-            transform: `rotate(calc(22.5deg * ${i++})) translate(0px, -100px)`,
+            transform: `rotate(calc(22.5deg * ${i++})) translate(0px, var(--petal-transform))`,
           }}
         ></div>
         <div
           className="petal"
           style={{
-            transform: `rotate(calc(22.5deg * ${i++})) translate(0px, -100px)`,
+            transform: `rotate(calc(22.5deg * ${i++})) translate(0px, var(--petal-transform))`,
           }}
         ></div>
         <div
           className="petal"
           style={{
-            transform: `rotate(calc(22.5deg * ${i++})) translate(0px, -100px)`,
+            transform: `rotate(calc(22.5deg * ${i++})) translate(0px, var(--petal-transform))`,
           }}
         ></div>
         <div
           className="petal"
           style={{
-            transform: `rotate(calc(22.5deg * ${i++})) translate(0px, -100px)`,
+            transform: `rotate(calc(22.5deg * ${i++})) translate(0px, var(--petal-transform))`,
           }}
         ></div>
         <div
           className="petal"
           style={{
-            transform: `rotate(calc(22.5deg * ${i++})) translate(0px, -100px)`,
+            transform: `rotate(calc(22.5deg * ${i++})) translate(0px, var(--petal-transform))`,
           }}
         ></div>
       </div>

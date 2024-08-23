@@ -19,7 +19,7 @@ export default function PomodoroForm({
   return (
     <div className="flex-center sm:flex-col gap-5" id="pomodoro-form">
       <Tabs defaultValue="single timers">
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className="grid grid-cols-2">
           <TabsTrigger value="single timers">Timers</TabsTrigger>
           <TabsTrigger value="session time">Session</TabsTrigger>
         </TabsList>

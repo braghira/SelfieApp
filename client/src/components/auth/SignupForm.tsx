@@ -51,7 +51,7 @@ export default function SignupForm() {
   return (
     <Form {...form}>
       <div className="flex flex-col items-center w-full sm:max-w-md">
-        <Logo className="mb-5" />
+        <Logo className="mb-5" size="lg" />
 
         <h1 className="my-2 text-center">Sign Up</h1>
         <p className="mb-5">To use Selfie, Please enter your details</p>

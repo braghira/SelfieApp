@@ -29,7 +29,6 @@ const SessionSchema = z.object({
 type SessionType = z.infer<typeof SessionSchema>;
 
 export default function SessionForm({
-  timer,
   dispatch,
   InitialTimer,
   setInitialTimer,
@@ -158,7 +157,7 @@ export default function SessionForm({
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(onSubmit)}
-        className="w-[300px] flex flex-col gap-5 mt-4"
+        className="flex flex-col gap-5 mt-4"
       >
         <div className="flex gap-5">
           <FormField
@@ -212,7 +211,11 @@ export default function SessionForm({
         {form.formState.isSubmitSuccessful && (
           <div className="grid grid-cols-3 gap-2">
             {session.map((timer) => (
-              <Button type="button" onClick={() => setPomodoro(timer)}>
+              <Button
+                type="button"
+                autoFocus
+                onClick={() => setPomodoro(timer)}
+              >
                 {timer.study.initialValue / (1000 * 60)}/
                 {timer.relax.initialValue / (1000 * 60)} x {timer.cycles}
               </Button>

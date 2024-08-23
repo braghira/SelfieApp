@@ -10,11 +10,11 @@ export default function WelcomePage() {
   return (
     <div className="container flex flex-col justify-between gap-10 min-h-screen">
       <div className="flex justify-end w-full py-7">
-        <ModeToggle />
+        <ModeToggle isIcon={true} />
       </div>
       <div className="flex flex-col items-center justify-center h-full gap-10 my-10">
         <div className="flex flex-col items-center gap-10 xl:mb-10">
-          <Logo className="animate-slide-from-left" />
+          <Logo size="lg" className="animate-slide-from-left" />
           <h1 className="animate-slide-from-right">Welcome to Selfie!</h1>
         </div>
         <div className="text-center w-full max-w-sm">

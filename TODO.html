@@ -111,7 +111,7 @@
             const a_d_perc = document.createElement("td");
 
             a_d_own.textContent = "ANDREA";
-            a_d_task.textContent = `${andrea_tasks}`;
+            a_d_task.textContent = `${andrea_tasks}/${total_andrea_tasks}`;
             a_d_perc.textContent = `${Math.floor((andrea_tasks / total_andrea_tasks) * 100)}%`;
 
             const c_row = document.createElement("tr");
@@ -120,7 +120,7 @@
             const c_d_perc = document.createElement("td");
 
             c_d_own.textContent = "CHIARA";
-            c_d_task.textContent = `${chiara_tasks}`;
+            c_d_task.textContent = `${chiara_tasks}/${total_chiara_tasks}`;
             c_d_perc.textContent = `${Math.floor((chiara_tasks / total_chiara_tasks) * 100)}%`;
 
             const m_row = document.createElement("tr");
@@ -129,7 +129,7 @@
             const m_d_perc = document.createElement("td");
 
             m_d_own.textContent = "MATTIA";
-            m_d_task.textContent = `${mattia_tasks}`;
+            m_d_task.textContent = `${mattia_tasks}/${total_mattia_tasks}`;
             m_d_perc.textContent = `${Math.floor((mattia_tasks / total_mattia_tasks) * 100)}%`;
 
             // table with number of tasks completed and progress %
