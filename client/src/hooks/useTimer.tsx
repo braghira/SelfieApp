@@ -182,6 +182,13 @@ function timerReducer(
 }
 
 export function useTimer() {
+  let parsed_timer: PomodoroType | null = null;
+  const storage = localStorage.getItem("pomodoro_timer");
+  if (storage) {
+    parsed_timer = JSON.parse(storage);
+    console.log("storage: ", parsed_timer);
+  }
+
   // default is 30/5 with 5 cycles for a total of 175m
   const studyTimer = {
     initialValue: 1000 * 60 * 30,
@@ -206,7 +213,12 @@ export function useTimer() {
     totalTime,
   });
 
-  const [timer, dispatch] = useReducer(timerReducer, InitialTimer);
+  // we check for the stored timer first, if it's not found then use the default timer
+  let final_timer: PomodoroType;
+  if (parsed_timer) final_timer = parsed_timer;
+  else final_timer = InitialTimer;
+
+  const [timer, dispatch] = useReducer(timerReducer, final_timer);
 
   return { timer, dispatch, InitialTimer, setInitialTimer };
 }

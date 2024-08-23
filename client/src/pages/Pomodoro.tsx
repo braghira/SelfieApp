@@ -113,8 +113,8 @@ export default function Pomodoro() {
   }
 
   return (
-    <div className="container sm:flex-center space-x-5 space-y-5 mb-10">
-      <div className="flex justify-start flex-col gap-5">
+    <div className="view-container flex justify-center flex-col gap-5 md:flex-row sm:items-center mb-10">
+      <div className="flex justify-start flex-col gap-5 max-w-[530px]">
         <h2>
           Welcome to the <span className="text-primary">Pomodoro</span> View!
         </h2>

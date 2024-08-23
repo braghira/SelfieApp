@@ -31,9 +31,7 @@ const StudyRelaxSchema = z.object({
 type StudyPauseType = z.infer<typeof StudyRelaxSchema>;
 
 export default function StudyPauseForm({
-  timer,
   dispatch,
-  InitialTimer,
   setInitialTimer,
 }: StudyPauseFormProps) {
   const form = useForm<StudyPauseType>({
@@ -80,7 +78,7 @@ export default function StudyPauseForm({
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(onSubmit)}
-        className="w-[300px] flex flex-col gap-5 mt-4"
+        className="flex flex-col gap-5 mt-4"
       >
         <FormField
           control={form.control}

@@ -6,6 +6,7 @@ import {
 } from "react-router-dom";
 // pages
 import Home from "./pages/Home";
+import Events from "./pages/Events";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import WelcomePage from "./pages/WelcomePage";
@@ -27,7 +28,12 @@ const router = createBrowserRouter(
         <Route element={<DashboardLayout />}>
           <Route path="/home" element={<Home />} />
           <Route path="/pomodoro" element={<Pomodoro />} />
-          <Route path="/calendar" element={<Home />} />
+          <Route
+            path="/calendar"
+            element={
+              <Events /> // temporary
+            }
+          />
           <Route path="/notes" element={<Home />} />
         </Route>
       </Route>
