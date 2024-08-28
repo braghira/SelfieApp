@@ -282,3 +282,70 @@
     transition: all 500ms ease-in-out;
   }
 }
+
+@layer utilities { /*calendario*/
+
+  .completedAct{
+    color: rgb(48, 165, 14);
+    background-color: rgb(215, 255, 225);
+  }
+  
+  .inProgressAct{
+    color:rgb(34, 68, 234);
+    background-color: rgb(208, 252, 255);
+  }
+  
+  .lateAct{
+    color: rgb(227, 49, 20);
+    background-color: rgb(254, 236, 236);
+  }
+  
+
+}
+
+.rbc-header {
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #17405d;
+}
+
+.rbc-time-header-cell .rbc-today {
+  background-color: #047eaa !important;
+}
+
+.rbc-time-slot {
+  color: #74a4c3;
+  z-index: 1;
+}
+
+.rbc-time-slot:not(.rbc-today .rbc-time-slot) {
+  background-color: #eff4f7;
+}
+
+/*Event Styles*/
+.rbc-event,
+.rbc-background-event {
+  z-index: 2;
+  padding: 0px !important;
+  border: none !important;
+}
+
+.rbc-event-label {
+  display: none !important;
+}
+
+.rbc-events-container {
+  width: 100% !important;
+}
+
+.rbc-activity-late{
+  background-color: #ff4d4d !important; 
+  color: white;
+}
+
+.rbc-activity {
+  background-color: #4caf50 !important; 
+  color: white;
+}

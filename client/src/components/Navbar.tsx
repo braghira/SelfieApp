@@ -89,7 +89,6 @@ export default function Navbar() {
             <div className="h-full flex flex-col items-start justify-between">
               <div className="flex flex-col items-start gap-2">
                 <ModeToggle isIcon={false} />
-
                 <Button variant="ghost">Set Birthday</Button>
               </div>
 
