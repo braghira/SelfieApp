@@ -154,6 +154,7 @@ export default function Pomodoro() {
           />
         )}
 
+        {/* Buttons */}
         <div className="flex-center gap-5">
           <TooltipProvider>
             {(!timer.study.started || !timer.relax.started) &&
@@ -172,22 +173,24 @@ export default function Pomodoro() {
                 </Tooltip>
               )}
 
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  onClick={() =>
-                    timer.totalTime == 0 ? reset() : restartStudy()
-                  }
-                >
-                  <RotateCcwIcon />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                {timer.totalTime == 0 ? "Restart Session" : "Restart Cycle"}
-              </TooltipContent>
-            </Tooltip>
+            {timer.study.started && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    onClick={() =>
+                      timer.totalTime == 0 ? reset() : restartStudy()
+                    }
+                  >
+                    <RotateCcwIcon />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  {timer.totalTime == 0 ? "Restart Session" : "Restart Cycle"}
+                </TooltipContent>
+              </Tooltip>
+            )}
 
-            {timer.totalTime > 0 && (
+            {timer.study.started && timer.totalTime > 0 && (
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
@@ -207,7 +210,7 @@ export default function Pomodoro() {
             )}
 
             {/* Show only when we are not in the last cycle study timer */}
-            {timer.cycles > 0 && (
+            {timer.cycles > 0 && timer.study.started && (
               <Tooltip>
                 <TooltipContent>Skip This Cycle</TooltipContent>
                 <TooltipTrigger asChild>

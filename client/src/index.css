@@ -19,6 +19,8 @@
     --pomodoro-container-size: calc(var(--pomodoro-size) + var(--orbit-size));
     --petal-size: calc(var(--pomodoro-size) / 4);
     --petal-transform: calc(0px - var(--pomodoro-size) / 3.75);
+    /* Utilities */
+    --navbar-h: 60px;
     /* Theme Variables */
     --background: 0 0% 100%;
     --foreground: 240 10% 3.9%;
@@ -84,7 +86,7 @@
     @apply bg-background text-foreground font-sans overflow-x-hidden;
   }
   nav {
-    @apply w-full mb-5;
+    @apply w-screen sm:h-[--navbar-h];
   }
   p {
     @apply small-regular sm:base-regular;
@@ -196,7 +198,7 @@
   }
 
   .view-container {
-    @apply container mb-16 sm:mb-0;
+    @apply container mt-5 mb-16 sm:mb-5;
   }
 
   .logo-wrapper {
