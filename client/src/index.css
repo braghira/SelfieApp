@@ -13,9 +13,12 @@
 
   :root {
     /* Variables for pomodoro animation */
-    --pomodoro-size: 350px;
-    --orbit-size: 30px;
+    --logo-sm: 69px;
+    --pomodoro-size: 300px;
+    --orbit-size: calc(var(--pomodoro-size) / 12);
     --pomodoro-container-size: calc(var(--pomodoro-size) + var(--orbit-size));
+    --petal-size: calc(var(--pomodoro-size) / 4);
+    --petal-transform: calc(0px - var(--pomodoro-size) / 3.75);
     /* Theme Variables */
     --background: 0 0% 100%;
     --foreground: 240 10% 3.9%;
@@ -67,6 +70,12 @@
   }
 }
 
+@screen md {
+  :root {
+    --pomodoro-size: 390px;
+  }
+}
+
 @layer base {
   * {
     @apply border-border;
@@ -75,7 +84,7 @@
     @apply bg-background text-foreground font-sans overflow-x-hidden;
   }
   nav {
-    @apply w-full mb-3 p-5;
+    @apply w-full mb-5;
   }
   p {
     @apply small-regular sm:base-regular;
@@ -127,7 +136,7 @@
   }
 
   .timer-medium {
-    @apply text-[30px] font-medium leading-[140%] tracking-wide;
+    @apply text-[calc(var(--pomodoro-size)/13)] font-medium leading-[140%] tracking-wide;
   }
 
   .small-semibold {
@@ -186,8 +195,8 @@
     @apply flex flex-col flex-1 items-center gap-10 overflow-scroll py-10 px-5 md:px-8 lg:p-14 custom-scrollbar;
   }
 
-  .home-container {
-    @apply container;
+  .view-container {
+    @apply container mb-16 sm:mb-0;
   }
 
   .logo-wrapper {
@@ -261,7 +270,7 @@
   }
 
   .petal {
-    @apply absolute rounded-t-[50%] rounded-b-[30%] h-[80px] w-[30px] bg-[hsl(var(--sunflower-yellow))] origin-center;
+    @apply absolute rounded-t-[50%] rounded-b-[30%] h-[var(--petal-size)] w-[calc(var(--petal-size)/2.7)] bg-[hsl(var(--sunflower-yellow))] origin-center;
     transition: transform 2s ease-out,
       opacity 2s cubic-bezier(0, 0.085, 0.68, 0.53);
   }

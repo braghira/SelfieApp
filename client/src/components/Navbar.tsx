@@ -11,62 +11,180 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { Menu } from "lucide-react";
+import { CalendarDays, HomeIcon, NotebookIcon, TimerIcon } from "lucide-react";
 
 export default function Navbar() {
   const { logout } = useLogout();
 
   return (
-    <nav className="flex justify-between items-center">
-      <div className="sm:hidden">
+    <nav>
+      <div className="hidden sm:flex justify-between items-center py-3 px-5 sm:bg-card sm:border-b">
+        <NavLink to="/home">
+          <Logo size="sm" />
+        </NavLink>
+
+        <div className="flex sm:justify-between sm:items-center sm:gap-5">
+          <NavLink
+            to="/home"
+            className={({ isActive }) =>
+              [
+                isActive
+                  ? buttonVariants({ variant: "default" })
+                  : buttonVariants({ variant: "ghost" }),
+              ].join(" ")
+            }
+          >
+            Home
+          </NavLink>
+
+          <NavLink
+            to="/pomodoro"
+            className={({ isActive }) =>
+              [
+                isActive
+                  ? buttonVariants({ variant: "default" })
+                  : buttonVariants({ variant: "ghost" }),
+              ].join(" ")
+            }
+          >
+            Pomodoro
+          </NavLink>
+
+          <NavLink
+            to="/calendar"
+            className={({ isActive }) =>
+              [
+                isActive
+                  ? buttonVariants({ variant: "default" })
+                  : buttonVariants({ variant: "ghost" }),
+              ].join(" ")
+            }
+          >
+            Calendar
+          </NavLink>
+
+          <NavLink
+            to="/notes"
+            className={({ isActive }) =>
+              [
+                isActive
+                  ? buttonVariants({ variant: "default" })
+                  : buttonVariants({ variant: "ghost" }),
+              ].join(" ")
+            }
+          >
+            Notes
+          </NavLink>
+        </div>
+
         <Sheet>
           <SheetTrigger>
-            <Menu />
+            <ProfilePhoto />
           </SheetTrigger>
-          <SheetContent className="w-[250px]" side={"left"}>
-            <SheetHeader className="flex flex-col items-start">
-              <SheetTitle>Views Menu</SheetTitle>
+          <SheetContent className="w-60 sm:w-[20rem]" side={"right"}>
+            <SheetHeader className="mb-5">
+              <SheetTitle>Account settings</SheetTitle>
             </SheetHeader>
 
-            <NavLink to="/pomodoro" className={buttonVariants({ variant: "link" })}>
-              pomodoro
-            </NavLink>
+            <div className="h-full flex flex-col items-start justify-between">
+              <div className="flex flex-col items-start gap-2">
+                <ModeToggle isIcon={false} />
+                <Button variant="ghost">Set Birthday</Button>
+              </div>
 
-            <NavLink to="/calendar" className={buttonVariants({ variant: "link" })}>
-              calendario
-            </NavLink>
-
-            <ProfilePhoto />
-
-            <Button variant={"ghost"} onClick={() => logout()}>
-              Logout
-            </Button>
+              <Button
+                className="mb-12"
+                variant="destructive"
+                onClick={() => logout()}
+              >
+                Logout
+              </Button>
+            </div>
           </SheetContent>
         </Sheet>
       </div>
-      <NavLink to="/home">
-        <Logo />
-      </NavLink>
-      <div className="hidden sm:flex sm:justify-between sm:items-center">
 
-        <NavLink to="/pomodoro" className={buttonVariants({ variant: "ghost" })}>
-          pomodoro
+      {/* Bottom mobile navbar */}
+      <div className="hidden max-[640px]:flex h-12 fixed left-0 bottom-0 w-screen p-1 bg-background justify-around items-end gap-5 z-50 border-t border-border">
+        <NavLink
+          to="/home"
+          className={({ isActive }) =>
+            [
+              isActive
+                ? buttonVariants({ variant: "default", size: "icon" })
+                : buttonVariants({ variant: "ghost", size: "icon" }),
+            ].join(" ")
+          }
+        >
+          <HomeIcon />
         </NavLink>
 
-        <NavLink to="/calendar" className={buttonVariants({ variant: "ghost" })}>
-              calendario
+        <NavLink
+          to="/pomodoro"
+          className={({ isActive }) =>
+            [
+              isActive
+                ? buttonVariants({ variant: "default", size: "icon" })
+                : buttonVariants({ variant: "ghost", size: "icon" }),
+            ].join(" ")
+          }
+        >
+          <TimerIcon />
         </NavLink>
 
-        <NavLink to="/home">
-          <ProfilePhoto />
+        <NavLink
+          to="/calendar"
+          className={({ isActive }) =>
+            [
+              isActive
+                ? buttonVariants({ variant: "default", size: "icon" })
+                : buttonVariants({ variant: "ghost", size: "icon" }),
+            ].join(" ")
+          }
+        >
+          <CalendarDays />
         </NavLink>
-        
 
-        <Button variant={"ghost"} onClick={() => logout()}>
-          Logout
-        </Button>
+        <NavLink
+          to="/notes"
+          className={({ isActive }) =>
+            [
+              isActive
+                ? buttonVariants({ variant: "default", size: "icon" })
+                : buttonVariants({ variant: "ghost", size: "icon" }),
+            ].join(" ")
+          }
+        >
+          <NotebookIcon />
+        </NavLink>
+
+        <Sheet>
+          <SheetTrigger>
+            <ProfilePhoto />
+          </SheetTrigger>
+          <SheetContent className="w-60 sm:w-[20rem]" side={"right"}>
+            <SheetHeader className="mb-5">
+              <SheetTitle>Account settings</SheetTitle>
+            </SheetHeader>
+
+            <div className="h-full flex flex-col items-start justify-between">
+              <div className="flex flex-col items-start gap-2">
+                <ModeToggle isIcon={false} />
+
+                <Button variant="ghost">Set Birthday</Button>
+              </div>
+
+              <Button
+                className="mb-12"
+                variant="destructive"
+                onClick={() => logout()}
+              >
+                Logout
+              </Button>
+            </div>
+          </SheetContent>
+        </Sheet>
       </div>
-      <ModeToggle />
     </nav>
   );
 }

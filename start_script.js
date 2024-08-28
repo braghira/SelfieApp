@@ -143,13 +143,9 @@ function startMenu() {
 
   if (nodeVersion === disiVersion) {
     // Avvia il controllo delle dipendenze e la modalità client appropriata
-    console.log("Updating dependencies...");
+    console.log("Installing dependencies...");
     installDependencies(serverPackageJsonPath, "server", () => {
-      installDependencies(clientPackageJsonPath, "client", () => {
-        updateDependencies(clientPackageJsonPath, "server", () => {
-          updateDependencies(clientPackageJsonPath, "client", DevOrProd);
-        });
-      });
+      installDependencies(clientPackageJsonPath, "client", DevOrProd)
     });
   } else {
     console.log(`You are using a different Node version.`);
