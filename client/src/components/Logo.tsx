@@ -7,7 +7,7 @@ interface LogoProps {
 }
 
 export default function Logo({ className, size }: LogoProps) {
-  const sizes = [69, 111, 154];
+  const sizes = [50, 100, 150];
 
   const i: number = findSize();
 

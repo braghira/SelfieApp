@@ -1,35 +1,38 @@
-import { useEffect } from "react";
-// components
-import EventDetails from "@/components/EventDetails";
-import EventForm from "@/components/EventForms";
-// context
-import { useEvents } from "@/context/EventContext";
-import { useAuth } from "@/context/AuthContext";
-// hooks
-import useEventsApi from "@/hooks/useEventsApi.tsx";
+import {
+  ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup,
+} from "@/components/ui/resizable";
 
-export default function Dashboard() {
-  const { events, dispatch } = useEvents();
-  const { user } = useAuth();
-  const { getEvents } = useEventsApi();
-
-  useEffect(() => {
-    if (user) {
-      getEvents();
-    }
-  }, [dispatch, user]); 
-
+export default function Home() {
   return (
-    <div className="container mb-8">
-      <div className="grid sm:grid-cols-[3fr_1fr] gap-7">
-        <div className="flex max-w-3xl justify-between flex-col gap-5">
-          {events &&
-            events.map((event) => (
-              <EventDetails key={event._id} event={event} />
-            ))}
-        </div>
-        <EventForm />
-      </div>
+    <div className="view-container">
+      <ResizablePanelGroup
+        direction="horizontal"
+        className="w-full rounded-lg border"
+      >
+        <ResizablePanel defaultSize={50}>
+          <div className="flex h-[200px] items-center justify-center p-6">
+            <span className="font-semibold">One</span>
+          </div>
+        </ResizablePanel>
+        <ResizableHandle />
+        <ResizablePanel defaultSize={50}>
+          <ResizablePanelGroup direction="vertical">
+            <ResizablePanel defaultSize={25}>
+              <div className="flex h-full items-center justify-center p-6">
+                <span className="font-semibold">Two</span>
+              </div>
+            </ResizablePanel>
+            <ResizableHandle />
+            <ResizablePanel defaultSize={75}>
+              <div className="flex h-full items-center justify-center p-6">
+                <span className="font-semibold">Three</span>
+              </div>
+            </ResizablePanel>
+          </ResizablePanelGroup>
+        </ResizablePanel>
+      </ResizablePanelGroup>
     </div>
   );
 }
