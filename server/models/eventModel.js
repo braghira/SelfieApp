@@ -31,8 +31,7 @@ const eventSchema = new Schema({
         },
         endType: {
             type: String,
-            enum: ['never', 'after', 'until'],
-            default: 'never'
+            enum: ['after', 'until'],
         },
         occurrences: {
             type: Number,

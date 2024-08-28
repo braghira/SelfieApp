@@ -7,7 +7,6 @@ import ProfilePhoto from "./ProfilePhoto";
 import {
   Sheet,
   SheetContent,
-  SheetDescription,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
@@ -29,11 +28,12 @@ export default function Navbar() {
               <SheetTitle>Views Menu</SheetTitle>
             </SheetHeader>
 
-            <NavLink
-              to="/pomodoro"
-              className={buttonVariants({ variant: "link" })}
-            >
+            <NavLink to="/pomodoro" className={buttonVariants({ variant: "link" })}>
               pomodoro
+            </NavLink>
+
+            <NavLink to="/calendar" className={buttonVariants({ variant: "link" })}>
+              calendario
             </NavLink>
 
             <ProfilePhoto />
@@ -48,14 +48,19 @@ export default function Navbar() {
         <Logo />
       </NavLink>
       <div className="hidden sm:flex sm:justify-between sm:items-center">
-        <NavLink
-          to="/pomodoro"
-          className={buttonVariants({ variant: "ghost" })}
-        >
+
+        <NavLink to="/pomodoro" className={buttonVariants({ variant: "ghost" })}>
           pomodoro
         </NavLink>
 
-        <ProfilePhoto />
+        <NavLink to="/calendar" className={buttonVariants({ variant: "ghost" })}>
+              calendario
+        </NavLink>
+
+        <NavLink to="/home">
+          <ProfilePhoto />
+        </NavLink>
+        
 
         <Button variant={"ghost"} onClick={() => logout()}>
           Logout

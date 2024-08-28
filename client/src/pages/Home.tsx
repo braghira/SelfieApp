@@ -17,7 +17,7 @@ export default function Dashboard() {
     if (user) {
       getEvents();
     }
-  }, [dispatch, user]); // only re render when an action is performed on a workout
+  }, [dispatch, user]); 
 
   return (
     <div className="container mb-8">
@@ -30,6 +30,7 @@ export default function Dashboard() {
         </div>
         <EventForm />
       </div>
+        
     </div>
   );
 }

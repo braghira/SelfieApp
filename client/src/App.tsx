@@ -12,6 +12,7 @@ import WelcomePage from "./pages/WelcomePage";
 import ProtectedRoutes from "./components/ProtectedRoutes";
 import ErrorPage from "./pages/ErrorPage";
 import LoadingPage from "./pages/LoadingPage";
+import Calendar from "./pages/Calendar";
 // layouts
 import DashboardLayout from "./layouts/DashboardLayout";
 import AuthLayout from "./layouts/AuthLayout";
@@ -27,7 +28,7 @@ const router = createBrowserRouter(
         <Route element={<DashboardLayout />}>
           <Route path="/home" element={<Home />} />
           <Route path="/pomodoro" element={<Pomodoro />} />
-          <Route path="/calendar" element={<Home />} />
+          <Route path="/calendar" element={<Calendar />} />
           <Route path="/notes" element={<Home />} />
         </Route>
       </Route>

@@ -4,7 +4,7 @@ import * as z from "zod";
 
 const recurrencePatternSchema = z.object({
   frequency: z.enum(['daily', 'weekly', 'monthly']).optional(),
-  endType: z.enum(['never', 'after', 'until']).optional(),
+  endType: z.enum(['after', 'until']).optional(),
   occurrences: z.number().optional(),
   endDate: z.string().optional(), 
 });
@@ -20,6 +20,15 @@ export const EventSchema = z.object({
   createdAt: z.string().optional(),
 });
 export type EventType = z.infer<typeof EventSchema>;
+
+
+export const ActivitySchema = z.object({
+  title: z.string().min(2, "Title must be at least 2 characters"),
+  endDate: z.string().nullable().optional(),
+  completed: z.boolean(),
+  _id: z.string().optional(),
+});
+export type ActivityType = z.infer<typeof ActivitySchema>;
 
 // TODO: aggiungere campo per la foto profilo
 export const UserSchema = z.object({
