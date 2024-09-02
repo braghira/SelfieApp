@@ -18,6 +18,9 @@ import Calendar from "./pages/Calendar";
 import DashboardLayout from "./layouts/DashboardLayout";
 import AuthLayout from "./layouts/AuthLayout";
 import Pomodoro from "./pages/Pomodoro";
+import Notes from "./pages/Notes";
+import Editor from "./pages/Editor";
+
 
 // Per come è impostata la nostra app tutte le route devono stare dentro ad una route che fa da
 // padre a tutte le altre senza aggiungere layout o path
@@ -29,8 +32,15 @@ const router = createBrowserRouter(
         <Route element={<DashboardLayout />}>
           <Route path="/home" element={<Home />} />
           <Route path="/pomodoro" element={<Pomodoro />} />
+<<<<<<< Updated upstream
           <Route path="/calendar" element={<Calendar />} />
           <Route path="/notes" element={<Home />} />
+=======
+          <Route path="/calendar" element={<Home />} />
+          <Route path="/notes" element={<Notes />} />
+          <Route path="/editor/:id?" element={<Editor />} />
+
+>>>>>>> Stashed changes
         </Route>
       </Route>
       <Route element={<AuthLayout />}>
