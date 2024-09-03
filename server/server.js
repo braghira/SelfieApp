@@ -12,6 +12,7 @@ const eventRoutes = require(path.resolve(__dirname, "routes", "events"));
 const authRoutes = require(path.resolve(__dirname, "routes", "users"));
 const mediaRoutes = require(path.resolve(__dirname, "routes", "media"));
 const corsOptions = require("./utils/corsOptions");
+const noteRoutes = require(path.resolve(__dirname, "routes", "notes"));
 
 // utilities
 const { port, mongouri, node_env } = require(path.resolve(
@@ -43,6 +44,9 @@ app.use("/api/activities", activityRoutes);
 app.use("/api/events", eventRoutes);
 app.use("/api/media", mediaRoutes);
 app.use("/auth", authRoutes);
+app.use('/api/notes', noteRoutes);
+
+
 
 if (node_env === "production") {
   // route fallback: reindirizza tutte le altre richieste all'app React
