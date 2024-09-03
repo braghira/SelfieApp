@@ -1,8 +1,9 @@
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Calendar, momentLocalizer } from "react-big-calendar";
 import moment from 'moment';
 // components
 import EventForm from "@/components/EventForms";
+import EventDetails from "@/components/EventDetails";
 import ActivityForm from "@/components/ActivityForms";
 import ActivityList from "@/components/ActivityList";
 // context
@@ -21,12 +22,47 @@ export default function CalendarPage() {
     const { getEvents } = useEventsApi();
     const { getActivities } = useActivitiesApi();
 
+    const [selectedEvent, setSelectedEvent] = useState(null); 
+    const [open, setOpen] = useState(false); 
+
     useEffect(() => {
         if (user) {
             getActivities();
             getEvents();
         }
     }, [dispatchA, dispatchE, user]);
+
+    const colors = {
+        late: '#d15446',
+        onTime: '#4087b3',
+        event: '#3fb33f'
+    };
+
+    const eventPropGetter = (event) => {
+        const now = moment();
+        const start = moment(event.start);
+
+        let backgroundColor;
+        if (event.data?.event) {
+            backgroundColor = colors.event;
+        } else if (start.isBefore(now)) {
+            backgroundColor = colors.late;
+        } else {
+            backgroundColor = colors.onTime;
+        }
+
+        return {
+            style: {
+                backgroundColor,
+            },
+            className: 'custom-event'
+        };
+    };
+
+    const handleSelected = (event) => {
+        setSelectedEvent(event.data.event); 
+        setOpen(true);
+    }
 
     const elementList = [
         ...events?.flatMap(event => {
@@ -50,7 +86,6 @@ export default function CalendarPage() {
                         title: event.title,
                         data: { event },
                         formattedEndDate: endDateAmericanFormat,
-                        className: 'rbc-event'
                     });
                 }
             } else if (event.isRecurring && event.recurrencePattern?.endType === 'until') {
@@ -64,7 +99,6 @@ export default function CalendarPage() {
                             title: event.title,
                             data: { event },
                             formattedEndDate: endDateAmericanFormat,
-                            className: 'rbc-event'
                         });
                         if (event.recurrencePattern?.frequency === 'daily') {
                             newDate = newDate.add(1, 'days');
@@ -81,7 +115,6 @@ export default function CalendarPage() {
                             title: event.title,
                             data: { event },
                             formattedEndDate: endDateAmericanFormat,
-                            className: 'rbc-event'
                         });
                     }
                 }
@@ -92,7 +125,6 @@ export default function CalendarPage() {
                     title: event.title,
                     data: { event },
                     formattedEndDate: endDateAmericanFormat,
-                    className: 'rbc-event'
                 });
             }
             return dates;
@@ -108,7 +140,11 @@ export default function CalendarPage() {
     ];
 
     return (
-        <div className="container mb-2">
+        <div className="container mb-2 mt-6">
+            <div id="event-details-container">
+                {selectedEvent && <EventDetails event={selectedEvent} open={open} setOpen={setOpen} />}
+            </div>
+
             <div className="grid sm:grid-cols-[3fr_1fr] gap-8">
                 <Calendar
                     localizer={localizer}
@@ -116,6 +152,8 @@ export default function CalendarPage() {
                     events={elementList}
                     min={moment("2024-10-10T07:00:00").toDate()}
                     max={moment("2024-10-10T22:00:00").toDate()}
+                    eventPropGetter={eventPropGetter} 
+                    onSelectEvent={handleSelected} 
                 />
                 {activities && <ActivityList activities={activities} />}
             </div>
