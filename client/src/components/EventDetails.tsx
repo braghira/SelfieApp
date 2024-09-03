@@ -1,12 +1,11 @@
-// components
 import { Trash2 } from "lucide-react";
 import { Button } from "./ui/button";
 import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "./ui/card";
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 // types
 import { EventType } from "@/lib/utils";
 // date fns
@@ -16,10 +15,11 @@ import useEventsApi from "@/hooks/useEventsApi.tsx";
 
 interface EventDetailsProps {
   event: EventType;
+  open: boolean;
+  setOpen: (open: boolean) => void;
 }
 
-
-export default function EventDetails({ event }: EventDetailsProps) {
+export default function EventDetails({ event, open, setOpen }: EventDetailsProps) {
   const { user } = useAuth();
   const { deleteEvent } = useEventsApi();
 
@@ -30,39 +30,43 @@ export default function EventDetails({ event }: EventDetailsProps) {
   }
 
   return (
-    <Card className="event-details">
-      <CardHeader className="flex-row justify-between items-center">
-        <CardTitle className="text-primary">{event.title}</CardTitle>
-        <Button variant="ghost" size={"icon"} onClick={handleDelete}>
-          <Trash2 className="h-6 w-6" />
-        </Button>
-      </CardHeader>
-      <CardContent className="flex-col gap-3 justify-center items-center">
-        <div>
-          Date: <span className="base-semibold">{format(new Date(event.date), "dd/MM/yyyy HH:mm")}</span>
-        </div>
-        <div>
-          Duration: <span className="base-semibold">{event.duration}</span>
-        </div>
-        {event.location && (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader className="flex-row">
+          <DialogTitle>{event.title}</DialogTitle>
+        </DialogHeader>
+        <div className="flex justify-between items-start">
           <div>
-            Location: <span className="base-semibold">{event.location}</span>
-          </div>
-        )}
-        {event.isRecurring && event.recurrencePattern && (
-          <div>
-            Frequency: <span className="base-semibold">{event.recurrencePattern.frequency}</span><br />
-            {event.recurrencePattern.endType === 'after' && event.recurrencePattern.occurrences !== undefined && (
-              <span>Repeats: {event.recurrencePattern.occurrences} times</span>
-            )}
-            {event.recurrencePattern.endType === 'until' && event.recurrencePattern.endDate && (
+            <div>
+              Date: <span className="base-semibold">{format(new Date(event.date), "dd/MM/yyyy HH:mm")}</span>
+            </div>
+            <div>
+              Duration: <span className="base-semibold">{event.duration}</span>
+            </div>
+            {event.location && (
               <div>
-                 End Date: <span className="base-semibold">{format(new Date(event.recurrencePattern.endDate), "dd/MM/yyyy HH:mm")}</span>
+                Location: <span className="base-semibold">{event.location}</span>
+              </div>
+            )}
+            {event.isRecurring && event.recurrencePattern && (
+              <div>
+                Frequency: <span className="base-semibold">{event.recurrencePattern.frequency}</span><br />
+                {event.recurrencePattern.endType === 'after' && event.recurrencePattern.occurrences !== undefined && (
+                  <span>Repeats: {event.recurrencePattern.occurrences} times</span>
+                )}
+                {event.recurrencePattern.endType === 'until' && event.recurrencePattern.endDate && (
+                  <div>
+                    End Date: <span className="base-semibold">{format(new Date(event.recurrencePattern.endDate), "dd/MM/yyyy HH:mm")}</span>
+                  </div>
+                )}
               </div>
             )}
           </div>
-        )}
-      </CardContent>
-    </Card>
+          <Button variant="ghost" size={"icon"} onClick={handleDelete}>
+            <Trash2 className="h-6 w-6" />
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }

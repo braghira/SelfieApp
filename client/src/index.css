@@ -286,8 +286,8 @@
 @layer utilities { /*calendario*/
 
   .completedAct{
-    color: rgb(48, 165, 14);
-    background-color: rgb(215, 255, 225);
+    color: rgb(228, 129, 47);
+    background-color: rgb(255, 234, 215);
   }
   
   .inProgressAct{
@@ -324,10 +324,10 @@
   background-color: #eff4f7;
 }
 
-/*Event Styles*/
 .rbc-event,
 .rbc-background-event {
   z-index: 2;
+  background-color: #5bc35b;
   padding: 0px !important;
   border: none !important;
 }
@@ -337,15 +337,44 @@
 }
 
 .rbc-events-container {
+  
   width: 100% !important;
 }
 
-.rbc-activity-late{
-  background-color: #ff4d4d !important; 
-  color: white;
+.rbc-event.rbc-selected, .rbc-day-slot .rbc-selected.rbc-background-event {
+  background-color: #3b8a3e;
 }
 
-.rbc-activity {
-  background-color: #4caf50 !important; 
-  color: white;
+.rbc-show-more {
+  color: #747474;
+}
+
+.rbc-toolbar button {
+  color: #373a3c;
+  background: #cce5ff; 
+  border: 1px solid #b3d7ff;
+}
+
+.rbc-toolbar button:active, .rbc-toolbar button.rbc-active {
+  background-color: #66b2ff; 
+  border-color: #3399ff;
+}
+.rbc-toolbar button:active:hover, .rbc-toolbar button:active:focus, .rbc-toolbar button.rbc-active:hover, .rbc-toolbar button.rbc-active:focus {
+  color: #373a3c;
+  background-color: #66b2ff;
+  border-color: #3399ff;
+}
+.rbc-toolbar button:focus {
+  color: #373a3c;
+  background-color: #80bdfa;
+  border-color: #3399ff;
+}
+.rbc-toolbar button:hover {
+  color: #373a3c;
+  background-color: #80bdfa;
+  border-color: #3399ff;
+}
+.rbc-toolbar .rbc-toolbar-label {
+  font-weight: bold;
+  text-transform: uppercase;
 }
