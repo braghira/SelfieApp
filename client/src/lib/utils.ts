@@ -104,3 +104,16 @@ export function timeToMs(time: string): number {
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
+
+export const NoteSchema = z.object({
+  title: z.string().trim().min(1, { message: "Title must be at least 1 character long." }),
+  content: z.string().trim().min(1, { message: "Content cannot be empty." }),
+  categories: z.array(z.string().trim()).optional().default([]),
+  author: z.string().trim().min(1, { message: "Author is required." }),
+  accessType: z.enum(['public', 'restricted', 'private']).default('private'),
+  specificAccess: z.array(z.string().trim()).optional().default([]),
+  createdAt: z.date().optional().default(() => new Date()),
+  updatedAt: z.date().optional().default(() => new Date()),
+  _id: z.string().optional(),
+});
+export type NoteType = z.infer<typeof NoteSchema>;
