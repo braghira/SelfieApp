@@ -6,7 +6,6 @@ import {
 } from "react-router-dom";
 // pages
 import Home from "./pages/Home";
-import Events from "./pages/Events";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import WelcomePage from "./pages/WelcomePage";
@@ -32,15 +31,10 @@ const router = createBrowserRouter(
         <Route element={<DashboardLayout />}>
           <Route path="/home" element={<Home />} />
           <Route path="/pomodoro" element={<Pomodoro />} />
-<<<<<<< Updated upstream
           <Route path="/calendar" element={<Calendar />} />
-          <Route path="/notes" element={<Home />} />
-=======
-          <Route path="/calendar" element={<Home />} />
           <Route path="/notes" element={<Notes />} />
           <Route path="/editor/:id?" element={<Editor />} />
 
->>>>>>> Stashed changes
         </Route>
       </Route>
       <Route element={<AuthLayout />}>
