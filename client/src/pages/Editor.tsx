@@ -3,7 +3,8 @@ import { Button } from "@/components/ui/button";
 import { useNoteContext } from '@/context/NoteContext';
 import useNotes from '@/hooks/useNote';
 import { useParams } from 'react-router-dom';
-import { useAuth } from '@/context/AuthContext'; // Sostituisci con il tuo contesto
+import { useAuth } from '@/context/AuthContext';
+import { marked } from 'marked'; 
 
 interface NoteData {
   title: string;
@@ -21,17 +22,16 @@ function NoteEditor() {
   const { dispatch } = useNoteContext();
   const { addNote, updateNote, fetchNotes } = useNotes(); 
   const { id } = useParams(); 
-  const { user } = useAuth(); // Accedi all'utente loggato
+  const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [showPopup, setShowPopup] = useState(false);
   const [initialFetch, setInitialFetch] = useState(false);
-
   const [noteData, setNoteData] = useState<NoteData>({
     title: '',
     content: '',
     categories: [],
-    author: user?.name || '', // Popola con il nome dell'utente loggato
+    author: user?.name || '',
     accessType: 'private',
     specificAccess: [],
     createdAt: new Date(),
@@ -47,7 +47,7 @@ function NoteEditor() {
         const note = fetchedNotes.find((note) => note._id === id);
         if (note) {
           setNoteData(note);
-          setInitialFetch(true);  // Segna che il fetch iniziale è stato eseguito
+          setInitialFetch(true);
         } else {
           setError('Nota non trovata.');
         }
@@ -105,6 +105,14 @@ function NoteEditor() {
     setShowPopup(false);
   };
 
+  const containsMarkdown = (text: string) => {
+    return /[#*_-]/.test(text);
+  };
+
+  const renderMarkdown = (markdown: string) => {
+    return { __html: marked(markdown) };
+  };
+
   if (loading) return <div>Loading...</div>;
   if (error) return <div>{error}</div>;
 
@@ -133,7 +141,18 @@ function NoteEditor() {
             rows={10}
             required
           ></textarea>
+          <div className="text-sm text-gray-500 mt-2">You can use Markdown syntax in the content.</div>
         </div>
+
+        {containsMarkdown(noteData.content) && (
+          <div className="mb-8">
+            <label className="block text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4">Preview</label>
+            <div 
+              className="p-4 text-lg text-gray-900 dark:text-gray-100 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg"
+              dangerouslySetInnerHTML={renderMarkdown(noteData.content)} 
+            />
+          </div>
+        )}
 
         <div className="mb-8">
           <label className="block text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4">Categories</label>
@@ -160,7 +179,7 @@ function NoteEditor() {
             onChange={handleChange}
             className="w-full p-4 text-lg text-gray-900 dark:text-gray-100 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-4 focus:ring-red-500 transition"
             required
-            disabled // Rende il campo disabilitato per impedire la modifica
+            disabled 
           />
         </div>
 
@@ -200,6 +219,7 @@ function NoteEditor() {
           type="submit"
           className="hover:bg-red-700 focus:outline-none focus:ring-4 focus:ring-red-500 transition"
           disabled={loading}
+          aria-label={id ? 'Update Note' : 'Create Note'}  // Aggiungi aria-label qui
         >
           {id ? 'Update Note' : 'Create Note'}
         </Button>
@@ -211,7 +231,11 @@ function NoteEditor() {
             <h2 className="text-2xl font-bold mb-4 text-gray-800 dark:text-gray-100">
               {id ? 'Nota aggiornata' : 'Nota creata'} con successo!
             </h2>
-            <Button onClick={closePopup} className="hover:bg-red-700 focus:outline-none focus:ring-4 focus:ring-red-500 transition">
+            <Button
+              onClick={closePopup}
+              className="hover:bg-red-700 focus:outline-none focus:ring-4 focus:ring-red-500 transition"
+              aria-label="OK"  // Aggiungi aria-label qui
+            >
               OK
             </Button>
           </div>

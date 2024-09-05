@@ -13,7 +13,7 @@ const noteSchema = new Schema({
     },
     categories: {
         type: [String],
-        default: [] // Può essere una lista vuota se l'utente non specifica categorie
+        default: [] 
     },
     author: {
         type: String,
@@ -25,9 +25,9 @@ const noteSchema = new Schema({
         default: 'private'
     },
     specificAccess: {
-        type: [String], // Utenti specifici che hanno accesso (email, ID, ecc.)
+        type: [String],
         required: function() { return this.accessType === 'restricted'; }
     },
-}, { timestamps: true }); // timestamps aggiunge campi createdAt e updatedAt
+}, { timestamps: true }); 
 
 module.exports = mongoose.model('Note', noteSchema);
