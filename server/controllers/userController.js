@@ -7,6 +7,7 @@ const {
   node_env,
 } = require("../utils/globalVariables");
 const jwt = require("jsonwebtoken");
+const webpush = require("web-push");
 
 /**
  * Creates an access Json Web Token given the user id
@@ -140,12 +141,9 @@ const refreshToken = async (req, res) => {
     const user = await User.findOne({ _id });
 
     if (user._doc.profilePic) {
-      console.log("EHI");
       // put media api endpoint to get the image in the frontend
       user._doc.profilePic = `/api/media/${user.profilePic}`;
     }
-
-    console.log("user: ", user._doc);
 
     if (!user) {
       console.log("User not found with id:", _id);
@@ -166,4 +164,100 @@ const refreshToken = async (req, res) => {
   }
 };
 
-module.exports = { loginUser, signupUser, logoutUser, refreshToken };
+/**
+ * @param req body needs user ID and subscription value from frontend
+ */
+async function subscribe(req, res) {
+  const { _id, subscription } = req.body;
+
+  console.log("sub body: ", req.body);
+
+  try {
+    const user = await User.findById(_id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // update DB
+    user.pushSubscriptions.push(subscription);
+    await user.save();
+
+    console.log("body: ", { _id, subscription });
+    console.log("user: ", user);
+
+    res.status(201).json({ message: 'Subscribed successfully' });
+  } catch (error) {
+    console.error('Subscription error:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+}
+
+/**
+* @param req body needs user ID and unique device endpoint
+*/
+async function unsubscribe(req, res) {
+  const { _id, subscription } = req.body;
+
+  try {
+    const user = await User.findById(_id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    console.log("unsub body: ", subscription);
+    console.log("user subscriptions: ", user.pushSubscriptions);
+
+    // filter out the matching endpoints and update DB
+    user.pushSubscriptions = user.pushSubscriptions.filter(sub => sub.endpoint !== subscription.endpoint);
+    await user.save();
+
+    res.status(200).json({ message: 'Unsubscribed successfully' });
+  } catch (error) {
+    console.error('Unsubscription error:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+}
+
+/**
+ * @param req body needs destination user ID, title and body of the notification
+ */
+const sendNotification = async (req, res) => {
+  const { title, body, url, _id } = req.body;
+
+  try {
+    const user = await User.findById(_id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    const payload = JSON.stringify({
+      title,
+      body,
+      url,
+      _id,
+    });
+
+    console.log("payload: ", payload);
+
+    // cicle through all the user's devices to send them all a notification
+    const promises = user.pushSubscriptions.map(subscription =>
+      webpush.sendNotification(subscription, payload).catch(err => {
+        console.error('Notification error:', err);
+      })
+    );
+
+    // await all the promises of sending a notification
+    await Promise.all(promises);
+
+    if (promises.length === 0)
+      res.status(200).json({ message: "No subscriptions for this user" });
+    else
+      res.status(200).json({ message: 'Notification sent successfully' });
+  } catch (error) {
+    console.error('Promises error:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+
+module.exports = { loginUser, signupUser, logoutUser, refreshToken, subscribe, unsubscribe, sendNotification };

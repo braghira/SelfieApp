@@ -15,6 +15,15 @@ const userSchema = new mongoose.Schema({
   },
   name: String,
   surname: String,
+  pushSubscriptions: [
+    {
+      endpoint: { type: String, required: true },
+      keys: {
+        p256dh: { type: String, required: true },
+        auth: { type: String, required: true }
+      }
+    }
+  ],
   email: {
     type: String,
     unique: true, // le email devono essere uniche

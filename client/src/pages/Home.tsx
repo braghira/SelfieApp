@@ -1,10 +1,28 @@
+import Loader from "@/components/Loader";
+import { Button } from "@/components/ui/button";
 import {
   ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
+import useSendNotification, {
+  NotificationPayload,
+} from "@/hooks/useSendNotification";
 
 export default function Home() {
+  const { loading, sendNotification } = useSendNotification();
+
+  function handleSendNotification() {
+    const payload: NotificationPayload = {
+      title: "Push Test",
+      body: "Is this thing On?",
+      url: `http://localhost:5173/home`,
+    };
+
+    // send to bowser
+    sendNotification("66d1e784cd5434101ea33e08", payload);
+  }
+
   return (
     <div className="view-container">
       <ResizablePanelGroup
@@ -13,7 +31,9 @@ export default function Home() {
       >
         <ResizablePanel defaultSize={50}>
           <div className="flex h-[200px] items-center justify-center p-6">
-            <span className="font-semibold">One</span>
+            <Button onClick={handleSendNotification}>
+              {loading ? <Loader /> : "sendPush"}
+            </Button>
           </div>
         </ResizablePanel>
         <ResizableHandle />

@@ -13,7 +13,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { UserType, UserSchema, client_log } from "@/lib/utils";
+import { UserType, UserSchema } from "@/lib/utils";
 // images
 import Loader from "@/components/Loader";
 import Logo from "@/components/Logo";
@@ -37,13 +37,11 @@ export default function SignupForm() {
   });
 
   async function onSubmit(values: UserType) {
-    client_log(values);
     await signup(values, (err) => {
       form.setError("root.serverError", { message: err });
     });
     // se non ci sono errori nel form possiamo reinderizzare l'utente alla home page
     if (JSON.stringify(form.formState.errors) === "{}") {
-      client_log("Im navigating my head");
       navigate("/home");
     }
   }
