@@ -4,6 +4,7 @@ const cookieParser = require("cookie-parser");
 const path = require("path");
 const mongoose = require("mongoose");
 const cors = require("cors");
+const webpush = require("web-push");
 require("dotenv").config({ path: path.resolve(__dirname, ".env") }); // config method will attach .env variables to the "process" global variable
 
 // our modules
@@ -15,12 +16,21 @@ const corsOptions = require("./utils/corsOptions");
 const noteRoutes = require(path.resolve(__dirname, "routes", "notes"));
 
 // utilities
-const { port, mongouri, node_env } = require(path.resolve(
-  __dirname,
-  "utils",
-  "globalVariables"
-));
+const { port, mongouri, node_env, vapid_public_key,
+  vapid_private_key } = require(path.resolve(
+    __dirname,
+    "utils",
+    "globalVariables"
+  ));
+
 const appPath = path.resolve(__dirname, "..", "client", "dist");
+
+webpush.setVapidDetails(
+  // boh proviamo
+  'mailto:andrea.venturoli5@studio.unibo.it',
+  vapid_public_key,
+  vapid_private_key
+);
 
 // express app
 const app = express();
@@ -49,7 +59,7 @@ app.use('/api/notes', noteRoutes);
 
 
 if (node_env === "production") {
-  // route fallback: reindirizza tutte le altre richieste all'app React
+  // route fallback: redirect every other request to React app
   app.get("*", (req, res) => {
     res.sendFile(path.join(appPath, "index.html"));
   });

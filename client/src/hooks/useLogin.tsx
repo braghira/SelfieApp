@@ -2,7 +2,6 @@ import { useState } from "react";
 import { isAxiosError } from "axios";
 import { useAuth } from "@/context/AuthContext";
 import api from "@/lib/axios";
-import { client_log } from "@/lib/utils";
 
 export default function useLogin() {
   const [error, setError] = useState<string>("");
@@ -18,7 +17,6 @@ export default function useLogin() {
         username,
         password,
       });
-      client_log("login api res: ", response.data);
 
       // update the auth context
       dispatch({ type: "LOGIN", payload: response.data });
@@ -34,13 +32,11 @@ export default function useLogin() {
         } else {
           setError(json.error || "An unknown error occurred");
           onError(json.error || "An unknown error occurred");
-          client_log(json.error);
         }
       } else {
         const errorMessage = "An unknown error occurred";
         setError(errorMessage);
         onError(errorMessage);
-        isAxiosError(error) && client_log(error.message);
       }
     }
   }

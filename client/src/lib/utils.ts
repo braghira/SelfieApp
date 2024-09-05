@@ -3,15 +3,15 @@ import { twMerge } from "tailwind-merge";
 import * as z from "zod";
 
 const recurrencePatternSchema = z.object({
-  frequency: z.enum(['daily', 'weekly', 'monthly']).optional(),
-  endType: z.enum(['after', 'until']).optional(),
+  frequency: z.enum(["daily", "weekly", "monthly"]).optional(),
+  endType: z.enum(["after", "until"]).optional(),
   occurrences: z.number().optional(),
-  endDate: z.string().optional(), 
+  endDate: z.string().optional(),
 });
 
 export const EventSchema = z.object({
   title: z.string().min(2, "Title must be at least 2 characters"),
-  date: z.string(), 
+  date: z.string(),
   duration: z.number().nonnegative(),
   location: z.string().optional(),
   isRecurring: z.boolean(),
@@ -21,7 +21,6 @@ export const EventSchema = z.object({
 });
 export type EventType = z.infer<typeof EventSchema>;
 
-
 export const ActivitySchema = z.object({
   title: z.string().min(2, "Title must be at least 2 characters"),
   endDate: z.string().nullable().optional(),
@@ -30,7 +29,17 @@ export const ActivitySchema = z.object({
 });
 export type ActivityType = z.infer<typeof ActivitySchema>;
 
-// TODO: aggiungere campo per la foto profilo
+const pushKeysSchema = z.object({
+  p256dh: z.string(),
+  auth: z.string(),
+});
+
+const pushSubscriptionSchema = z.object({
+  endpoint: z.string(),
+  keys: pushKeysSchema,
+});
+
+// TODO: aggiungere campo per le notifiche push
 export const UserSchema = z.object({
   username: z
     .string()
@@ -42,6 +51,7 @@ export const UserSchema = z.object({
   email: z.string().email().optional(),
   name: z.string().trim().optional(),
   surname: z.string().trim().optional(),
+  pushSubscriptions: z.array(pushSubscriptionSchema).optional(),
   birthday: z.date().optional(),
   /** Contains the string of the endpoint to get the image based on its ID */
   profilePic: z.string().optional(),
@@ -94,6 +104,23 @@ export function timeToMs(time: string): number {
   const totsec = secs + mins * 60 + hrs * 60 * 60;
 
   return 1000 * totsec;
+}
+
+export function urlBase64ToUint8Array(base64String: string): Uint8Array {
+  // Aggiungi padding per base64 se necessario
+  const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
+  const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
+
+  // Decodifica base64 in una stringa raw
+  const rawData = window.atob(base64);
+
+  // Crea un Uint8Array dalla stringa raw
+  const outputArray = new Uint8Array(rawData.length);
+  for (let i = 0; i < rawData.length; ++i) {
+    outputArray[i] = rawData.charCodeAt(i);
+  }
+
+  return outputArray;
 }
 
 /**

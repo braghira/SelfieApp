@@ -210,8 +210,9 @@ export default function SessionForm({
 
         {form.formState.isSubmitSuccessful && (
           <div className="grid grid-cols-3 gap-2">
-            {session.map((timer) => (
+            {session.map((timer, key) => (
               <Button
+                key={key}
                 type="button"
                 autoFocus
                 onClick={() => setPomodoro(timer)}

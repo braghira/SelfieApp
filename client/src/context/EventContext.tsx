@@ -15,10 +15,7 @@ export type EventContextType =
   | undefined;
 
 // definiamo qui le azioni possibili sul contesto
-function eventsReducer(
-  state: EventType[],
-  action: ActionType
-): EventType[] {
+function eventsReducer(state: EventType[], action: ActionType): EventType[] {
   client_log("state: ", state);
   client_log("payload: ", action.payload);
   switch (action.type) {
@@ -41,9 +38,7 @@ export function useEvents() {
   const context = useContext(EventContext);
 
   if (!context) {
-    throw Error(
-      "useEventContext must be used inside a EventContextProvider"
-    );
+    throw Error("useEventContext must be used inside an EventContextProvider");
   }
 
   return context;

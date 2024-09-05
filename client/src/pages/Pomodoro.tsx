@@ -118,19 +118,19 @@ export default function Pomodoro() {
         <h2>
           Welcome to the <span className="text-primary">Pomodoro</span> View!
         </h2>
-        <p className="leading-8">
+        <p className="leading-6">
           Here you can set your pomodoro session in 2 ways:
-          <ul className="list-disc">
-            <li>
-              <b>Timers</b>: Set the study and pause timer exactly how you want,
-              including the number of study/pause cycles;
-            </li>
-            <li>
-              <b>Session</b>: Insert a total session time and choose the option
-              that best fits your needs.
-            </li>
-          </ul>
         </p>
+        <ul className="list-disc small-regular sm:base-regular">
+          <li className="leading-6">
+            <b>Timers</b>: Set the study and pause timer exactly how you want,
+            including the number of study/pause cycles;
+          </li>
+          <li className="leading-6">
+            <b>Session</b>: Insert a total session time and choose the option
+            that best fits your needs.
+          </li>
+        </ul>
       </div>
 
       <div className="flex-center flex-col gap-5 z-10">
