@@ -12,7 +12,7 @@ interface Note {
   categories: string[];
   createdAt: Date;
   updatedAt: Date;
-  author: string; // Assicurati che il campo author sia incluso
+  author: string; 
 }
 
 function HomeNote() {
@@ -82,16 +82,16 @@ function HomeNote() {
   return (
     <div className="home-note p-4">
       <div className="flex justify-start items-center space-x-4 mb-4">
-        <Button onClick={handleCreateNewNote}>Nuova Nota</Button>
-        <Button onClick={handleDeleteAllNotes}>Elimina Tutte le Note</Button>
+        <Button onClick={handleCreateNewNote} aria-label="Crea una nuova nota">Nuova Nota</Button>
+        <Button onClick={handleDeleteAllNotes} aria-label="Elimina tutte le note">Elimina Tutte le Note</Button>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button>Ordina per</Button>
+            <Button aria-label="Apri il menu di ordinamento">Ordina per</Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent>
-            <DropdownMenuItem onClick={() => handleSortChange('title')}>Titolo</DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleSortChange('date')}>Data</DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleSortChange('length')}>Lunghezza</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleSortChange('title')} aria-label="Ordina per titolo">Titolo</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleSortChange('date')} aria-label="Ordina per data">Data</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleSortChange('length')} aria-label="Ordina per lunghezza">Lunghezza</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
@@ -106,7 +106,7 @@ function HomeNote() {
               categories={note.categories}
               createdAt={note.createdAt}
               updatedAt={note.updatedAt}
-              author={note.author} // Passa anche l'autore
+              author={note.author} 
             />
           ))
         ) : (
@@ -118,4 +118,3 @@ function HomeNote() {
 }
 
 export default HomeNote;
-

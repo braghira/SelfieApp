@@ -6,6 +6,8 @@ import { format } from 'date-fns';
 import { useNoteContext } from '@/context/NoteContext';
 import useNotes from '@/hooks/useNote';
 import { useAuth } from "@/context/AuthContext";
+import { marked } from 'marked';
+
 
 interface NoteCardProps {
   id: string;
@@ -14,7 +16,7 @@ interface NoteCardProps {
   categories: string[];
   createdAt: Date;
   updatedAt: Date;
-  author: string; // Nuova proprietà per l'autore
+  author: string;
 }
 
 export default function NoteCard({
@@ -24,13 +26,17 @@ export default function NoteCard({
   categories,
   createdAt,
   updatedAt,
-  author, // Destrutturazione della nuova proprietà
+  author,
 }: NoteCardProps) {
   const { user } = useAuth();
   const { dispatch } = useNoteContext();
   const { deleteNote, duplicateNote } = useNotes();
 
   const [isPopupOpen, setIsPopupOpen] = useState(false);
+
+
+  const markdownContent = marked(content);
+  
 
   const previewContent = content.length > 200 ? `${content.slice(0, 200)}...` : content;
 
@@ -84,33 +90,36 @@ export default function NoteCard({
           <CardTitle className="text-primary">{title}</CardTitle>
           {user && (
             <div className="flex space-x-2 mt-2 md:mt-0 justify-center">
-              <Button variant="ghost" size="icon" onClick={handleEdit}>
+              <Button variant="ghost" size="icon" onClick={handleEdit} aria-label="Edit note">
                 <Edit className="h-5 w-5" />
               </Button>
-              <Button variant="ghost" size="icon" onClick={handleCopyContent}>
+              <Button variant="ghost" size="icon" onClick={handleCopyContent} aria-label="Copy note">
                 <Copy className="h-5 w-5" />
               </Button>
-              <Button variant="ghost" size="icon" onClick={handleDuplicate}>
+              <Button variant="ghost" size="icon" onClick={handleDuplicate} aria-label="Duplicate note">
                 <Plus className="h-5 w-5" />
               </Button>
-              <Button variant="ghost" size="icon" onClick={handleDelete}>
+              <Button variant="ghost" size="icon" onClick={handleDelete} aria-label="Delete note">
                 <Trash2 className="h-5 w-5" />
               </Button>
             </div>
           )}
         </CardHeader>
         <CardContent className="flex-col gap-3">
-          <div className="text-gray-600 dark:text-white mb-2">
-            {previewContent}
-            {content.length > 200 && (
-              <span
-                onClick={handleSeeMore}
-                className="font-bold italic cursor-pointer ml-1 text-red-600 dark:text-red-400"
-              >
-                see more
-              </span>
-            )}
-          </div>
+          <div
+            className="text-gray-600 dark:text-white mb-2"
+            dangerouslySetInnerHTML={{
+              __html: marked(previewContent) 
+            }}
+          />
+          {content.length > 200 && !isPopupOpen && (
+            <span
+              onClick={handleSeeMore}
+              className="font-bold italic cursor-pointer ml-1 text-red-600 dark:text-red-400"
+            >
+              see more
+            </span>
+          )}
           <div>
             Categories: <span className="font-semibold">{categories.join(', ')}</span>
           </div>
@@ -121,7 +130,7 @@ export default function NoteCard({
             Updated: <span className="font-semibold">{format(new Date(updatedAt), 'dd/MM/yyyy')}</span>
           </div>
           <div>
-            Author: <span className="font-semibold">{author}</span> {/* Aggiunta per visualizzare l'autore */}
+            Author: <span className="font-semibold">{author}</span>
           </div>
         </CardContent>
       </Card>
@@ -134,15 +143,17 @@ export default function NoteCard({
               variant="ghost"
               size="icon"
               className="absolute top-3 right-3"
+              aria-label="Close popup"
             >
               <X className="h-6 w-6" />
             </Button>
             <h2 className="text-2xl font-bold mb-4 text-gray-800 dark:text-gray-100">
               {title}
             </h2>
-            <p className="mb-4 text-gray-600 dark:text-gray-300">
-              {content}
-            </p>
+            <div
+              className="mb-4 text-gray-600 dark:text-gray-300"
+              dangerouslySetInnerHTML={{ __html: markdownContent }} // Usa sanitizedContent se sanifichi
+            />
             <p className="text-sm text-gray-500 dark:text-gray-400">
               <strong>Author:</strong> {author}
             </p>
@@ -152,4 +163,3 @@ export default function NoteCard({
     </>
   );
 }
-
