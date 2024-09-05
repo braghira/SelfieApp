@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Calendar, momentLocalizer } from "react-big-calendar";
+import { Calendar, momentLocalizer, Event } from "react-big-calendar";
 import moment from 'moment';
 // components
 import EventForm from "@/components/EventForms";
@@ -14,6 +14,8 @@ import { useAuth } from "@/context/AuthContext";
 import useActivitiesApi from "@/hooks/useActivitiesApi";
 import useEventsApi from "@/hooks/useEventsApi.tsx";
 
+import { EventType } from "@/lib/utils";
+
 export default function CalendarPage() {
     const localizer = momentLocalizer(moment);
     const { activities, dispatch: dispatchA } = useActivities();
@@ -22,7 +24,7 @@ export default function CalendarPage() {
     const { getEvents } = useEventsApi();
     const { getActivities } = useActivitiesApi();
 
-    const [selectedEvent, setSelectedEvent] = useState(null); 
+    const [selectedEvent, setSelectedEvent] = useState<EventType | null>(null); 
     const [open, setOpen] = useState(false); 
 
     useEffect(() => {
@@ -38,19 +40,27 @@ export default function CalendarPage() {
         event: '#3fb33f'
     };
 
-    const eventPropGetter = (event) => {
+    interface CustomEvent {
+        start: Date;
+        end: Date;
+        title: string;
+        type: 'event' | 'activity'; 
+    }
+    
+    const eventPropGetter = (event: CustomEvent) => {
         const now = moment();
         const start = moment(event.start);
-
         let backgroundColor;
-        if (event.data?.event) {
-            backgroundColor = colors.event;
-        } else if (start.isBefore(now)) {
-            backgroundColor = colors.late;
-        } else {
-            backgroundColor = colors.onTime;
-        }
 
+        if (event.type === 'event') {
+            backgroundColor = colors.event;
+        } else if (event.type === 'activity') {
+            if (start.isBefore(now)) {
+                backgroundColor = colors.late; 
+            } else {
+                backgroundColor = colors.onTime; 
+            }
+        }
         return {
             style: {
                 backgroundColor,
@@ -58,17 +68,23 @@ export default function CalendarPage() {
             className: 'custom-event'
         };
     };
+    
+    const handleSelected = (event: Event) => {
+        const selectedEvent = event as CustomEvent; 
+        
+        if (selectedEvent.type === 'event') {
+            const fullEvent = events?.find(e => e.title === selectedEvent.title);
+            if (fullEvent) {
+                setSelectedEvent(fullEvent);
+                setOpen(true);
+            }
+        }
+    };
 
-    const handleSelected = (event) => {
-        setSelectedEvent(event.data.event); 
-        setOpen(true);
-    }
-
-    const elementList = [
+    const elementList: CustomEvent[] = [
         ...events?.flatMap(event => {
             const momentDate = moment(new Date(event.date));
-            const endDateAmericanFormat = momentDate.format('YYYY-MM-DD hh:mm A');
-            const dates = [];
+            const dates: CustomEvent[] = [];
             
             if (event.isRecurring && event.recurrencePattern?.endType === 'after') {
                 for (let i = 0; i < (event.recurrencePattern.occurrences ?? 0); i++) {
@@ -84,8 +100,7 @@ export default function CalendarPage() {
                         start: newDate.toDate(),
                         end: newDate.add(event.duration, 'hour').toDate(),
                         title: event.title,
-                        data: { event },
-                        formattedEndDate: endDateAmericanFormat,
+                        type: 'event', 
                     });
                 }
             } else if (event.isRecurring && event.recurrencePattern?.endType === 'until') {
@@ -97,8 +112,7 @@ export default function CalendarPage() {
                             start: newDate.toDate(),
                             end: newDate.clone().add(event.duration, 'hour').toDate(),
                             title: event.title,
-                            data: { event },
-                            formattedEndDate: endDateAmericanFormat,
+                            type: 'event',  
                         });
                         if (event.recurrencePattern?.frequency === 'daily') {
                             newDate = newDate.add(1, 'days');
@@ -113,8 +127,7 @@ export default function CalendarPage() {
                             start: endDate.toDate(),
                             end: endDate.clone().add(event.duration, 'hour').toDate(),
                             title: event.title,
-                            data: { event },
-                            formattedEndDate: endDateAmericanFormat,
+                            type: 'event',  
                         });
                     }
                 }
@@ -123,8 +136,7 @@ export default function CalendarPage() {
                     start: momentDate.toDate(),
                     end: momentDate.add(event.duration, 'hour').toDate(),
                     title: event.title,
-                    data: { event },
-                    formattedEndDate: endDateAmericanFormat,
+                    type: 'event',
                 });
             }
             return dates;
@@ -135,9 +147,11 @@ export default function CalendarPage() {
                 end: new Date(activity.endDate),
                 title: activity.title,
                 allDay: true,
-            } : null;
+                type: 'activity' as const, 
+            } as CustomEvent : null;
         }).filter(activity => activity !== null) || []
     ];
+    
 
     return (
         <div className="container mb-2 mt-6">

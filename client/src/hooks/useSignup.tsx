@@ -2,7 +2,7 @@ import { useState } from "react";
 import axios from "axios";
 import { useAuth } from "@/context/AuthContext";
 import api from "@/lib/axios";
-import { UserType, client_log } from "@/lib/utils";
+import { UserType } from "@/lib/utils";
 
 export default function useSignup() {
   const [error, setError] = useState<string>("");
@@ -13,8 +13,6 @@ export default function useSignup() {
       const response = await api.post("/auth/signup", { ...user });
 
       if (response.status === 200) {
-        client_log("signup api res: ", response.data);
-
         // update the auth context
         dispatch({ type: "LOGIN", payload: response.data });
 

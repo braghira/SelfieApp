@@ -92,6 +92,7 @@ export default function ActivityForm() {
                     type="date"
                     className="shad-input"
                     {...field}
+                    value={field.value ?? ""}
                   />
                 </FormControl>
                 <FormMessage />

@@ -1,21 +1,10 @@
 import { NavLink } from "react-router-dom";
-import { ModeToggle } from "./ModeToggle";
-import { Button, buttonVariants } from "./ui/button";
-import useLogout from "@/hooks/useLogout";
+import { buttonVariants } from "./ui/button";
 import Logo from "./Logo";
-import ProfilePhoto from "./ProfilePhoto";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
 import { CalendarDays, HomeIcon, NotebookIcon, TimerIcon } from "lucide-react";
+import SideSheet from "./SideSheet";
 
 export default function Navbar() {
-  const { logout } = useLogout();
-
   return (
     <nav>
       <div className="hidden fixed z-50 backface-visibility-hidden top-0 left-0 w-full h-[--navbar-h] sm:flex justify-between items-center py-1 px-5 sm:bg-card sm:border-b">
@@ -77,31 +66,7 @@ export default function Navbar() {
           </NavLink>
         </div>
 
-        <Sheet>
-          <SheetTrigger>
-            <ProfilePhoto />
-          </SheetTrigger>
-          <SheetContent className="w-60 sm:w-[20rem]" side={"right"}>
-            <SheetTitle className="flex-start mb-5">
-              <SheetTitle>Account settings</SheetTitle>
-            </SheetTitle>
-
-            <div className="h-full flex flex-col items-start justify-between">
-              <div className="flex flex-col items-start gap-2">
-                <ModeToggle isIcon={false} />
-                <Button variant="ghost">Set Birthday</Button>
-              </div>
-
-              <Button
-                className="mb-12"
-                variant="destructive"
-                onClick={() => logout()}
-              >
-                Logout
-              </Button>
-            </div>
-          </SheetContent>
-        </Sheet>
+        <SideSheet />
       </div>
 
       {/* Bottom mobile navbar */}
@@ -159,32 +124,7 @@ export default function Navbar() {
           <NotebookIcon />
         </NavLink>
 
-        <Sheet>
-          <SheetTrigger>
-            <ProfilePhoto />
-          </SheetTrigger>
-          <SheetContent className="w-60 sm:w-[20rem]" side={"right"}>
-            <SheetHeader className="mb-5">
-              <SheetTitle>Account settings</SheetTitle>
-            </SheetHeader>
-
-            <div className="h-full flex flex-col items-start justify-between">
-              <div className="flex flex-col items-start gap-2">
-                <ModeToggle isIcon={false} />
-
-                <Button variant="ghost">Set Birthday</Button>
-              </div>
-
-              <Button
-                className="mb-12"
-                variant="destructive"
-                onClick={() => logout()}
-              >
-                Logout
-              </Button>
-            </div>
-          </SheetContent>
-        </Sheet>
+        <SideSheet />
       </div>
     </nav>
   );

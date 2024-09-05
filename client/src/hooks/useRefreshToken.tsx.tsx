@@ -11,8 +11,6 @@ export default function useRefreshToken() {
     try {
       const response = await api.get("/auth/refresh");
 
-      client_log("Refresh response: ", response.data);
-
       if (response.data) {
         // json objects return only strings, we make sure to turn it back into a date object
         response.data.birthday = new Date(response.data.birthday);

@@ -5,6 +5,8 @@ const mongouri = process.env.DB_URI;
 const node_env = process.env.NODE_ENV;
 const access_key = process.env.ACCESS_JWT_KEY;
 const refresh_key = process.env.REFRESH_JWT_KEY;
+const vapid_public_key = process.env.VAPID_PUBLIC_KEY;
+const vapid_private_key = process.env.VAPID_PRIVATE_KEY;
 
 /**
  * Access token expire time in ms
@@ -30,4 +32,6 @@ module.exports = {
   node_env,
   access_key,
   refresh_key,
+  vapid_public_key,
+  vapid_private_key
 };

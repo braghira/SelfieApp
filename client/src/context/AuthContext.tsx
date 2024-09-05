@@ -12,7 +12,7 @@ import {
 type AuthType = UserType | undefined;
 
 // types for the reducer
-export type ActionType = {
+export type AuthActionType = {
   type: "LOGIN" | "LOGOUT";
   payload: AuthType;
 };
@@ -20,7 +20,7 @@ export type ActionType = {
 export type AuthContextType =
   | {
       user: AuthType;
-      dispatch: React.Dispatch<ActionType>;
+      dispatch: React.Dispatch<AuthActionType>;
       loading: boolean;
       setLoading: React.Dispatch<React.SetStateAction<boolean>>;
     }
@@ -32,7 +32,7 @@ export type AuthContextType =
  * @param action azione da compiere sullo stato
  * @returns il nuovo User
  */
-function authReducer(state: AuthType, action: ActionType): AuthType {
+function authReducer(state: AuthType, action: AuthActionType): AuthType {
   switch (action.type) {
     case "LOGIN":
       return action.payload;
@@ -49,7 +49,7 @@ export function useAuth() {
   const context = useContext(AuthContext);
 
   if (!context) {
-    throw Error("useAuthContext must be used inside an AuthContextProvider");
+    throw Error("useAuth must be used inside an AuthContextProvider");
   }
 
   return context;
@@ -64,23 +64,24 @@ export function AuthContextProvider({ children }: PropsWithChildren) {
     const verifyRefreshToken = async () => {
       try {
         const user = await refresh();
-        client_log("user: ", user);
-        if (user === "expired")
+        if (user === "expired") {
           dispatch({ type: "LOGOUT", payload: undefined });
-        else dispatch({ type: "LOGIN", payload: user });
+        } else {
+          dispatch({ type: "LOGIN", payload: user });
+          client_log("user: ", user);
+        }
 
         setLoading(false);
       } catch (error) {
         client_log("Couldn't get new access token");
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
 
     // if access token doesn't exist already
     !state?.accessToken ? verifyRefreshToken() : setLoading(false);
   }, []); // check if the user is still logged only when component initially renders
-
-  client_log("AuthContext state: ", state);
 
   return (
     <AuthContext.Provider
