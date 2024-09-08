@@ -33,10 +33,10 @@ export default function usePushNotification() {
   /**
    * Deletes all service workers
    */
-  async function unregisterServiceWorkers() {
-    const registrations = await navigator.serviceWorker.getRegistrations();
-    await Promise.all(registrations.map((r) => r.unregister()));
-  }
+  // async function unregisterServiceWorkers() {
+  //   const registrations = await navigator.serviceWorker.getRegistrations();
+  //   await Promise.all(registrations.map((r) => r.unregister()));
+  // }
 
   /**
    * Subscribes user to push notifications service with Push Manager and saves the sub on the server
