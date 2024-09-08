@@ -11,6 +11,16 @@ import {
 import useLogout from "./useLogout";
 import { client_log } from "@/lib/utils";
 
+/**
+ * Use this axios instance if you want your api requests to be authenticated.
+ * Adds authentication middleware to the returned axios instance:
+ * - Request -> the middleware sets Authorization headers with the user acess token
+ * - Response -> the middleware does 3 things:
+ * > 1. checks if the cookie has expired with its refresh token, and in that case forcibly logouts the user.
+ * > 2. refreshes the access token if needed.
+ * > 3. it updates the local user context.
+ * @returns an axios instance
+ */
 export default function useAxiosPrivate() {
   const { refresh } = useRefreshToken();
   const { user, dispatch } = useAuth();
@@ -30,6 +40,7 @@ export default function useAxiosPrivate() {
           if (!request.headers) {
             request.headers = new AxiosHeaders();
           }
+
           // add authorization header to the request
           request.headers.set("Authorization", `Bearer ${user?.accessToken}`);
         }
@@ -47,26 +58,31 @@ export default function useAxiosPrivate() {
         // take the previous request with our added property
         const prevRequest = error?.config as InternalAxiosRequestConfigExtended;
 
-        // catch requests when token has expired
+        // catch forbidden requests when token has expired
         if (error?.response?.status === 403 && !prevRequest.sent) {
           prevRequest.sent = true;
-          client_log("JWT token expired, logging out");
+          client_log("Refresh token expired, logging out");
+
           // logout only if the user is authenticated
           user && logout();
+
           return Promise.reject(error);
         }
 
         // catch all unauthorized requests
         if (error?.response?.status === 401 && !prevRequest.sent) {
           prevRequest.sent = true;
+
           // refresh the user with a new request token
           const auth = await refresh();
 
           // check if the token is expired first
           if (auth === "expired" || auth === undefined) {
-            client_log("Access token expired");
+            client_log("Refresh token expired while refreshing");
+
             // logout only if the user is authenticated
             user && logout();
+
             return Promise.reject(error);
           }
 
@@ -81,6 +97,7 @@ export default function useAxiosPrivate() {
             );
           } else {
             prevRequest.headers = new AxiosHeaders();
+
             prevRequest.headers.set(
               "Authorization",
               `Bearer ${newAccessToken}`

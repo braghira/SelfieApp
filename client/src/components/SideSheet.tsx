@@ -10,19 +10,18 @@ import ProfilePhoto from "./ProfilePhoto";
 import { ModeToggle } from "./ModeToggle";
 import { Button } from "./ui/button";
 import useLogout from "@/hooks/useLogout";
-import useSubscribe from "@/hooks/useSubscribe";
-import useUnsubscribe from "@/hooks/useUnsubscribe";
-import { usePushContext } from "@/context/NotificationContext";
 import { useAuth } from "@/context/AuthContext";
 import Loader from "./Loader";
 import { Bell } from "lucide-react";
+import usePushNotification from "@/hooks/usePushNotification";
+import { usePushContext } from "@/context/NotificationContext";
 
 export default function SideSheet() {
   const { logout } = useLogout();
-  const { subscription } = usePushContext();
-  const { subscribe, loading: subLoading } = useSubscribe();
-  const { unsubscribe, loading: unsubLoading } = useUnsubscribe();
+  const { RequestPushSub, subscribe, unsubscribe, subLoading, unsubLoading } =
+    usePushNotification();
   const { user } = useAuth();
+  const { subscription } = usePushContext();
 
   return (
     <Sheet>
@@ -43,7 +42,7 @@ export default function SideSheet() {
             {subscription ? (
               <Button
                 disabled={unsubLoading}
-                className="bg-blue-900 hover:bg-blue-700"
+                className="bg-blue-900 hover:bg-blue-800"
                 onClick={() => {
                   if (user?._id) unsubscribe(user?._id);
                 }}
@@ -59,9 +58,9 @@ export default function SideSheet() {
             ) : (
               <Button
                 disabled={subLoading}
-                className="bg-blue-900 hover:bg-blue-700"
-                onClick={() => {
-                  if (user?._id) subscribe(user?._id);
+                className="bg-blue-900 hover:bg-blue-800"
+                onClick={async () => {
+                  if (user?._id) RequestPushSub(() => subscribe(user._id));
                 }}
               >
                 {subLoading ? (

@@ -28,7 +28,7 @@ const userSchema = new mongoose.Schema({
     type: String,
     unique: true, // le email devono essere uniche
   },
-  profilePic: { type: mongoose.Schema.Types.ObjectId, ref: "Media" },
+  profilePic: { type: mongoose.Schema.Types.ObjectId, ref: "Media", required: true },
   birthday: Date,
 });
 

@@ -12,27 +12,30 @@ interface Note {
   categories: string[];
   createdAt: Date;
   updatedAt: Date;
-  author: string; 
+  author: string;
 }
 
 function HomeNote() {
   const { dispatch } = useNoteContext();
   const { fetchNotes, deleteAllNotes } = useNotes();
-  const [fetchedNotes, setFetchedNotes] = useState<Note[]>([]);   
-  const [sortOption, setSortOption] = useState<string>('default');
+  const [fetchedNotes, setFetchedNotes] = useState<Note[]>([]);
+  const [sortOption, setSortOption] = useState<string>("default");
 
   useEffect(() => {
     const loadNotes = async () => {
       try {
         const fetched = await fetchNotes();
-        setFetchedNotes(fetched); 
-        dispatch({ type: 'SET_NOTES', payload: fetched });
-        console.log('Note caricate con successo!');
+        setFetchedNotes(fetched);
+        dispatch({ type: "SET_NOTES", payload: fetched });
+        console.log("Note caricate con successo!");
       } catch (error: unknown) {
         if (error instanceof Error) {
-          console.error('Errore nel caricamento delle note:', error.message);
+          console.error("Errore nel caricamento delle note:", error.message);
         } else {
-          console.error('Errore sconosciuto nel caricamento delle note:', error);
+          console.error(
+            "Errore sconosciuto nel caricamento delle note:",
+            error
+          );
         }
       }
     };
@@ -44,11 +47,13 @@ function HomeNote() {
     const sortNotes = (notes: Note[], option: string) => {
       return [...notes].sort((a, b) => {
         switch (option) {
-          case 'title':
+          case "title":
             return a.title.localeCompare(b.title);
-          case 'date':
-            return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-          case 'length':
+          case "date":
+            return (
+              new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+            );
+          case "length":
             return b.content.length - a.content.length;
           default:
             return 0;
@@ -59,18 +64,18 @@ function HomeNote() {
   }, [fetchedNotes, sortOption]);
 
   const handleCreateNewNote = () => {
-    window.location.href = '/editor'; 
-    console.log('Navigato verso la pagina di creazione della nota.');
+    window.location.href = "/editor";
+    console.log("Navigato verso la pagina di creazione della nota.");
   };
 
   const handleDeleteAllNotes = async () => {
     try {
-      await deleteAllNotes(); 
-      dispatch({ type: 'DELETE_ALL_NOTES' }); 
-      setFetchedNotes([]); 
-      console.log('Tutte le note sono state eliminate con successo!');
+      await deleteAllNotes();
+      dispatch({ type: "DELETE_ALL_NOTES" });
+      setFetchedNotes([]);
+      console.log("Tutte le note sono state eliminate con successo!");
     } catch (error) {
-      console.error('Errore nell\'eliminazione delle note:', error);
+      console.error("Errore nell'eliminazione delle note:", error);
     }
   };
 
@@ -82,16 +87,38 @@ function HomeNote() {
   return (
     <div className="home-note p-4">
       <div className="flex justify-start items-center space-x-4 mb-4">
-        <Button onClick={handleCreateNewNote} aria-label="Crea una nuova nota">Nuova Nota</Button>
-        <Button onClick={handleDeleteAllNotes} aria-label="Elimina tutte le note">Elimina Tutte le Note</Button>
+        <Button onClick={handleCreateNewNote} aria-label="Crea una nuova nota">
+          Nuova Nota
+        </Button>
+        <Button
+          onClick={handleDeleteAllNotes}
+          aria-label="Elimina tutte le note"
+        >
+          Elimina Tutte le Note
+        </Button>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button aria-label="Apri il menu di ordinamento">Ordina per</Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent>
-            <DropdownMenuItem onClick={() => handleSortChange('title')} aria-label="Ordina per titolo">Titolo</DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleSortChange('date')} aria-label="Ordina per data">Data</DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleSortChange('length')} aria-label="Ordina per lunghezza">Lunghezza</DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => handleSortChange("title")}
+              aria-label="Ordina per titolo"
+            >
+              Titolo
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => handleSortChange("date")}
+              aria-label="Ordina per data"
+            >
+              Data
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => handleSortChange("length")}
+              aria-label="Ordina per lunghezza"
+            >
+              Lunghezza
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
@@ -99,14 +126,14 @@ function HomeNote() {
         {sortedNotes.length > 0 ? (
           sortedNotes.map((note) => (
             <NoteCard
-              key={note._id || ''}
-              id={note._id || ''}
+              key={note._id || ""}
+              id={note._id || ""}
               title={note.title}
               content={note.content}
               categories={note.categories}
               createdAt={note.createdAt}
               updatedAt={note.updatedAt}
-              author={note.author} 
+              author={note.author}
             />
           ))
         ) : (
