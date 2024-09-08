@@ -68,6 +68,7 @@ export function AuthContextProvider({ children }: PropsWithChildren) {
           dispatch({ type: "LOGOUT", payload: undefined });
         } else {
           dispatch({ type: "LOGIN", payload: user });
+
           client_log("user: ", user);
         }
 

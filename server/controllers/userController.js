@@ -10,7 +10,7 @@ const jwt = require("jsonwebtoken");
 const webpush = require("web-push");
 
 /**
- * Creates an access Json Web Token given the user id
+ * Creates a Json Web Token given the user id
  * @param _id id of the user to use as the payload of the jwt
  * @param secret_key secret key of the corresponding token
  * @param expire_time expire time of the corresponding token
@@ -37,13 +37,14 @@ const loginUser = async (req, res) => {
       user._doc.profilePic = `/api/media/${user.profilePic}`;
     }
 
-    console.log("user: ", user._doc);
-
     // create access token
     const accessToken = createToken(user._id, access_key, access_time);
     // create refresh token
     const refreshToken = createToken(user._id, refresh_key, refresh_time);
+
+    console.log("user: ", user._doc);
     console.log(`login refresh token: ${refreshToken}`);
+
     // insert the refresh token in the cookie
     res.cookie("jwt", refreshToken, {
       httpOnly: true, // accessible only by web server
@@ -79,18 +80,18 @@ const signupUser = async (req, res) => {
     );
 
     if (user._doc.profilePic) {
-      console.log("EHI");
       // put media api endpoint to get the image in the frontend
       user._doc.profilePic = `/api/media/${user.profilePic}`;
     }
-
-    console.log("user: ", user._doc);
 
     // create access token
     const accessToken = createToken(user._id, access_key, access_time);
     // create refresh token
     const refreshToken = createToken(user._id, refresh_key, refresh_time);
+
+    console.log("user: ", user._doc);
     console.log(`login refresh token: ${refreshToken}`);
+
     // insert the refresh token in the cookie
     res.cookie("jwt", refreshToken, {
       httpOnly: true, // accessible only by web server
@@ -99,6 +100,7 @@ const signupUser = async (req, res) => {
       // cookie expire time, matches refresh token expire time (in ms)
       maxAge: refresh_time,
     });
+
     res.status(200).json({ ...user._doc, accessToken });
   } catch (error) {
     console.log(error.message);
@@ -111,10 +113,14 @@ const signupUser = async (req, res) => {
  */
 const logoutUser = async (req, res) => {
   const cookies = req.cookies;
-  if (!cookies?.jwt)
+
+  // No cookies set
+  if (!cookies?.jwt) {
     return res
       .status(204)
-      .json({ error: "Logout requested with no cookies set!" }); // No cookies set, what?!
+      .json({ error: "Logout requested with no cookies set!" });
+  }
+
   res.clearCookie("jwt", { httpOnly: true, sameSite: "None", secure: true });
   res.json({ message: "Cookie cleared" });
 };
@@ -207,7 +213,7 @@ async function unsubscribe(req, res) {
     console.log("unsub body: ", subscription);
     console.log("user subscriptions: ", user.pushSubscriptions);
 
-    // filter out the matching endpoints and update DB
+    // remove the old subscription and update DB
     user.pushSubscriptions = user.pushSubscriptions.filter(sub => sub.endpoint !== subscription.endpoint);
     await user.save();
 
@@ -234,25 +240,43 @@ const sendNotification = async (req, res) => {
       title,
       body,
       url,
-      _id,
     });
 
     console.log("payload: ", payload);
 
     // cicle through all the user's devices to send them all a notification
     const promises = user.pushSubscriptions.map(subscription =>
-      webpush.sendNotification(subscription, payload).catch(err => {
-        console.error('Notification error:', err);
-      })
-    );
+      webpush.sendNotification(subscription, payload)
+        .then((res) => {
+
+          console.log("send push status code: ", res.statusCode);
+
+          // Sub has expired, throw error and handle it by deleting the subscription from DB
+          if (res.statusCode === 410 || res.statusCode === 404) {
+            console.log(
+              "Subscription has expired or is no longer valid: ",
+              res.statusCode
+            );
+            // subscription no longer valid
+            throw new Error("Subscription no longer valid");
+          } else if (res.statusCode === 201) {
+            console.log("Notifications sent to all devices");
+          }
+        })
+        .catch(async (error) => {
+          // remove the old subscription and update DB
+          user.pushSubscriptions = user.pushSubscriptions.filter(sub => sub.endpoint !== subscription.endpoint);
+          await user.save();
+        }))
 
     // await all the promises of sending a notification
     await Promise.all(promises);
 
     if (promises.length === 0)
-      res.status(200).json({ message: "No subscriptions for this user" });
+      res.status(202).json({ message: "No subscriptions for this user" });
     else
       res.status(200).json({ message: 'Notification sent successfully' });
+
   } catch (error) {
     console.error('Promises error:', error);
     res.status(500).json({ message: 'Internal server error' });

@@ -5,22 +5,22 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
-import useSendNotification, {
+import usePushNotification, {
   NotificationPayload,
-} from "@/hooks/useSendNotification";
+} from "@/hooks/usePushNotification";
 
 export default function Home() {
-  const { loading, sendNotification } = useSendNotification();
+  const { RequestPushSub, sendNotification, sendLoading } =
+    usePushNotification();
 
   function handleSendNotification() {
     const payload: NotificationPayload = {
       title: "Push Test",
       body: "Is this thing On?",
-      url: `http://localhost:5173/home`,
+      url: `http://localhost:5173/pomodoro`,
     };
-
     // send to bowser
-    sendNotification("66d1e784cd5434101ea33e08", payload);
+    RequestPushSub(() => sendNotification("66d1e784cd5434101ea33e08", payload));
   }
 
   return (
@@ -32,7 +32,7 @@ export default function Home() {
         <ResizablePanel defaultSize={50}>
           <div className="flex h-[200px] items-center justify-center p-6">
             <Button onClick={handleSendNotification}>
-              {loading ? <Loader /> : "sendPush"}
+              {sendLoading ? <Loader /> : "sendPush"}
             </Button>
           </div>
         </ResizablePanel>

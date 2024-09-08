@@ -29,16 +29,6 @@ export const ActivitySchema = z.object({
 });
 export type ActivityType = z.infer<typeof ActivitySchema>;
 
-const pushKeysSchema = z.object({
-  p256dh: z.string(),
-  auth: z.string(),
-});
-
-const pushSubscriptionSchema = z.object({
-  endpoint: z.string(),
-  keys: pushKeysSchema,
-});
-
 // TODO: aggiungere campo per le notifiche push
 export const UserSchema = z.object({
   username: z
@@ -51,7 +41,6 @@ export const UserSchema = z.object({
   email: z.string().email().optional(),
   name: z.string().trim().optional(),
   surname: z.string().trim().optional(),
-  pushSubscriptions: z.array(pushSubscriptionSchema).optional(),
   birthday: z.date().optional(),
   /** Contains the string of the endpoint to get the image based on its ID */
   profilePic: z.string().optional(),
@@ -59,6 +48,28 @@ export const UserSchema = z.object({
   _id: z.string().optional(),
 });
 export type UserType = z.infer<typeof UserSchema>;
+
+export const NoteSchema = z.object({
+  title: z
+    .string()
+    .trim()
+    .min(1, { message: "Title must be at least 1 character long." }),
+  content: z.string().trim().min(1, { message: "Content cannot be empty." }),
+  categories: z.array(z.string().trim()).optional().default([]),
+  author: z.string().trim().min(1, { message: "Author is required." }),
+  accessType: z.enum(["public", "restricted", "private"]).default("private"),
+  specificAccess: z.array(z.string().trim()).optional().default([]),
+  createdAt: z
+    .date()
+    .optional()
+    .default(() => new Date()),
+  updatedAt: z
+    .date()
+    .optional()
+    .default(() => new Date()),
+  _id: z.string().optional(),
+});
+export type NoteType = z.infer<typeof NoteSchema>;
 
 export function client_log(message: unknown, ...options: unknown[]) {
   if (import.meta.env.DEV) console.log(message, ...options);
@@ -106,21 +117,10 @@ export function timeToMs(time: string): number {
   return 1000 * totsec;
 }
 
-export function urlBase64ToUint8Array(base64String: string): Uint8Array {
-  // Aggiungi padding per base64 se necessario
-  const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
-  const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
-
-  // Decodifica base64 in una stringa raw
-  const rawData = window.atob(base64);
-
-  // Crea un Uint8Array dalla stringa raw
-  const outputArray = new Uint8Array(rawData.length);
-  for (let i = 0; i < rawData.length; ++i) {
-    outputArray[i] = rawData.charCodeAt(i);
-  }
-
-  return outputArray;
+export async function getPushSub() {
+  const registration = await navigator.serviceWorker.ready;
+  const subscription = await registration.pushManager.getSubscription();
+  return subscription;
 }
 
 /**
@@ -131,16 +131,3 @@ export function urlBase64ToUint8Array(base64String: string): Uint8Array {
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
-
-export const NoteSchema = z.object({
-  title: z.string().trim().min(1, { message: "Title must be at least 1 character long." }),
-  content: z.string().trim().min(1, { message: "Content cannot be empty." }),
-  categories: z.array(z.string().trim()).optional().default([]),
-  author: z.string().trim().min(1, { message: "Author is required." }),
-  accessType: z.enum(['public', 'restricted', 'private']).default('private'),
-  specificAccess: z.array(z.string().trim()).optional().default([]),
-  createdAt: z.date().optional().default(() => new Date()),
-  updatedAt: z.date().optional().default(() => new Date()),
-  _id: z.string().optional(),
-});
-export type NoteType = z.infer<typeof NoteSchema>;

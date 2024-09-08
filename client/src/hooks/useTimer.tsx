@@ -1,3 +1,4 @@
+import { client_log } from "@/lib/utils";
 import { useReducer, useState } from "react";
 
 export type TimerType = {
@@ -183,10 +184,12 @@ function timerReducer(
 
 export function useTimer() {
   let parsed_timer: PomodoroType | null = null;
+
   const storage = localStorage.getItem("pomodoro_timer");
+
   if (storage) {
     parsed_timer = JSON.parse(storage);
-    console.log("storage: ", parsed_timer);
+    client_log("storage: ", parsed_timer);
   }
 
   // default is 30/5 with 5 cycles for a total of 175m

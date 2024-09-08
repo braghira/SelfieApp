@@ -16,22 +16,6 @@ if (import.meta.env.PROD) {
   disableReactDevTools();
 }
 
-// service worker registration
-if ("serviceWorker" in navigator) {
-  // if navigator contains 'serviceWorker' property the browser can use sw
-  window.addEventListener("load", () => {
-    navigator.serviceWorker
-      // the path is relative to domain root since we put sw script in the public dir
-      .register("/service-worker.js")
-      .then((registration) => {
-        console.log("ServiceWorker registration successful:", registration);
-      })
-      .catch((error) => {
-        console.log("ServiceWorker registration failed:", error);
-      });
-  });
-}
-
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <ThemeProvider>

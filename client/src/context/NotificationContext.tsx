@@ -5,16 +5,13 @@ import {
   useEffect,
   useReducer,
 } from "react";
-import { useAuth } from "./AuthContext";
-import { client_log, urlBase64ToUint8Array } from "@/lib/utils";
-import api from "@/lib/axios";
 
 export type PushType = PushSubscription | null;
 
 // types for the reducer
 export type PushActionType = {
   type: "SUB" | "UNSUB";
-  payload: { sub: PushType };
+  payload: PushType;
 };
 
 export type PushContextType =
@@ -33,7 +30,7 @@ export type PushContextType =
 function pushReducer(state: PushType, action: PushActionType) {
   switch (action.type) {
     case "SUB":
-      return action.payload.sub;
+      return action.payload;
     case "UNSUB":
       return null;
     default:
@@ -60,47 +57,21 @@ export function usePushContext() {
  */
 export function NotificationContextProvider({ children }: PropsWithChildren) {
   const [state, dispatch] = useReducer(pushReducer, null);
-  const { user } = useAuth();
 
   useEffect(() => {
     // Check if Notification API and Service Worker are supported
     if ("Notification" in window && navigator.serviceWorker) {
-      Notification.requestPermission()
-        .then(async (permission) => {
-          if (permission === "granted") {
-            // Check if the user is already subscribed by checking service worker directly
-            const registration = await navigator.serviceWorker.ready;
-            const existingSubscription =
-              await registration.pushManager.getSubscription();
-
-            if (existingSubscription) {
-              console.log("User is already subscribed:", existingSubscription);
-              dispatch({ type: "SUB", payload: { sub: existingSubscription } });
-            } else {
-              try {
-                const reg = await navigator.serviceWorker.ready;
-                const sub = await reg.pushManager.subscribe({
-                  userVisibleOnly: true,
-                  applicationServerKey: urlBase64ToUint8Array(
-                    import.meta.env.VITE_VAPID_PUBLIC_KEY
-                  ),
-                });
-
-                const payload = { subscription: sub, _id: user?._id };
-
-                client_log("payload: ", payload);
-                // Send the subscription to the server
-                await api.post("/auth/subscribe", JSON.stringify(payload));
-                dispatch({ type: "SUB", payload: { sub } });
-
-                console.log("User is subscribed:", sub);
-              } catch (error) {
-                console.error("Failed to subscribe the user: ", error);
-              }
-            }
-          }
+      // Check if the user is already subscribed
+      navigator.serviceWorker.ready
+        .then((registration) => {
+          registration.pushManager.getSubscription().then((subscription) => {
+            if (subscription) dispatch({ type: "SUB", payload: subscription });
+            else dispatch({ type: "UNSUB", payload: null });
+          });
         })
-        .catch((err) => console.error("Permission request error:", err));
+        .catch(() => {
+          dispatch({ type: "UNSUB", payload: null });
+        });
     }
   }, []);
 

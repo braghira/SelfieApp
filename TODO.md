@@ -135,8 +135,4 @@ Durante la presentazione i docenti non vogliono aspettare tre mesi che si conclu
 
 In ordine di importanza:
 
-- [x] Aggiungere azione reset per il timer reducer
-- [ ] Rendere i due timer resizable
-- [ ] Modificare la Navbar per accogliere le view
-- [ ] Definire la struttura dati delle note
-- [ ] Transizione dai workouts alle note
+- [ ] Aggiungere un DB a parte per le iscrizioni al servizio push, il model dovrebbe contenere una user reference e il solito array di subscriptions
