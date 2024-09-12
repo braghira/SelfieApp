@@ -1,5 +1,5 @@
 import { Trash2 } from "lucide-react";
-import { Button } from "./ui/button";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -19,7 +19,11 @@ interface EventDetailsProps {
   setOpen: (open: boolean) => void;
 }
 
-export default function EventDetails({ event, open, setOpen }: EventDetailsProps) {
+export default function EventDetails({
+  event,
+  open,
+  setOpen,
+}: EventDetailsProps) {
   const { user } = useAuth();
   const { deleteEvent } = useEventsApi();
 
@@ -38,27 +42,45 @@ export default function EventDetails({ event, open, setOpen }: EventDetailsProps
         <div className="flex justify-between items-start">
           <div>
             <div>
-              Date: <span className="base-semibold">{format(new Date(event.date), "dd/MM/yyyy HH:mm")}</span>
+              Date:{" "}
+              <span className="base-semibold">
+                {format(new Date(event.date), "dd/MM/yyyy HH:mm")}
+              </span>
             </div>
             <div>
               Duration: <span className="base-semibold">{event.duration}</span>
             </div>
             {event.location && (
               <div>
-                Location: <span className="base-semibold">{event.location}</span>
+                Location:{" "}
+                <span className="base-semibold">{event.location}</span>
               </div>
             )}
             {event.isRecurring && event.recurrencePattern && (
               <div>
-                Frequency: <span className="base-semibold">{event.recurrencePattern.frequency}</span><br />
-                {event.recurrencePattern.endType === 'after' && event.recurrencePattern.occurrences !== undefined && (
-                  <span>Repeats: {event.recurrencePattern.occurrences} times</span>
-                )}
-                {event.recurrencePattern.endType === 'until' && event.recurrencePattern.endDate && (
-                  <div>
-                    End Date: <span className="base-semibold">{format(new Date(event.recurrencePattern.endDate), "dd/MM/yyyy HH:mm")}</span>
-                  </div>
-                )}
+                Frequency:{" "}
+                <span className="base-semibold">
+                  {event.recurrencePattern.frequency}
+                </span>
+                <br />
+                {event.recurrencePattern.endType === "after" &&
+                  event.recurrencePattern.occurrences !== undefined && (
+                    <span>
+                      Repeats: {event.recurrencePattern.occurrences} times
+                    </span>
+                  )}
+                {event.recurrencePattern.endType === "until" &&
+                  event.recurrencePattern.endDate && (
+                    <div>
+                      End Date:{" "}
+                      <span className="base-semibold">
+                        {format(
+                          new Date(event.recurrencePattern.endDate),
+                          "dd/MM/yyyy HH:mm"
+                        )}
+                      </span>
+                    </div>
+                  )}
               </div>
             )}
           </div>
