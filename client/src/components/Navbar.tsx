@@ -7,7 +7,7 @@ import SideSheet from "./SideSheet";
 export default function Navbar() {
   return (
     <nav>
-      <div className="hidden fixed z-50 backface-visibility-hidden top-0 left-0 w-full h-[--navbar-h] sm:flex justify-between items-center py-1 px-5 sm:bg-card sm:border-b">
+      <div className="hidden fixed z-50 backface-visibility-hidden top-0 left-0 w-full h-[--navbar-h] md:flex justify-between items-center py-1 px-5 sm:bg-card sm:border-b">
         <NavLink to="/home">
           <Logo size="sm" />
         </NavLink>
@@ -71,7 +71,7 @@ export default function Navbar() {
 
       {/* Bottom mobile navbar */}
       {/* Added backface-visibility-hidden for mozilla android cause of a fixed position not working, Chat GPT */}
-      <div className="hidden max-[640px]:flex h-12 fixed backface-visibility-hidden left-0 bottom-0 w-full p-1 bg-background justify-around items-end gap-5 z-50 border-t border-border">
+      <div className="md:hidden flex h-12 fixed backface-visibility-hidden left-0 bottom-0 w-full p-1 bg-background justify-around items-end gap-5 z-50 border-t border-border">
         <NavLink
           to="/home"
           className={({ isActive }) =>

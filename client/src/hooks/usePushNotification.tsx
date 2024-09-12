@@ -140,6 +140,8 @@ export default function usePushNotification() {
 
       if (response.status === 202) {
         console.log(response.data);
+        subscribe(_id);
+        sendNotification(_id, payload);
       } else if (response.status === 200) {
         console.log(response.data);
       } else {

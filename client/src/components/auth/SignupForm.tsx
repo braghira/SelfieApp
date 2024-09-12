@@ -48,7 +48,7 @@ export default function SignupForm() {
 
   return (
     <Form {...form}>
-      <div className="flex flex-col items-center w-full sm:max-w-md">
+      <div className="flex flex-col items-center w-full max-w-sm md:max-w-md">
         <Logo className="mb-5" size="lg" />
 
         <h1 className="my-2 text-center">Sign Up</h1>

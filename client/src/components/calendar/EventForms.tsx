@@ -4,9 +4,23 @@ import { EventSchema, EventType, client_log } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import Loader from "./Loader";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import Loader from "@/components/Loader";
 import { useAuth } from "@/context/AuthContext";
 import { useEvents } from "@/context/EventContext";
 import useAxiosPrivate from "@/hooks/useAxiosPrivate";
@@ -35,9 +49,15 @@ export default function EventForm() {
   });
 
   async function onSubmit(event: EventType) {
-    if (event.isRecurring && (!event.recurrencePattern?.frequency || !event.recurrencePattern?.endType ||
-        (event.recurrencePattern.endType === 'after' && !event.recurrencePattern.occurrences) ||
-        (event.recurrencePattern.endType === 'until' && !event.recurrencePattern.endDate))) {
+    if (
+      event.isRecurring &&
+      (!event.recurrencePattern?.frequency ||
+        !event.recurrencePattern?.endType ||
+        (event.recurrencePattern.endType === "after" &&
+          !event.recurrencePattern.occurrences) ||
+        (event.recurrencePattern.endType === "until" &&
+          !event.recurrencePattern.endDate))
+    ) {
       form.setError("recurrencePattern", {
         type: "manual",
         message: "You need to select frequency and End Type",
@@ -72,7 +92,10 @@ export default function EventForm() {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-2 mt-4 w-[500px]">
+      <form
+        onSubmit={form.handleSubmit(onSubmit)}
+        className="flex flex-col gap-2 mt-4 w-full max-w-sm md:max-w-md"
+      >
         <FormField
           control={form.control}
           name="title"
@@ -162,7 +185,7 @@ export default function EventForm() {
               <FormControl>
                 <Checkbox
                   checked={field.value}
-                  onCheckedChange={field.onChange} 
+                  onCheckedChange={field.onChange}
                 />
               </FormControl>
               <FormMessage />
@@ -170,7 +193,7 @@ export default function EventForm() {
           )}
         />
 
-        {form.watch('isRecurring') && (
+        {form.watch("isRecurring") && (
           <>
             <FormField
               control={form.control}
@@ -179,7 +202,14 @@ export default function EventForm() {
                 <FormItem>
                   <FormLabel className="shad-form_label">Frequency</FormLabel>
                   <FormControl>
-                    <Select onValueChange={(value) => form.setValue("recurrencePattern.frequency", value as "daily" | "weekly" | "monthly")}>
+                    <Select
+                      onValueChange={(value) =>
+                        form.setValue(
+                          "recurrencePattern.frequency",
+                          value as "daily" | "weekly" | "monthly"
+                        )
+                      }
+                    >
                       <SelectTrigger className="w-[180px]">
                         <SelectValue placeholder="Select frequency" />
                       </SelectTrigger>
@@ -204,14 +234,25 @@ export default function EventForm() {
                 <FormItem>
                   <FormLabel className="shad-form_label">End Type</FormLabel>
                   <FormControl>
-                    <Select onValueChange={(value) => form.setValue("recurrencePattern.endType", value as "after" | "until")}>
+                    <Select
+                      onValueChange={(value) =>
+                        form.setValue(
+                          "recurrencePattern.endType",
+                          value as "after" | "until"
+                        )
+                      }
+                    >
                       <SelectTrigger className="w-[180px]">
                         <SelectValue placeholder="Select end type" />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectGroup>
-                          <SelectItem value="after">After N occurrences</SelectItem>
-                          <SelectItem value="until">Until a specific date</SelectItem>
+                          <SelectItem value="after">
+                            After N occurrences
+                          </SelectItem>
+                          <SelectItem value="until">
+                            Until a specific date
+                          </SelectItem>
                         </SelectGroup>
                       </SelectContent>
                     </Select>
@@ -221,13 +262,15 @@ export default function EventForm() {
               )}
             />
 
-            {form.watch('recurrencePattern.endType') === 'after' && (
+            {form.watch("recurrencePattern.endType") === "after" && (
               <FormField
                 control={form.control}
                 name="recurrencePattern.occurrences"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="shad-form_label">Occurrences</FormLabel>
+                    <FormLabel className="shad-form_label">
+                      Occurrences
+                    </FormLabel>
                     <FormControl>
                       <Input
                         type="number"
@@ -244,7 +287,7 @@ export default function EventForm() {
               />
             )}
 
-            {form.watch('recurrencePattern.endType') === 'until' && (
+            {form.watch("recurrencePattern.endType") === "until" && (
               <FormField
                 control={form.control}
                 name="recurrencePattern.endDate"
@@ -267,11 +310,16 @@ export default function EventForm() {
         )}
 
         {form.formState.errors.root && (
-          <FormMessage>{form.formState.errors.root.serverError?.message || form.formState.errors.root.validation?.message}</FormMessage>
+          <FormMessage>
+            {form.formState.errors.root.serverError?.message ||
+              form.formState.errors.root.validation?.message}
+          </FormMessage>
         )}
 
         {form.formState.errors.recurrencePattern && (
-          <FormMessage>{form.formState.errors.recurrencePattern.message}</FormMessage>
+          <FormMessage>
+            {form.formState.errors.recurrencePattern.message}
+          </FormMessage>
         )}
 
         <Button type="submit" className="shad-button_primary">
