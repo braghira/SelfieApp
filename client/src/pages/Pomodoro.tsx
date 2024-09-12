@@ -3,7 +3,18 @@ import StudyAnimation from "@/components/timer/StudyAnimation";
 import { Button } from "@/components/ui/button";
 import { useTimer } from "@/hooks/useTimer";
 import { ChevronLast, Play, RotateCcwIcon, SkipForward } from "lucide-react";
-import { useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import {
   Tooltip,
   TooltipContent,
@@ -11,9 +22,34 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import PomodoroForm from "@/components/timer/PomodoroForm";
+import usePushNotification, {
+  NotificationPayload,
+} from "@/hooks/usePushNotification";
+import { useAuth } from "@/context/AuthContext";
+import { BlockerFunction, useBlocker } from "react-router-dom";
 
 export default function Pomodoro() {
   const { timer, dispatch, InitialTimer, setInitialTimer } = useTimer();
+  const { RequestPushSub, sendNotification } = usePushNotification();
+  const { user } = useAuth();
+  const [open, setOpen] = useState(false);
+
+  // Block navigating elsewhere when data has been entered into the input
+  const shouldBlock = useCallback<BlockerFunction>(
+    ({ currentLocation, nextLocation }) =>
+      timer.study.started &&
+      timer.relax.started &&
+      currentLocation.pathname !== nextLocation.pathname,
+    [timer.relax.started, timer.study.started]
+  );
+  const blocker = useBlocker(shouldBlock);
+
+  useEffect(() => {
+    if (blocker.state === "blocked") {
+      setOpen(true);
+    }
+    console.log("breakpoint");
+  }, [blocker.state]);
 
   const remainder = useRef((timer.study.initialValue / 1000) % 5);
   const repetitions = useRef(
@@ -29,6 +65,7 @@ export default function Pomodoro() {
   }
 
   function reset() {
+    console.log("reset");
     dispatch({
       type: "SET",
       payload: InitialTimer,
@@ -112,6 +149,35 @@ export default function Pomodoro() {
     }
   }
 
+  // send a notification every time we start next phase
+  useEffect(() => {
+    const payload: NotificationPayload = {
+      title: "Pomodoro Timer",
+      body: timer.isStudyCycle ? "Study timer started" : "Relax timer started",
+      url: `${window.origin}/pomodoro`,
+    };
+
+    const userID = user?._id;
+
+    if (userID && timer.study.started && timer.relax.started)
+      RequestPushSub(() => sendNotification(userID, payload));
+  }, [timer.isStudyCycle]);
+
+  // send a notification when session is finished
+  useEffect(() => {
+    const payload: NotificationPayload = {
+      title: "Pomodoro Timer",
+      body: "Pomodoro session finished! Wheew",
+      url: `${window.origin}/pomodoro`,
+    };
+
+    const userID = user?._id;
+
+    if (userID && timer.totalTime === 0 && timer.relax.started) {
+      RequestPushSub(() => sendNotification(userID, payload));
+    }
+  }, [timer.totalTime]);
+
   return (
     <div className="view-container flex justify-center flex-col gap-5 md:flex-row sm:items-center mb-10">
       <div className="flex justify-start flex-col gap-5 max-w-[530px]">
@@ -164,6 +230,23 @@ export default function Pomodoro() {
                     <Button
                       onClick={() => {
                         start();
+
+                        const payload: NotificationPayload = {
+                          title: "Pomodoro Timer",
+                          body: "Pomodoro session started",
+                          url: `${window.origin}/pomodoro`,
+                        };
+
+                        const userID = user?._id;
+
+                        if (
+                          userID &&
+                          timer.totalTime === InitialTimer.totalTime &&
+                          !timer.study.started
+                        )
+                          RequestPushSub(() =>
+                            sendNotification(userID, payload)
+                          );
                       }}
                     >
                       <Play />
@@ -178,14 +261,14 @@ export default function Pomodoro() {
                 <TooltipTrigger asChild>
                   <Button
                     onClick={() =>
-                      timer.totalTime == 0 ? reset() : restartStudy()
+                      timer.totalTime === 0 ? reset() : restartStudy()
                     }
                   >
                     <RotateCcwIcon />
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>
-                  {timer.totalTime == 0 ? "Restart Session" : "Restart Cycle"}
+                  {timer.totalTime === 0 ? "Restart Session" : "Restart Cycle"}
                 </TooltipContent>
               </Tooltip>
             )}
@@ -236,6 +319,39 @@ export default function Pomodoro() {
           setInitialTimer={setInitialTimer}
         />
       )}
+
+      <AlertDialog open={open} onOpenChange={setOpen}>
+        <AlertDialogTrigger></AlertDialogTrigger>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will delete all of your
+              Pomodoro Session progress. All non-completed cycles will be
+              automatically added to your next pomodoro session(s).
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel
+              onClick={() => {
+                if (blocker.state === "blocked") blocker.reset();
+              }}
+            >
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (blocker.state === "blocked") {
+                  blocker.proceed();
+                  localStorage.removeItem("pomodoro_timer");
+                }
+              }}
+            >
+              Continue
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

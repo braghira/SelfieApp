@@ -37,7 +37,7 @@ export default function RelaxAnimation({
 
   useEffect(() => {
     startPlucking(timer.relax.started);
-  }, [timer.relax.started]);
+  }, []);
 
   useEffect(() => {
     if (timer.relax.started) {
@@ -49,7 +49,7 @@ export default function RelaxAnimation({
           type: "SET",
           payload: {
             study: timer.study,
-            relax: timer.relax,
+            relax: { ...timer.relax, started: false },
             isStudyCycle: false,
             cycles: 0,
             totalTime: 0,

@@ -1,4 +1,3 @@
-import { client_log } from "@/lib/utils";
 import { useReducer, useState } from "react";
 
 export type TimerType = {
@@ -189,7 +188,6 @@ export function useTimer() {
 
   if (storage) {
     parsed_timer = JSON.parse(storage);
-    client_log("storage: ", parsed_timer);
   }
 
   // default is 30/5 with 5 cycles for a total of 175m
