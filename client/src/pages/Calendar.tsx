@@ -13,6 +13,7 @@ import { useAuth } from "@/context/AuthContext";
 // hooks
 import useActivitiesApi from "@/hooks/useActivitiesApi";
 import useEventsApi from "@/hooks/useEventsApi.tsx";
+import usePushNotification, { NotificationPayload } from "@/hooks/usePushNotification";
 
 import { EventType } from "@/lib/utils";
 
@@ -23,6 +24,8 @@ export default function CalendarPage() {
   const { user } = useAuth();
   const { getEvents } = useEventsApi();
   const { getActivities } = useActivitiesApi();
+  const { RequestPushSub, sendNotification } = usePushNotification();
+  const [notificationStatus, setNotificationStatus] = useState<NotificationStatus>({});
 
   const [selectedEvent, setSelectedEvent] = useState<EventType | null>(null);
   const [open, setOpen] = useState(false);
@@ -46,6 +49,83 @@ export default function CalendarPage() {
     title: string;
     type: "event" | "activity";
   }
+
+  type NotificationStatus = {
+    [eventId: string]: { "24h"?: boolean; "3h"?: boolean; "1h"?: boolean; daily?: boolean; };
+  };
+
+  //se mancano 24, 3 o 1 ore invio una notifica
+    useEffect(() => {
+      const userID = user?._id;
+      const now = moment(); 
+      if (userID && events) {
+        const updatedStatus = { ...notificationStatus };
+        events.forEach((event) => { 
+          const eventId = event._id; 
+          if (eventId) {
+          const eventStart = moment(event.date);
+          const timeLeft = eventStart.diff(now, "hours");
+          if (!updatedStatus[eventId]) {
+            updatedStatus[eventId] = {};
+          }
+          if (timeLeft === 24 && !updatedStatus[eventId]["24h"]) {
+            sendEventNotification(userID,"24h", eventId);
+          }
+          if (timeLeft === 3 && !updatedStatus[eventId]["3h"]) {
+            sendEventNotification(userID,"3h",eventId);
+          }
+          if (timeLeft === 1 && !updatedStatus[eventId]["1h"]) {
+            sendEventNotification(userID,"1h",eventId);
+          }
+        }
+        });
+        //per le attività mando un ricordo giornalmente
+        activities.forEach((activity) => {
+          const activityId = activity._id;
+          if (activityId && activity.endDate && !activity.completed) {
+            const endDate = moment(activity.endDate);
+            const daysOverdue = now.diff(endDate, 'days');
+            if (endDate.isBefore(now, 'day')) {
+              if (!updatedStatus[activityId]) {
+                updatedStatus[activityId] = {};
+              }
+              if (!updatedStatus[activityId].daily) {
+                sendActivityNotification(userID, daysOverdue, activityId);
+                updatedStatus[activityId].daily = true; 
+              }
+            }
+          }
+        });
+          setNotificationStatus(updatedStatus);
+      }
+    }, [events, activities, user, notificationStatus]);
+
+    const sendEventNotification = (userID: string, timeLeft: string, eventId: string) => {
+      const payload: NotificationPayload = {
+        title: "Upcoming Event!!!",
+        body: `Check out your calendar, ${timeLeft} hours left until the event`,
+        url: `http://localhost:5173/calendar`,
+      };
+      RequestPushSub(() => sendNotification(userID, payload));
+      setNotificationStatus(prevStatus => ({
+        ...prevStatus,
+        [eventId]: { ...prevStatus[eventId], [timeLeft]: true },
+      }));
+    }
+    
+    const sendActivityNotification = (userID: string, daysPassed: number, activityId: string) => {
+      const payload: NotificationPayload = {
+        title: "Attività Scaduta!",
+        body: `L'attività è scaduta da ${daysPassed} giorni. Ricordati di completarla!`,
+        url: `http://localhost:5173/calendar`,
+      };
+      RequestPushSub(() => sendNotification(userID, payload));     
+      setNotificationStatus((prevStatus) => ({
+        ...prevStatus,
+        [activityId]: { ...prevStatus[activityId], [`day${daysPassed}`]: true },
+      }));
+    };
+    
 
   const eventPropGetter = (event: CustomEvent) => {
     const now = moment();
@@ -162,14 +242,13 @@ export default function CalendarPage() {
   ];
 
   return (
-    <div className="view-container mb-10 mt-6">
-      {selectedEvent && (
-        <div id="event-details-container">
+    <div className="container mb-2 mt-6">
+      <div id="event-details-container">
+        {selectedEvent && (
           <EventDetails event={selectedEvent} open={open} setOpen={setOpen} />
-        </div>
-      )}
-
-      <div className="flex flex-col md:grid md:grid-cols-[3fr_1fr] gap-8">
+        )}
+      </div>
+      <div className="flex flex-col gap-8 sm:grid lg:grid-cols-[3fr_1fr] sm:grid-cols-1">
         <Calendar
           localizer={localizer}
           views={["month", "week", "day"]}
@@ -179,10 +258,11 @@ export default function CalendarPage() {
           eventPropGetter={eventPropGetter}
           onSelectEvent={handleSelected}
         />
-        {activities && <ActivityList activities={activities} />}
+        <div className="hidden lg:block">
+          {activities && <ActivityList activities={activities} />}
+        </div>
       </div>
-
-      <div className="flex sm:flex-row flex-col items-center justify-around gap-5">
+      <div className="flex flex-col items-center gap-4 mt-8 sm:flex-row sm:justify-around">
         <EventForm />
         <ActivityForm />
       </div>

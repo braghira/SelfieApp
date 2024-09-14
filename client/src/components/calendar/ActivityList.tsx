@@ -120,7 +120,6 @@ export default function ActivityList({ activities }: ActivityDetailsProps) {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
                         <DropdownMenuItem onClick={() => handleComplete(activity)}>Complete</DropdownMenuItem>
                         <DropdownMenuItem onClick={() => handleDelete(activity)}>Delete</DropdownMenuItem>
                       </DropdownMenuContent>

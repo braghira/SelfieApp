@@ -5,6 +5,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogClose,
 } from "@/components/ui/dialog";
 // types
 import { EventType } from "@/lib/utils";
@@ -84,9 +85,11 @@ export default function EventDetails({
               </div>
             )}
           </div>
-          <Button variant="ghost" size={"icon"} onClick={handleDelete}>
-            <Trash2 className="h-6 w-6" />
-          </Button>
+          <DialogClose asChild>
+            <Button variant="ghost" size={"icon"} onClick={handleDelete}>
+              <Trash2 className="h-6 w-6" />
+            </Button>
+          </DialogClose>
         </div>
       </DialogContent>
     </Dialog>
