@@ -10,7 +10,8 @@ require("dotenv").config({ path: path.resolve(__dirname, ".env") }); // config m
 // our modules
 const activityRoutes = require(path.resolve(__dirname, "routes", "activities"));
 const eventRoutes = require(path.resolve(__dirname, "routes", "events"));
-const authRoutes = require(path.resolve(__dirname, "routes", "users"));
+const authRoutes = require(path.resolve(__dirname, "routes", "auth"));
+const userRoutes = require(path.resolve(__dirname, "routes", "users"));
 const mediaRoutes = require(path.resolve(__dirname, "routes", "media"));
 const corsOptions = require("./utils/corsOptions");
 const noteRoutes = require(path.resolve(__dirname, "routes", "notes"));
@@ -50,10 +51,11 @@ if (node_env === "production") {
 }
 
 // routes
+app.use("/auth", authRoutes);
+app.use("/api/users", userRoutes);
 app.use("/api/activities", activityRoutes);
 app.use("/api/events", eventRoutes);
 app.use("/api/media", mediaRoutes);
-app.use("/auth", authRoutes);
 app.use('/api/notes', noteRoutes);
 
 

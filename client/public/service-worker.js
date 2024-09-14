@@ -1,3 +1,5 @@
+/* eslint-disable no-undef */
+
 // when we receive a push notif we show it with a title, body and icon
 self.addEventListener('push', (event) => {
     if (event.data) {
@@ -6,7 +8,10 @@ self.addEventListener('push', (event) => {
         const options = {
             body: data.body,           // notif body
             icon: "./notebook2.png",           // notif icon
-            data: { url: data.url, }
+            data: {
+                url: data.url,
+                pomodoro: data.pomodoro
+            }
         };
 
         self.registration.showNotification(data.title, options);
@@ -15,9 +20,26 @@ self.addEventListener('push', (event) => {
 
 // when user clicks on a notification we redirect to the url provided
 self.addEventListener('notificationclick', (event) => {
-    event.notification.close();
+    const notification = event.notification;
+    const urlToOpen = new URL(notification.data.url, self.location.origin);
+
+    // Send a message to client with postMessage
     event.waitUntil(
-        // eslint-disable-next-line no-undef
-        clients.openWindow(event.notification.data.url)
+        clients.matchAll().then(clientsArr => {
+            // Check if app window is already open, if yes send the message to all of them
+            const hadWindow = clientsArr.some(client => {
+                client.postMessage({
+                    url: notification.data.url,
+                    pomodoro: notification.data.pomodoro
+                });
+                return client.focus();
+            });
+
+            if (!hadWindow) {
+                clients.openWindow(urlToOpen);
+            }
+        })
     );
+
+    notification.close();
 });
