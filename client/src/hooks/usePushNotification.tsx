@@ -10,7 +10,7 @@ export type NotificationPayload = {
   title: string; // notification title
   body: string; // body of the notification
   url: string; // data containing url to get to when clicking, and a PomodoroTimer session if needed
-  pomodoro: PomodoroType | null;
+  pomodoro?: PomodoroType;  
 };
 
 export default function usePushNotification() {
