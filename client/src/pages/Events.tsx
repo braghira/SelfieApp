@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 // components
-import EventDetails from "@/components/EventDetails";
-import EventForm from "@/components/EventForms";
+import EventDetails from "@/components/calendar/EventDetails";
+import EventForm from "@/components/calendar/EventForms";
 // context
 import { useEvents } from "@/context/EventContext";
 import { useAuth } from "@/context/AuthContext";
@@ -18,15 +18,20 @@ export default function Events() {
     if (user) {
       getEvents();
     }
-  }, [dispatch, user]); // only re render when an action is performed on a workout
+  }, [dispatch, user]); // only re render when an action is performed on a event
 
   return (
     <div className="view-container mb-8">
       <div className="grid sm:grid-cols-[3fr_1fr] gap-7">
         <div className="flex max-w-3xl justify-start flex-col gap-5">
-         {events &&
+          {events &&
             events.map((event) => (
-              <EventDetails key={event._id} event={event} open={open} setOpen={setOpen} />
+              <EventDetails
+                key={event._id}
+                event={event}
+                open={open}
+                setOpen={setOpen}
+              />
             ))}
         </div>
         <EventForm />

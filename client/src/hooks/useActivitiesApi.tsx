@@ -78,12 +78,12 @@ export default function useActivitiesApi() {
           headers: { Authorization: `Bearer ${user?.accessToken}` },
         }
       );
-  
+
       // La risposta dovrebbe contenere l'oggetto aggiornato
       const json = response.data;
       // Controlliamo che lo schema sia corretto con zod
       const parsed = ActivitySchema.safeParse(json);
-  
+
       if (parsed.success) {
         // Dispatch l'azione corretta per aggiornare l'attività
         dispatch({ type: "UPDATE_ACTIVITY", payload: json });
@@ -99,7 +99,6 @@ export default function useActivitiesApi() {
       }
     }
   }
-  
 
   return { getActivities, deleteActivity, completeActivity };
 }

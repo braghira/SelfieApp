@@ -1,9 +1,14 @@
-import { useEffect, useState, useMemo } from 'react';
-import { Button } from '@/components/ui/button';
-import NoteCard from '@/components/editor/notecard';
-import { useNoteContext } from '@/context/NoteContext';
-import useNotes from '@/hooks/useNote';
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
+import { useEffect, useState, useMemo } from "react";
+import { Button } from "@/components/ui/button";
+import NoteCard from "@/components/editor/notecard";
+import { useNoteContext } from "@/context/NoteContext";
+import useNotes from "@/hooks/useNote";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
 
 interface Note {
   _id?: string;

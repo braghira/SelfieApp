@@ -1,13 +1,16 @@
 import { useAuth } from "@/context/AuthContext";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import useAxiosPrivate from "./useAxiosPrivate";
 import { client_log, getPushSub } from "@/lib/utils";
 import { usePushContext } from "@/context/NotificationContext";
+import { PomodoroType } from "./useTimer";
+import { useNavigate } from "react-router-dom";
 
 export type NotificationPayload = {
   title: string; // notification title
   body: string; // body of the notification
-  url: string; // url to go to when clicking notification
+  url: string; // data containing url to get to when clicking, and a PomodoroTimer session if needed
+  pomodoro: PomodoroType | null;
 };
 
 export default function usePushNotification() {
@@ -17,6 +20,7 @@ export default function usePushNotification() {
   const private_api = useAxiosPrivate();
   const { user } = useAuth();
   const { dispatch } = usePushContext();
+  const navigate = useNavigate();
 
   const notificationsSupported = () =>
     "Notification" in window &&
@@ -29,6 +33,18 @@ export default function usePushNotification() {
   async function registerServiceWorker() {
     return navigator.serviceWorker.register("/service-worker.js");
   }
+
+  // receive the clicked message and redirect the user based on the url provided
+  useEffect(() => {
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.addEventListener("message", (event) => {
+        const { url, pomodoro } = event.data;
+        console.log(`Message from service worker: ${url}, ${pomodoro}`);
+
+        navigate(url);
+      });
+    }
+  }, []);
 
   /**
    * Deletes all service workers

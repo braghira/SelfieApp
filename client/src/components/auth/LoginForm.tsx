@@ -89,13 +89,6 @@ export default function LoginForm() {
             {form.formState.isSubmitting ? <Loader /> : "Login"}
           </Button>
 
-          <NavLink
-            to="/forgot-password"
-            className="mt-2 hover:underline cursor-pointer"
-          >
-            <p>Forgot Password?</p>
-          </NavLink>
-
           <p className="mt-4 text-center">
             {"Don't have an account yet?"}
             <NavLink to="/signup" className="text-primary ml-2 hover:underline">
