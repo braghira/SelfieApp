@@ -1,5 +1,6 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useState } from "react";
 // types
 import { ActivitySchema, ActivityType, client_log } from "@/lib/utils";
 // components
@@ -17,12 +18,15 @@ import { useAuth } from "@/context/AuthContext";
 import { useActivities } from "@/context/ActivityContext";
 import useAxiosPrivate from "@/hooks/useAxiosPrivate";
 import Loader from "../Loader";
+import UsersSearchBar from "@/components/UsersSearchBar";
 import { isAxiosError } from "axios";
+import { UserType } from "@/lib/utils";
 
 export default function ActivityForm() {
   const { dispatch } = useActivities();
   const { user } = useAuth();
   const private_api = useAxiosPrivate();
+  const [userList, setUsersList] = useState<UserType[]>([]);
 
   const form = useForm<ActivityType>({
     resolver: zodResolver(ActivitySchema),
@@ -101,6 +105,7 @@ export default function ActivityForm() {
             </FormItem>
           )}
         />
+        <UsersSearchBar userList={userList} setUsersList={setUsersList} />
         <Button type="submit" className="shad-button_primary">
           {form.formState.isSubmitting ? <Loader /> : "Add Activity"}
         </Button>
