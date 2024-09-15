@@ -2,9 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { useNoteContext } from '@/context/NoteContext';
 import useNotes from '@/hooks/useNote';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { marked } from 'marked'; 
+import { useTimeMachineContext } from '@/context/TimeMachine';
+import Loader from '@/components/Loader';
 
 interface NoteData {
   title: string;
@@ -23,22 +25,27 @@ function NoteEditor() {
   const { addNote, updateNote, fetchNotes } = useNotes(); 
   const { id } = useParams(); 
   const { user } = useAuth();
+  const { currentDate } = useTimeMachineContext(); // Usa la data simulata
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [showPopup, setShowPopup] = useState(false);
   const [initialFetch, setInitialFetch] = useState(false);
+
   const [noteData, setNoteData] = useState<NoteData>({
     title: '',
     content: '',
     categories: [],
-    author: user?.name || '',
+    author: user?.name || '', // Popola con il nome dell'utente loggato
     accessType: 'private',
     specificAccess: [],
-    createdAt: new Date(),
-    updatedAt: new Date(),
+    createdAt: currentDate,  // Usa la data simulata per la creazione
+    updatedAt: currentDate,  // Usa la data simulata per l'aggiornamento
   });
 
   useEffect(() => {
+    console.log('Current date from TimeMachineContext:', currentDate); // Debug: verifica la data
+
     const fetchNote = async () => {
       if (!id || initialFetch) return;
       setLoading(true);
@@ -46,8 +53,13 @@ function NoteEditor() {
         const fetchedNotes = await fetchNotes();
         const note = fetchedNotes.find((note) => note._id === id);
         if (note) {
-          setNoteData(note);
+          setNoteData({
+            ...note,
+            createdAt: note.createdAt || new Date(),
+            updatedAt: note.updatedAt as Date,
+          });
           setInitialFetch(true);
+          console.log('Nota caricata:', note); // Debug
         } else {
           setError('Nota non trovata.');
         }
@@ -60,7 +72,7 @@ function NoteEditor() {
     };
 
     fetchNote();
-  }, [id, fetchNotes, initialFetch]);
+  }, [id, fetchNotes, initialFetch, currentDate]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -79,18 +91,20 @@ function NoteEditor() {
       if (id) {
         const updatedNoteData: NoteData = {
           ...noteData,
-          updatedAt: new Date(),
+          updatedAt: currentDate,  // Usa la data simulata per l'aggiornamento
         };
         await updateNote(updatedNoteData);
         dispatch({ type: 'UPDATE_NOTE', payload: updatedNoteData });
+        console.log('Nota aggiornata:', updatedNoteData); // Debug
       } else {
         const newNoteData: NoteData = {
           ...noteData,
-          createdAt: new Date(),
-          updatedAt: new Date(),
+          createdAt: currentDate,  // Usa la data simulata per la creazione
+          updatedAt: currentDate,  // Usa la data simulata per l'aggiornamento
         };
         await addNote(newNoteData);
         dispatch({ type: 'ADD_NOTE', payload: newNoteData });
+        console.log('Nuova nota creata:', newNoteData); // Debug
       }
       setShowPopup(true);
     } catch (err) {
@@ -113,135 +127,139 @@ function NoteEditor() {
     return { __html: marked(markdown) };
   };
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) return  <Loader />;
   if (error) return <div>{error}</div>;
 
   return (
     <div>
-      <form onSubmit={handleSubmit} className="p-8 bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-3xl mx-auto">
+    <form onSubmit={handleSubmit} className="p-8 bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-3xl mx-auto">
+      <div className="mb-8">
+        <label className="block text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4">Title</label>
+        <input
+          type="text"
+          name="title"
+          value={noteData.title}
+          onChange={handleChange}
+          className="w-full p-4 text-lg text-gray-900 dark:text-gray-100 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-4 focus:ring-red-500 transition"
+          required
+        />
+      </div>
+  
+      <div className="mb-8">
+        <label className="block text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4">Content</label>
+        <textarea
+          name="content"
+          value={noteData.content}
+          onChange={handleChange}
+          className="w-full p-4 text-lg text-gray-900 dark:text-gray-100 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-4 focus:ring-red-500 transition"
+          rows={10}
+          required
+        ></textarea>
+        <div className="text-sm text-gray-500 mt-2">You can use Markdown syntax in the content.</div>
+      </div>
+  
+      {containsMarkdown(noteData.content) && (
         <div className="mb-8">
-          <label className="block text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4">Title</label>
-          <input
-            type="text"
-            name="title"
-            value={noteData.title}
-            onChange={handleChange}
-            className="w-full p-4 text-lg text-gray-900 dark:text-gray-100 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-4 focus:ring-red-500 transition"
-            required
+          <label className="block text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4">Preview</label>
+          <div 
+            className="p-4 text-lg text-gray-900 dark:text-gray-100 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg"
+            dangerouslySetInnerHTML={renderMarkdown(noteData.content)} 
           />
         </div>
-
+      )}
+  
+      <div className="mb-8">
+        <label className="block text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4">Categories</label>
+        <input
+          type="text"
+          name="categories"
+          value={noteData.categories.join(', ')}
+          onChange={(e) =>
+            setNoteData({
+              ...noteData,
+              categories: e.target.value.split(',').map((cat) => cat.trim()),
+            })
+          }
+          className="w-full p-4 text-lg text-gray-900 dark:text-gray-100 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-4 focus:ring-red-500 transition"
+        />
+      </div>
+  
+      <div className="mb-8">
+        <label className="block text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4">Author</label>
+        <input
+          type="text"
+          name="author"
+          value={noteData.author}
+          onChange={handleChange}
+          className="w-full p-4 text-lg text-gray-900 dark:text-gray-100 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-4 focus:ring-red-500 transition"
+          required
+          disabled
+        />
+      </div>
+  
+      <div className="mb-8">
+        <label className="block text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4">Access Type</label>
+        <select
+          name="accessType"
+          value={noteData.accessType}
+          onChange={handleChange}
+          className="w-full p-4 text-lg text-gray-900 dark:text-gray-100 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-4 focus:ring-red-500 transition"
+        >
+          <option value="private">Private</option>
+          <option value="public">Public</option>
+          <option value="restricted">Restricted</option>
+        </select>
+      </div>
+  
+      {noteData.accessType === 'restricted' && (
         <div className="mb-8">
-          <label className="block text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4">Content</label>
-          <textarea
-            name="content"
-            value={noteData.content}
-            onChange={handleChange}
-            className="w-full p-4 text-lg text-gray-900 dark:text-gray-100 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-4 focus:ring-red-500 transition"
-            rows={10}
-            required
-          ></textarea>
-          <div className="text-sm text-gray-500 mt-2">You can use Markdown syntax in the content.</div>
-        </div>
-
-        {containsMarkdown(noteData.content) && (
-          <div className="mb-8">
-            <label className="block text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4">Preview</label>
-            <div 
-              className="p-4 text-lg text-gray-900 dark:text-gray-100 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg"
-              dangerouslySetInnerHTML={renderMarkdown(noteData.content)} 
-            />
-          </div>
-        )}
-
-        <div className="mb-8">
-          <label className="block text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4">Categories</label>
+          <label className="block text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4">Specific Access</label>
           <input
             type="text"
-            name="categories"
-            value={noteData.categories.join(', ')}
+            name="specificAccess"
+            value={noteData.specificAccess.join(', ')}
             onChange={(e) =>
               setNoteData({
                 ...noteData,
-                categories: e.target.value.split(',').map((cat) => cat.trim()),
+                specificAccess: e.target.value.split(',').map((email) => email.trim()),
               })
             }
             className="w-full p-4 text-lg text-gray-900 dark:text-gray-100 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-4 focus:ring-red-500 transition"
           />
         </div>
-
-        <div className="mb-8">
-          <label className="block text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4">Author</label>
-          <input
-            type="text"
-            name="author"
-            value={noteData.author}
-            onChange={handleChange}
-            className="w-full p-4 text-lg text-gray-900 dark:text-gray-100 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-4 focus:ring-red-500 transition"
-            required
-            disabled 
-          />
-        </div>
-
-        <div className="mb-8">
-          <label className="block text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4">Access Type</label>
-          <select
-            name="accessType"
-            value={noteData.accessType}
-            onChange={handleChange}
-            className="w-full p-4 text-lg text-gray-900 dark:text-gray-100 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-4 focus:ring-red-500 transition"
-          >
-            <option value="private">Private</option>
-            <option value="public">Public</option>
-            <option value="restricted">Restricted</option>
-          </select>
-        </div>
-
-        {noteData.accessType === 'restricted' && (
-          <div className="mb-8">
-            <label className="block text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4">Specific Access</label>
-            <input
-              type="text"
-              name="specificAccess"
-              value={noteData.specificAccess.join(', ')}
-              onChange={(e) =>
-                setNoteData({
-                  ...noteData,
-                  specificAccess: e.target.value.split(',').map((acc) => acc.trim()),
-                })
-              }
-              className="w-full p-4 text-lg text-gray-900 dark:text-gray-100 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-4 focus:ring-red-500 transition"
-            />
-          </div>
-        )}
-
+      )}
+  
+      <div className="flex items-center justify-between">
         <Button
           type="submit"
           className="hover:bg-red-700 focus:outline-none focus:ring-4 focus:ring-red-500 transition"
           disabled={loading}
-          aria-label={id ? 'Update Note' : 'Create Note'}  // Aggiungi aria-label qui
+          aria-label={id ? 'Update Note' : 'Create Note'}
         >
           {id ? 'Update Note' : 'Create Note'}
         </Button>
-      </form>
-
-      {showPopup && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-          <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-xl text-center">
-            <h2 className="text-2xl font-bold mb-4 text-gray-800 dark:text-gray-100">
-              {id ? 'Nota aggiornata' : 'Nota creata'} con successo!
-            </h2>
-            <Button
-              onClick={closePopup}
-              className="hover:bg-red-700 focus:outline-none focus:ring-4 focus:ring-red-500 transition"
-              aria-label="OK"  // Aggiungi aria-label qui
-            >
-              OK
-            </Button>
-          </div>
+  
+        <Button
+          type="button"
+          onClick={() => navigate("/notes")}
+          className="ml-4 hover:bg-red-700 focus:outline-none focus:ring-4 focus:ring-red-500 transition"
+          aria-label="Torna alla Home Note"
+        >
+          Torna alla Home Note
+        </Button>
+      </div>
+    </form>
+  
+    {showPopup && (
+      <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg">
+          <p className="text-lg text-gray-900 dark:text-gray-100">Nota salvata con successo!</p>
+          <Button onClick={closePopup} className="mt-4">OK</Button>
         </div>
-      )}
-    </div>
+      </div>
+    )}
+  </div>
+  
   );
 }
 

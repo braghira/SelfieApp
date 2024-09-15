@@ -3,6 +3,7 @@ import { buttonVariants } from "./ui/button";
 import Logo from "./Logo";
 import { CalendarDays, HomeIcon, NotebookIcon, TimerIcon } from "lucide-react";
 import SideSheet from "./SideSheet";
+import TimeMachinePopup from "./TimeMachine"; 
 
 export default function Navbar() {
   return (
@@ -64,6 +65,7 @@ export default function Navbar() {
           >
             Notes
           </NavLink>
+          <TimeMachinePopup />
         </div>
 
         <SideSheet />
@@ -123,7 +125,7 @@ export default function Navbar() {
         >
           <NotebookIcon />
         </NavLink>
-
+        <TimeMachinePopup />
         <SideSheet />
       </div>
     </nav>

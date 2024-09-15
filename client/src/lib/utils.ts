@@ -61,12 +61,10 @@ export const NoteSchema = z.object({
   specificAccess: z.array(z.string().trim()).optional().default([]),
   createdAt: z
     .date()
-    .optional()
-    .default(() => new Date()),
+    .optional(), 
   updatedAt: z
     .date()
-    .optional()
-    .default(() => new Date()),
+    .optional(),  
   _id: z.string().optional(),
 });
 export type NoteType = z.infer<typeof NoteSchema>;
