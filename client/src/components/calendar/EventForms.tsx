@@ -1,4 +1,5 @@
 import { useForm } from "react-hook-form";
+import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { EventSchema, EventType, client_log } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -25,11 +26,14 @@ import { useAuth } from "@/context/AuthContext";
 import { useEvents } from "@/context/EventContext";
 import useAxiosPrivate from "@/hooks/useAxiosPrivate";
 import { isAxiosError } from "axios";
+import { UserType } from "@/lib/utils";
+import UsersSearchBar from "@/components/UsersSearchBar";
 
 export default function EventForm() {
   const { dispatch } = useEvents();
   const { user } = useAuth();
   const private_api = useAxiosPrivate();
+  const [userList, setUsersList] = useState<UserType[]>([]);
 
   const form = useForm<EventType>({
     resolver: zodResolver(EventSchema),
@@ -192,6 +196,7 @@ export default function EventForm() {
             </FormItem>
           )}
         />
+        <UsersSearchBar userList={userList} setUsersList={setUsersList} />
 
         {form.watch("isRecurring") && (
           <>
