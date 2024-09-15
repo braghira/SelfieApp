@@ -1,20 +1,16 @@
 import { useState, useEffect } from "react";
 import { Calendar, momentLocalizer, Event } from "react-big-calendar";
 import moment from "moment";
-// components
 import EventForm from "@/components/calendar/EventForms";
 import EventDetails from "@/components/calendar/EventDetails";
 import ActivityForm from "@/components/calendar/ActivityForms";
 import ActivityList from "@/components/calendar/ActivityList";
-// context
 import { useEvents } from "@/context/EventContext";
 import { useActivities } from "@/context/ActivityContext";
 import { useAuth } from "@/context/AuthContext";
-// hooks
 import useActivitiesApi from "@/hooks/useActivitiesApi";
 import useEventsApi from "@/hooks/useEventsApi.tsx";
 import usePushNotification, { NotificationPayload } from "@/hooks/usePushNotification";
-
 import { EventType } from "@/lib/utils";
 
 export default function CalendarPage() {
@@ -25,8 +21,16 @@ export default function CalendarPage() {
   const { getEvents } = useEventsApi();
   const { getActivities } = useActivitiesApi();
   const { RequestPushSub, sendNotification } = usePushNotification();
-  const [notificationStatus, setNotificationStatus] = useState<NotificationStatus>({});
-
+  const [notificationEventStatus, setNotificationEventStatus] = useState<NotificationEventStatus>(() => {
+    const savedStatus = localStorage.getItem("notificationEventStatus");
+    console.log("Loaded event status from localStorage", savedStatus);
+    return savedStatus ? JSON.parse(savedStatus) : {};
+  });
+  const [notificationActivitiesStatus, setNotificationActivitiesStatus] = useState<NotificationActivityStatus>(() => {
+    const savedStatus = localStorage.getItem("notificationActivityStatus");
+    console.log("Loaded activity status from localStorage", savedStatus);
+    return savedStatus ? JSON.parse(savedStatus) : {};
+  });
   const [selectedEvent, setSelectedEvent] = useState<EventType | null>(null);
   const [open, setOpen] = useState(false);
 
@@ -36,6 +40,14 @@ export default function CalendarPage() {
       getEvents();
     }
   }, [dispatchA, dispatchE, user]);
+
+  useEffect(() => {
+    localStorage.setItem("notificationEventStatus", JSON.stringify(notificationEventStatus));
+  }, [notificationEventStatus]);
+
+  useEffect(() => {
+    localStorage.setItem("notificationActivitiesStatus", JSON.stringify(notificationActivitiesStatus));
+  }, [notificationActivitiesStatus]);
 
   const colors = {
     late: "#d15446",
@@ -50,82 +62,89 @@ export default function CalendarPage() {
     type: "event" | "activity";
   }
 
-  type NotificationStatus = {
-    [eventId: string]: { "24h"?: boolean; "3h"?: boolean; "1h"?: boolean; daily?: boolean; };
+  type NotificationEventStatus = {
+    [eventId: string]: { "24h"?: boolean; "3h"?: boolean; "1h"?: boolean; };
   };
 
-  //se mancano 24, 3 o 1 ore invio una notifica
-    useEffect(() => {
-      const userID = user?._id;
-      const now = moment(); 
-      if (userID && events) {
-        const updatedStatus = { ...notificationStatus };
-        events.forEach((event) => { 
-          const eventId = event._id; 
-          if (eventId) {
+  type NotificationActivityStatus = {
+    [activityId: string]: { lastNotified?: string };
+  };
+
+  useEffect(() => {
+    const userID = user?._id;
+    const now = moment();
+    const today = now.format("YYYY-MM-DD");
+    if (userID && events) {
+      const updatedEventStatus = { ...notificationEventStatus };
+      events.forEach((event) => {
+        const eventId = event._id;
+        if (eventId) {
           const eventStart = moment(event.date);
           const timeLeft = eventStart.diff(now, "hours");
-          if (!updatedStatus[eventId]) {
-            updatedStatus[eventId] = {};
+          if (!updatedEventStatus[eventId]) {
+            updatedEventStatus[eventId] = {};
           }
-          if (timeLeft === 24 && !updatedStatus[eventId]["24h"]) {
-            sendEventNotification(userID,"24h", eventId);
+          if (timeLeft === 24 && !updatedEventStatus[eventId]["24h"]) {
+            const eventTitle = event.title;
+            sendEventNotification(userID, "24h", eventTitle);
+            updatedEventStatus[eventId]["24h"] = true;
           }
-          if (timeLeft === 3 && !updatedStatus[eventId]["3h"]) {
-            sendEventNotification(userID,"3h",eventId);
+          if (timeLeft === 3 && !updatedEventStatus[eventId]["3h"]) {
+            const eventTitle = event.title;
+            sendEventNotification(userID, "3h", eventTitle);
+            updatedEventStatus[eventId]["3h"] = true;
           }
-          if (timeLeft === 1 && !updatedStatus[eventId]["1h"]) {
-            sendEventNotification(userID,"1h",eventId);
+          if (timeLeft === 1 && !updatedEventStatus[eventId]["1h"]) {
+            const eventTitle = event.title;
+            sendEventNotification(userID, "1h", eventTitle);
+            updatedEventStatus[eventId]["1h"] = true;
           }
         }
-        });
-        //per le attività mando un ricordo giornalmente
-        activities.forEach((activity) => {
-          const activityId = activity._id;
-          if (activityId && activity.endDate && !activity.completed) {
-            const endDate = moment(activity.endDate);
-            const daysOverdue = now.diff(endDate, 'days');
-            if (endDate.isBefore(now, 'day')) {
-              if (!updatedStatus[activityId]) {
-                updatedStatus[activityId] = {};
-              }
-              if (!updatedStatus[activityId].daily) {
-                sendActivityNotification(userID, daysOverdue, activityId);
-                updatedStatus[activityId].daily = true; 
-              }
+      });
+      setNotificationEventStatus(updatedEventStatus);
+    }
+
+    if (userID && activities) {
+      const updatedActivityStatus = { ...notificationActivitiesStatus  };
+      activities.forEach((activity) => {
+        const activityId = activity._id;
+        if (activityId && activity.endDate && !activity.completed) {
+          const endDate = moment(activity.endDate);
+          const daysOverdue = now.diff(endDate, "days");
+          if (endDate.isBefore(now, "day")) {
+            if (!updatedActivityStatus[activityId]) {
+              updatedActivityStatus[activityId] = {};
+            }
+            const lastNotified = updatedActivityStatus[activityId].lastNotified;
+            if (lastNotified != today) {
+              const activityName = activity.title;
+              sendActivityNotification(userID, daysOverdue, activityName);
+              updatedActivityStatus[activityId].lastNotified = today;
             }
           }
-        });
-          setNotificationStatus(updatedStatus);
-      }
-    }, [events, activities, user, notificationStatus]);
-
-    const sendEventNotification = (userID: string, timeLeft: string, eventId: string) => {
-      const payload: NotificationPayload = {
-        title: "Upcoming Event!!!",
-        body: `Check out your calendar, ${timeLeft} hours left until the event`,
-        url: `http://localhost:5173/calendar`,
-      };
-      RequestPushSub(() => sendNotification(userID, payload));
-      setNotificationStatus(prevStatus => ({
-        ...prevStatus,
-        [eventId]: { ...prevStatus[eventId], [timeLeft]: true },
-      }));
+        }
+      });
+      setNotificationActivitiesStatus(updatedActivityStatus);
     }
-    
-    const sendActivityNotification = (userID: string, daysPassed: number, activityId: string) => {
-      const payload: NotificationPayload = {
-        title: "Attività Scaduta!",
-        body: `L'attività è scaduta da ${daysPassed} giorni. Ricordati di completarla!`,
-        url: `http://localhost:5173/calendar`,
-      };
-      RequestPushSub(() => sendNotification(userID, payload));     
-      setNotificationStatus((prevStatus) => ({
-        ...prevStatus,
-        [activityId]: { ...prevStatus[activityId], [`day${daysPassed}`]: true },
-      }));
+  }, [events, activities]);
+
+  const sendEventNotification = (userID: string, timeLeft: string, eventTitle: string) => {
+    const payload: NotificationPayload = {
+      title: "Upcoming Event!!!",
+      body: `Check out your calendar, ${timeLeft} hours left until the event: ${eventTitle}`,
+      url: `http://localhost:5173/calendar`,
     };
-    
+    RequestPushSub(() => sendNotification(userID, payload));
+  };
+
+  const sendActivityNotification = (userID: string, daysPassed: number, activityName: string) => {
+    const payload: NotificationPayload = {
+      title: "You are late to complete an activity!",
+      body: `L'attività: ${activityName} è scaduta da ${daysPassed} giorni. Ricordati di completarla!`,
+      url: `http://localhost:5173/calendar`,
+    };
+    RequestPushSub(() => sendNotification(userID, payload));
+  };
 
   const eventPropGetter = (event: CustomEvent) => {
     const now = moment();
@@ -151,7 +170,6 @@ export default function CalendarPage() {
 
   const handleSelected = (event: Event) => {
     const selectedEvent = event as CustomEvent;
-
     if (selectedEvent.type === "event") {
       const fullEvent = events?.find((e) => e.title === selectedEvent.title);
       if (fullEvent) {
