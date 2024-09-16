@@ -7,6 +7,7 @@ import { useAuth } from '@/context/AuthContext';
 import { marked } from 'marked'; 
 import { useTimeMachineContext } from '@/context/TimeMachine';
 import Loader from '@/components/Loader';
+import UserFinder from "@/components/UserFinder";
 
 interface NoteData {
   title: string;
@@ -212,22 +213,45 @@ function NoteEditor() {
       </div>
   
       {noteData.accessType === 'restricted' && (
-        <div className="mb-8">
-          <label className="block text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4">Specific Access</label>
-          <input
-            type="text"
-            name="specificAccess"
-            value={noteData.specificAccess.join(', ')}
-            onChange={(e) =>
-              setNoteData({
-                ...noteData,
-                specificAccess: e.target.value.split(',').map((email) => email.trim()),
-              })
-            }
-            className="w-full p-4 text-lg text-gray-900 dark:text-gray-100 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-4 focus:ring-red-500 transition"
-          />
-        </div>
-      )}
+  <div className="mb-8">
+    <label className="block text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4">Specific Access</label>
+    <input
+      type="text"
+      name="specificAccess"
+      value={noteData.specificAccess.join(', ')}
+      onChange={(e) =>
+        setNoteData({
+          ...noteData,
+          specificAccess: e.target.value.split(',').map((username) => username.trim()),
+        })
+      }
+      className="w-full p-4 text-lg text-gray-900 dark:text-gray-100 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-4 focus:ring-red-500 transition"
+    />
+    
+    {/* Integrazione di UserFinder */}
+    <UserFinder 
+      onUserSelect={(username: string) => {
+        // Aggiungi l'username selezionato a specificAccess se non è già presente
+        if (!noteData.specificAccess.includes(username)) {
+          setNoteData({
+            ...noteData,
+            specificAccess: [...noteData.specificAccess, username],
+          });
+        }
+      }}
+    />
+    
+    {/* Visualizza gli utenti con accesso specifico */}
+    <div className="mt-4">
+      {noteData.specificAccess.map((user, index) => (
+        <span key={index} className="inline-block bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-100 px-3 py-1 rounded-lg mr-2 mb-2">
+          {user}
+        </span>
+      ))}
+    </div>
+  </div>
+)}
+
   
       <div className="flex items-center justify-between">
         <Button

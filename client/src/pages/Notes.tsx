@@ -124,4 +124,3 @@ function HomeNote() {
 }
 
 export default HomeNote;
-
