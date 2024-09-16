@@ -400,3 +400,15 @@
 .rbc-date-cell.rbc-now.rbc-current{
   @apply text-black;
 }
+@keyframes rotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.rotating-clock {
+  animation: rotate 10s linear infinite;
+}

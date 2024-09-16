@@ -32,7 +32,7 @@ const getNote = async (req, res) => {
 
 // Crea una nuova nota
 const createNote = async (req, res) => {
-    const { title, content, categories, author, accessType, specificAccess } = req.body;
+    const { title, content, categories, author, accessType, specificAccess, createdAt, updatedAt } = req.body;
 
     try {
         const newNote = new Note({
@@ -41,8 +41,11 @@ const createNote = async (req, res) => {
             categories: categories || [],
             author,
             accessType: accessType || 'private',
-            specificAccess: specificAccess || []
+            specificAccess: specificAccess || [],
+            createdAt: createdAt ? new Date(createdAt) : Date.now(),  // Usa la data fornita dal client o la data di sistema
+            updatedAt: updatedAt ? new Date(updatedAt) : Date.now(),  // Usa la data fornita dal client o la data di sistema
         });
+
         const savedNote = await newNote.save();
         res.status(201).json(savedNote);
     } catch (error) {
@@ -67,7 +70,9 @@ const duplicateNote = async (req, res) => {
         const duplicatedNote = new Note({
             ...note.toObject(),
             _id: undefined, // Genera un nuovo ID
-            title: `Copy of ${note.title}` // Modifica il titolo per differenziare
+            title: `Copy of ${note.title}`, // Modifica il titolo per differenziare
+            createdAt: Date.now(), // Imposta una nuova data di creazione
+            updatedAt: Date.now()  // Imposta una nuova data di aggiornamento
         });
 
         const savedNote = await duplicatedNote.save();
@@ -134,4 +139,3 @@ module.exports = {
     duplicateNote,
     deleteAllNotes
 };
-
