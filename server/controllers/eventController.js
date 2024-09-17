@@ -27,16 +27,25 @@ const getEvent = async(req, res) => {
 
 // create a new event
 const createEvent = async (req, res) => {
-    const { title, date, duration, location, isRecurring, recurrencePattern } = req.body
+    const { title, date, duration, location, isRecurring, itsPomodoro, groupList, recurrencePattern, pomodoro } = req.body
 
     // add document to DB
     try {
-        const event = await Event.create({ title, date, duration, location, isRecurring, recurrencePattern: isRecurring ? {
-            frequency: recurrencePattern.frequency,
-            endType: recurrencePattern.endType,
-            occurrences: recurrencePattern.endType === 'after' ? recurrencePattern.occurrences : undefined,
-            endDate: recurrencePattern.endType === 'until' ? recurrencePattern.endDate : undefined
-        } : undefined })
+        const event = await Event.create({ title, date, duration, location, isRecurring, itsPomodoro,
+            groupList: Array.isArray(groupList) ? groupList : [], 
+            recurrencePattern: isRecurring ? {
+                frequency: recurrencePattern.frequency,
+                endType: recurrencePattern.endType,
+                occurrences: recurrencePattern.endType === 'after' ? recurrencePattern.occurrences : undefined,
+                endDate: recurrencePattern.endType === 'until' ? recurrencePattern.endDate : undefined
+            } : undefined,
+            pomodoro: itsPomodoro ? {
+                initStudy: pomodoro.initStudy,
+                initRelax: pomodoro.initRelax,
+                cycles: pomodoro.cycles,
+            } : undefined,
+        })
+
         res.status(200).json(event)
     }
     catch (error) {

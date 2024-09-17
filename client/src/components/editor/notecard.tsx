@@ -7,15 +7,15 @@ import { useNoteContext } from '@/context/NoteContext';
 import useNotes from '@/hooks/useNote';
 import { useAuth } from "@/context/AuthContext";
 import { marked } from 'marked';
-
+import { useNavigate } from 'react-router-dom';
 
 interface NoteCardProps {
   id: string;
   title: string;
   content: string;
   categories: string[];
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt?: Date; // Cambiato a opzionale
+  updatedAt?: Date; // Cambiato a opzionale
   author: string;
 }
 
@@ -31,18 +31,16 @@ export default function NoteCard({
   const { user } = useAuth();
   const { dispatch } = useNoteContext();
   const { deleteNote, duplicateNote } = useNotes();
-
   const [isPopupOpen, setIsPopupOpen] = useState(false);
 
+  const navigate = useNavigate();
 
   const markdownContent = marked(content);
-  
-
   const previewContent = content.length > 200 ? `${content.slice(0, 200)}...` : content;
 
   const handleEdit = () => {
     if (user) {
-      window.location.href = `/editor/${id}`;
+      navigate(`/editor/${id}`);
     } else {
       console.warn('Utente non autorizzato a modificare la nota.');
     }
@@ -60,7 +58,7 @@ export default function NoteCard({
   const handleDuplicate = async () => {
     if (user) {
       const duplicatedNote = await duplicateNote(id);
-      if (typeof duplicatedNote !== 'undefined') {
+      if (duplicatedNote !== undefined) {
         dispatch({ type: 'ADD_NOTE', payload: duplicatedNote });
       }
     } else {
@@ -83,33 +81,43 @@ export default function NoteCard({
     setIsPopupOpen(false);
   };
 
+  // Funzione per formattare le date
+  const formatDate = (date?: Date) => date ? format(date, 'dd/MM/yyyy') : 'Data non disponibile';
+
   return (
     <>
       <Card className="note-card max-w-full w-full p-4">
         <CardHeader className="flex flex-col md:flex-row justify-between items-start md:items-center">
           <CardTitle className="text-primary">{title}</CardTitle>
-          {user && (
-            <div className="flex space-x-2 mt-2 md:mt-0 justify-center">
-              <Button variant="ghost" size="icon" onClick={handleEdit} aria-label="Edit note">
-                <Edit className="h-5 w-5" />
-              </Button>
-              <Button variant="ghost" size="icon" onClick={handleCopyContent} aria-label="Copy note">
-                <Copy className="h-5 w-5" />
-              </Button>
-              <Button variant="ghost" size="icon" onClick={handleDuplicate} aria-label="Duplicate note">
-                <Plus className="h-5 w-5" />
-              </Button>
-              <Button variant="ghost" size="icon" onClick={handleDelete} aria-label="Delete note">
-                <Trash2 className="h-5 w-5" />
-              </Button>
-            </div>
-          )}
+          <div className="flex space-x-2 mt-2 md:mt-0 justify-center">
+  {user && user.username === author && ( // Aggiungi questa condizione per controllare l'autore
+    <>
+      <Button variant="ghost" size="icon" onClick={handleEdit} aria-label="Edit note">
+        <Edit className="h-5 w-5" />
+      </Button>
+      
+      <Button variant="ghost" size="icon" onClick={handleDuplicate} aria-label="Duplicate note">
+        <Plus className="h-5 w-5" />
+      </Button>
+      
+      <Button variant="ghost" size="icon" onClick={handleDelete} aria-label="Delete note">
+        <Trash2 className="h-5 w-5" />
+      </Button>
+    </>
+  )}
+  
+  <Button variant="ghost" size="icon" onClick={handleCopyContent} aria-label="Copy note">
+    <Copy className="h-5 w-5" />
+  </Button>
+</div>
+
+          
         </CardHeader>
         <CardContent className="flex-col gap-3">
           <div
             className="text-gray-600 dark:text-white mb-2"
             dangerouslySetInnerHTML={{
-              __html: marked(previewContent) 
+              __html: marked(previewContent),
             }}
           />
           {content.length > 200 && !isPopupOpen && (
@@ -117,17 +125,17 @@ export default function NoteCard({
               onClick={handleSeeMore}
               className="font-bold italic cursor-pointer ml-1 text-red-600 dark:text-red-400"
             >
-              see more
+              See more
             </span>
           )}
           <div>
             Categories: <span className="font-semibold">{categories.join(', ')}</span>
           </div>
           <div>
-            Created: <span className="font-semibold">{format(new Date(createdAt), 'dd/MM/yyyy')}</span>
+            Created: <span className="font-semibold">{formatDate(createdAt)}</span>
           </div>
           <div>
-            Updated: <span className="font-semibold">{format(new Date(updatedAt), 'dd/MM/yyyy')}</span>
+            Updated: <span className="font-semibold">{formatDate(updatedAt)}</span>
           </div>
           <div>
             Author: <span className="font-semibold">{author}</span>
@@ -152,7 +160,7 @@ export default function NoteCard({
             </h2>
             <div
               className="mb-4 text-gray-600 dark:text-gray-300"
-              dangerouslySetInnerHTML={{ __html: markdownContent }} // Usa sanitizedContent se sanifichi
+              dangerouslySetInnerHTML={{ __html: markdownContent }} 
             />
             <p className="text-sm text-gray-500 dark:text-gray-400">
               <strong>Author:</strong> {author}

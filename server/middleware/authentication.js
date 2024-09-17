@@ -23,22 +23,28 @@ const loginLimiter = rateLimit({
 });
 
 const requireAuth = async (req, res, next) => {
-  // verify authentication from the headers authorization property
   const { authorization } = req.headers;
   if (!authorization) {
     return res.status(401).json({ error: "Authorization token required" });
   }
 
-  // authorization property holds a string that starts with 'Bearer ' and then some gibberish(the auth token), we want the gibberish only
   const token = authorization.split(" ")[1];
 
   try {
-    // grab the id of the model from the token
+    // Estrae l'_id dal token JWT
     const { _id } = jwt.verify(token, access_key);
-    // attach user property to the request object
-    req.user = await User.findOne({ _id }).select("_id");
-    // call the next middleware function in the stack
-    next();
+
+    // Trova l'utente nel database e seleziona sia _id che username
+    const user = await User.findOne({ _id }).select("_id username");
+
+    if (!user) {
+      return res.status(401).json({ error: "User not found" });
+    }
+
+    // Aggiunge l'utente con il suo username alla richiesta
+    req.user = user;
+
+    next(); // Passa al middleware successivo
   } catch (error) {
     console.log(error);
     res.status(401).json({ error: "Request is not authorized" });

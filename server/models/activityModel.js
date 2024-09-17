@@ -10,6 +10,10 @@ const activitySchema = new Schema({
     endDate: {
         type: Date,
     },
+    groupList:{
+        type: [String],
+        required: false,
+    },
     completed: {
         type: Boolean,
         default: false

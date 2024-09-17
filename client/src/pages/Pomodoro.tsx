@@ -27,12 +27,23 @@ import usePushNotification, {
 } from "@/hooks/usePushNotification";
 import { useAuth } from "@/context/AuthContext";
 import { BlockerFunction, useBlocker } from "react-router-dom";
+import useEventsApi from "@/hooks/useEventsApi";
+import { useEvents } from "@/context/EventContext";
+
 
 export default function Pomodoro() {
-  const { timer, dispatch, InitialTimer, setInitialTimer } = useTimer();
   const { RequestPushSub, sendNotification } = usePushNotification();
   const { user } = useAuth();
+  const { events } = useEvents();
   const [open, setOpen] = useState(false);
+  const { getEvents } = useEventsApi();
+  const { timer, dispatch, InitialTimer, setInitialTimer } = useTimer(events);
+  
+  useEffect(() => {
+    if (user) {
+      getEvents();
+    }
+  }, [dispatch, user]);
 
   // Block navigating elsewhere when data has been entered into the input
   const shouldBlock = useCallback<BlockerFunction>(

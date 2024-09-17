@@ -10,21 +10,31 @@ const recurrencePatternSchema = z.object({
 });
 export type RecurrenceType = z.infer<typeof recurrencePatternSchema>;
 
+const PomodoroSchema = z.object({
+  initStudy: z.number().optional(),
+  initRelax: z.number().optional(),
+  cycles: z.number().optional(),
+})
+
 export const EventSchema = z.object({
   title: z.string().min(2, "Title must be at least 2 characters"),
   date: z.string(),
   duration: z.number().nonnegative(),
   location: z.string().optional(),
   isRecurring: z.boolean(),
+  itsPomodoro: z.boolean(),
+  groupList: z.string().array().optional(),
   recurrencePattern: recurrencePatternSchema.optional(),
   _id: z.string().optional(),
   createdAt: z.string().optional(),
+  pomodoro: PomodoroSchema.optional(),
 });
 export type EventType = z.infer<typeof EventSchema>;
 
 export const ActivitySchema = z.object({
   title: z.string().min(2, "Title must be at least 2 characters"),
   endDate: z.string().nullable().optional(),
+  groupList: z.string().array().optional(),
   completed: z.boolean(),
   _id: z.string().optional(),
 });
@@ -62,12 +72,10 @@ export const NoteSchema = z.object({
   specificAccess: z.array(z.string().trim()).optional().default([]),
   createdAt: z
     .date()
-    .optional()
-    .default(() => new Date()),
+    .optional(), 
   updatedAt: z
     .date()
-    .optional()
-    .default(() => new Date()),
+    .optional(),  
   _id: z.string().optional(),
 });
 export type NoteType = z.infer<typeof NoteSchema>;

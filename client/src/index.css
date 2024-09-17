@@ -283,18 +283,15 @@
   /* Calendar */
 
   .completedAct {
-    color: rgb(228, 129, 47);
-    background-color: rgb(255, 234, 215);
+    color: rgb(209, 188, 30);
   }
 
   .inProgressAct {
     color: rgb(34, 68, 234);
-    background-color: rgb(208, 252, 255);
   }
 
   .lateAct {
-    color: rgb(227, 49, 20);
-    background-color: rgb(254, 236, 236);
+    color: rgb(210, 114, 36);
   }
 }
 
@@ -343,7 +340,7 @@
 }
 
 .rbc-month-view .rbc-day-bg.rbc-today {
-  @apply bg-primary/50;
+  @apply bg-rose-100 dark:bg-rose-200/50;
 }
 
 .rbc-date-cell.rbc-now.rbc-current {
@@ -398,4 +395,20 @@
 
 .rbc-toolbar .rbc-toolbar-label {
   @apply font-semibold uppercase;
+}
+
+.rbc-date-cell.rbc-now.rbc-current{
+  @apply text-black;
+}
+@keyframes rotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.rotating-clock {
+  animation: rotate 10s linear infinite;
 }

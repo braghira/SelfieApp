@@ -10,6 +10,9 @@ import { EventContextProvider } from "./context/EventContext.tsx";
 import { AuthContextProvider } from "./context/AuthContext.tsx";
 import { ThemeProvider } from "./context/ThemeContext.tsx";
 import { NotificationContextProvider } from "./context/NotificationContext.tsx";
+import { TimeMachineProvider } from './context/TimeMachine';
+import { NoteProvider } from './context/NoteContext'
+
 
 // desables react dev tools in production
 if (import.meta.env.PROD) {
@@ -20,13 +23,17 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <ThemeProvider>
       <AuthContextProvider>
+        <TimeMachineProvider>
         <NotificationContextProvider>
+        <NoteProvider>
           <EventContextProvider>
             <ActivityContextProvider>
               <App />
             </ActivityContextProvider>
           </EventContextProvider>
+          </NoteProvider>
         </NotificationContextProvider>
+        </TimeMachineProvider>
       </AuthContextProvider>
     </ThemeProvider>
   </React.StrictMode>

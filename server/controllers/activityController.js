@@ -27,11 +27,11 @@ const getActivity = async(req, res) => {
 
 // create a new activity
 const createActivity = async (req, res) => {
-    const { title, endDate, completed } = req.body
+    const { title, endDate, groupList, completed } = req.body
 
     // add document to DB
     try {
-        const activity = await Activity.create({ title, endDate, completed })
+        const activity = await Activity.create({ title, endDate, groupList: Array.isArray(groupList) ? groupList : [], completed })
         res.status(200).json(activity)
     }
     catch (error) {

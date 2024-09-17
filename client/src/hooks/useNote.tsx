@@ -8,7 +8,7 @@ interface UseNotesReturn {
   deleteNote: (id: string) => void;
   duplicateNote: (id: string) => void;
   deleteAllNotes: () => void;
-  fetchNotes: () => Promise<NoteType[]>; // Restituisce una Promise di NoteType[]
+  fetchNotes: () => Promise<NoteType[]>;
 }
 
 const useNotes = (): UseNotesReturn => {
@@ -55,14 +55,18 @@ const useNotes = (): UseNotesReturn => {
     }
   };
 
-  // Elimina una nota
+  // Elimina una nota creata dall'utente corrente
   const deleteNote = async (id: string) => {
     try {
       await private_api.delete(`/api/notes/${id}`);
       client_log(`Note with ID ${id} successfully deleted`);
     } catch (error) {
       if (isAxiosError(error)) {
-        client_log(`Error during deletion of note ${id}: ${error.message}`);
+        if (error.response?.status === 403) {
+          client_log(`Unauthorized: You are not the author or lack permission for note with ID ${id}`);
+        } else {
+          client_log(`Error during deletion of note ${id}: ${error.message}`);
+        }
       } else {
         client_log(`Uncaught error during deletion of note ${id}`);
       }
@@ -82,14 +86,18 @@ const useNotes = (): UseNotesReturn => {
     }
   };
 
-  // Elimina tutte le note
+  // Elimina tutte le note create dall'utente corrente
   const deleteAllNotes = async () => {
     try {
       await private_api.delete('/api/notes');
       client_log('All notes successfully deleted');
     } catch (error) {
       if (isAxiosError(error)) {
-        client_log(`Error during deletion of all notes: ${error.message}`);
+        if (error.response?.status === 403) {
+          client_log('Unauthorized: You can only delete your own notes.');
+        } else {
+          client_log(`Error during deletion of all notes: ${error.message}`);
+        }
       } else {
         client_log('Uncaught error during deletion of all notes');
       }

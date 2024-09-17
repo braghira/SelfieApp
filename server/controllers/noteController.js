@@ -1,137 +1,189 @@
 const mongoose = require('mongoose');
 const Note = require('../models/noteModels');
 
-// Recupera tutte le note
+// Recupera tutte le note, filtrando in base all'accesso
 const getNotes = async (req, res) => {
-    try {
-        const notes = await Note.find({}).sort({ createdAt: -1 });
-        res.status(200).json(notes);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
+  const { user } = req;
+
+  try {
+    const notes = await Note.find({
+      $or: [
+        { accessType: "public" },
+        { author: user.username },
+        { accessType: "restricted", specificAccess: { $in: [user.username] } }
+      ]
+    }).sort({ createdAt: -1 });
+
+    res.status(200).json(notes);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 };
 
-// Recupera una singola nota
+// Recupera una singola nota, verificando i permessi
 const getNote = async (req, res) => {
-    const { id } = req.params;
+  const { id } = req.params;
+  const { user } = req;
 
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-        return res.status(404).json({ error: 'No such note' });
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(404).json({ error: "No such note" });
+  }
+
+  try {
+    const note = await Note.findById(id);
+
+    if (!note) {
+      return res.status(404).json({ error: "No such note" });
     }
 
-    try {
-        const note = await Note.findById(id);
-        if (!note) {
-            return res.status(404).json({ error: 'No such note' });
-        }
-        res.status(200).json(note);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
+    // Controlla i permessi di accesso
+    if (
+      (note.accessType === "private" && note.author !== user.username) ||
+      (note.accessType === "restricted" && !note.specificAccess.includes(user.username))
+    ) {
+      return res.status(403).json({ error: "Access denied" });
     }
+
+    res.status(200).json(note);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 };
 
 // Crea una nuova nota
 const createNote = async (req, res) => {
-    const { title, content, categories, author, accessType, specificAccess } = req.body;
+  const { title, content, categories, accessType, specificAccess, createdAt, updatedAt } = req.body;
+  const { user } = req;
 
-    try {
-        const newNote = new Note({
-            title,
-            content,
-            categories: categories || [],
-            author,
-            accessType: accessType || 'private',
-            specificAccess: specificAccess || []
-        });
-        const savedNote = await newNote.save();
-        res.status(201).json(savedNote);
-    } catch (error) {
-        res.status(400).json({ error: error.message });
+  try {
+    const newNote = new Note({
+      title,
+      content,
+      categories: categories || [],
+      author: user.username,
+      accessType: accessType || 'private',
+      specificAccess: accessType === 'restricted' ? specificAccess : undefined,
+      createdAt: createdAt ? new Date(createdAt) : Date.now(),
+      updatedAt: updatedAt ? new Date(updatedAt) : Date.now(),
+    });
+
+    const savedNote = await newNote.save();
+    res.status(201).json(savedNote);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+};
+
+// Aggiorna una nota solo se l'autore è lo stesso utente
+const updateNote = async (req, res) => {
+  const { id } = req.params;
+  const { user } = req;
+
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(404).json({ error: "No such note" });
+  }
+
+  try {
+    // Prepara i dati da aggiornare, usando updatedAt dal body o Date.now() se non presente
+    const updatedData = {
+      ...req.body,
+      updatedAt: req.body.updatedAt ? new Date(req.body.updatedAt) : Date.now(),
+    };
+
+    // Aggiorna la nota solo se l'autore corrisponde
+    const note = await Note.findOneAndUpdate(
+      { _id: id, author: user.username },
+      updatedData,
+      { new: true }
+    );
+
+    if (!note) {
+      return res.status(404).json({ error: "No such note or unauthorized" });
     }
+
+    res.status(200).json(note);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
 };
 
 // Duplica una nota
 const duplicateNote = async (req, res) => {
-    const { id } = req.params;
+  const { id } = req.params;
+  const { user } = req;
 
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-        return res.status(404).json({ error: 'No such note' });
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(404).json({ error: "No such note" });
+  }
+
+  try {
+    const note = await Note.findById(id);
+
+    if (!note) {
+      return res.status(404).json({ error: "No such note" });
     }
 
-    try {
-        const note = await Note.findById(id);
-        if (!note) {
-            return res.status(404).json({ error: 'No such note' });
-        }
-
-        const duplicatedNote = new Note({
-            ...note.toObject(),
-            _id: undefined, // Genera un nuovo ID
-            title: `Copy of ${note.title}` // Modifica il titolo per differenziare
-        });
-
-        const savedNote = await duplicatedNote.save();
-        res.status(201).json(savedNote);
-    } catch (error) {
-        res.status(400).json({ error: error.message });
+    // Verifica i permessi di accesso
+    if (
+      (note.accessType === "private" && note.author !== user.username) ||
+      (note.accessType === "restricted" && !note.specificAccess.includes(user.username))
+    ) {
+      return res.status(403).json({ error: "Access denied" });
     }
+
+    const duplicatedNote = new Note({
+      ...note.toObject(),
+      _id: undefined,
+      title: `Copy of ${note.title}`,
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    });
+
+    const savedNote = await duplicatedNote.save();
+    res.status(201).json(savedNote);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
 };
 
-// Aggiorna una nota
-const updateNote = async (req, res) => {
-    const { id } = req.params;
-
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-        return res.status(404).json({ error: 'No such note' });
-    }
-
-    try {
-        const updatedNote = await Note.findByIdAndUpdate(id, req.body, { new: true });
-        if (!updatedNote) {
-            return res.status(404).json({ error: 'No such note' });
-        }
-        res.status(200).json(updatedNote);
-    } catch (error) {
-        res.status(400).json({ error: error.message });
-    }
-};
-
-// Elimina una nota
+// Elimina una nota solo se l'autore è lo stesso utente
 const deleteNote = async (req, res) => {
-    const { id } = req.params;
+  const { id } = req.params;
+  const { user } = req;
 
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-        return res.status(404).json({ error: 'No such note' });
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(404).json({ error: "No such note" });
+  }
+
+  try {
+    const note = await Note.findOneAndDelete({ _id: id, author: user.username });
+
+    if (!note) {
+      return res.status(404).json({ error: "No such note or unauthorized" });
     }
 
-    try {
-        const deletedNote = await Note.findByIdAndDelete(id);
-        if (!deletedNote) {
-            return res.status(404).json({ error: 'No such note' });
-        }
-        res.status(204).end();
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
+    res.status(200).json(note);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
 };
 
 // Elimina tutte le note
 const deleteAllNotes = async (req, res) => {
-    try {
-        await Note.deleteMany({});
-        res.status(204).end(); // No Content
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
+  try {
+    await Note.deleteMany({});
+    res.status(204).end(); // No Content
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 };
 
 module.exports = {
-    getNotes,
-    getNote,
-    createNote,
-    updateNote,
-    deleteNote,
-    duplicateNote,
-    deleteAllNotes
+  getNotes,
+  getNote,
+  createNote,
+  updateNote,
+  deleteNote,
+  duplicateNote,
+  deleteAllNotes,
 };
-
