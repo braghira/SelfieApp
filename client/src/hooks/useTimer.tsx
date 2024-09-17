@@ -1,4 +1,6 @@
 import { useReducer, useState } from "react";
+import moment from 'moment';
+import { EventType } from "@/lib/utils";
 
 export type TimerType = {
   initialValue: number;
@@ -181,7 +183,8 @@ function timerReducer(
   }
 }
 
-export function useTimer() {
+export function useTimer(eventList: EventType[]) {
+  const today = moment().startOf('day');
   let parsed_timer: PomodoroType | null = null;
 
   const storage = localStorage.getItem("pomodoro_timer");
@@ -190,29 +193,57 @@ export function useTimer() {
     parsed_timer = JSON.parse(storage);
   }
 
-  // default is 30/5 with 5 cycles for a total of 175m
-  const studyTimer = {
-    initialValue: 1000 * 60 * 30,
-    value: 1000 * 60 * 30,
-    started: false,
-  };
-  const relaxTimer = {
-    initialValue: 1000 * 60 * 5,
-    value: 1000 * 60 * 5,
-    started: false,
-  };
-  const cycles = 5;
-  const totalTime =
-    (studyTimer.initialValue + relaxTimer.initialValue) * cycles;
-  const isStudyCycle = true;
+  let todayEvent = null;
+  if (eventList && eventList.length > 0) {
+    todayEvent = eventList.find(
+      (event) => moment(event.date).isSame(today, 'day') && event.itsPomodoro
+    );
+  }
 
-  const [InitialTimer, setInitialTimer] = useState<PomodoroType>({
-    cycles,
-    isStudyCycle,
-    relax: relaxTimer,
-    study: studyTimer,
-    totalTime,
-  });
+
+  let studyTimer;
+  let relaxTimer;
+  let cycles;
+  if(todayEvent){
+    studyTimer = {
+      initialValue: todayEvent.pomodoro?.initStudy || 1000 * 60 * 30,
+      value: todayEvent.pomodoro?.initStudy || 1000 * 60 * 30,
+      started: false,
+    };
+    relaxTimer = {
+      initialValue: todayEvent.pomodoro?.initRelax || 1000 * 60 * 5,
+      value: todayEvent.pomodoro?.initRelax || 1000 * 60 * 5,
+      started: false,
+    };
+    cycles = todayEvent.pomodoro?.cycles || 5;
+  }
+  else{
+    // default is 30/5 with 5 cycles for a total of 175m
+    studyTimer = {
+      initialValue: 1000 * 60 * 30,
+      value: 1000 * 60 * 30,
+      started: false,
+    };
+    relaxTimer = {
+      initialValue: 1000 * 60 * 5,
+      value: 1000 * 60 * 5,
+      started: false,
+    };
+    cycles = 5;
+  }
+
+    const totalTime =
+      (studyTimer.initialValue + relaxTimer.initialValue) * cycles;
+    const isStudyCycle = true;
+
+    const [InitialTimer, setInitialTimer] = useState<PomodoroType>({
+      cycles,
+      isStudyCycle,
+      relax: relaxTimer,
+      study: studyTimer,
+      totalTime,
+    });
+
 
   // we check for the stored timer first, if it's not found then use the default timer
   let final_timer: PomodoroType;
