@@ -89,22 +89,29 @@ export default function NoteCard({
       <Card className="note-card max-w-full w-full p-4">
         <CardHeader className="flex flex-col md:flex-row justify-between items-start md:items-center">
           <CardTitle className="text-primary">{title}</CardTitle>
-          {user && (
-            <div className="flex space-x-2 mt-2 md:mt-0 justify-center">
-              <Button variant="ghost" size="icon" onClick={handleEdit} aria-label="Edit note">
-                <Edit className="h-5 w-5" />
-              </Button>
-              <Button variant="ghost" size="icon" onClick={handleCopyContent} aria-label="Copy note">
-                <Copy className="h-5 w-5" />
-              </Button>
-              <Button variant="ghost" size="icon" onClick={handleDuplicate} aria-label="Duplicate note">
-                <Plus className="h-5 w-5" />
-              </Button>
-              <Button variant="ghost" size="icon" onClick={handleDelete} aria-label="Delete note">
-                <Trash2 className="h-5 w-5" />
-              </Button>
-            </div>
-          )}
+          <div className="flex space-x-2 mt-2 md:mt-0 justify-center">
+  {user && user.username === author && ( // Aggiungi questa condizione per controllare l'autore
+    <>
+      <Button variant="ghost" size="icon" onClick={handleEdit} aria-label="Edit note">
+        <Edit className="h-5 w-5" />
+      </Button>
+      
+      <Button variant="ghost" size="icon" onClick={handleDuplicate} aria-label="Duplicate note">
+        <Plus className="h-5 w-5" />
+      </Button>
+      
+      <Button variant="ghost" size="icon" onClick={handleDelete} aria-label="Delete note">
+        <Trash2 className="h-5 w-5" />
+      </Button>
+    </>
+  )}
+  
+  <Button variant="ghost" size="icon" onClick={handleCopyContent} aria-label="Copy note">
+    <Copy className="h-5 w-5" />
+  </Button>
+</div>
+
+          
         </CardHeader>
         <CardContent className="flex-col gap-3">
           <div
