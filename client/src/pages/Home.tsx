@@ -15,6 +15,7 @@ import { useEffect, useState } from "react";
 
 export default function Home() {
   const [userList, setUsersList] = useState<UserType[]>([]);
+
   const { RequestPushSub, sendNotification, sendLoading } =
     usePushNotification();
 

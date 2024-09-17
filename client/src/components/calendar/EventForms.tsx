@@ -1,5 +1,6 @@
+import ical from "ical"
 import { useForm } from "react-hook-form";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { EventSchema, EventType, client_log } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -36,7 +37,8 @@ export default function EventForm() {
   const { user } = useAuth();
   const private_api = useAxiosPrivate();
   const [userList, setUsersList] = useState<UserType[]>([]);
-  const today = moment().format('YYYY-MM-DD');
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
 
   const form = useForm<EventType>({
     resolver: zodResolver(EventSchema),
@@ -58,14 +60,14 @@ export default function EventForm() {
         initStudy: 30,
         initRelax: 5,
         cycles: 5,
-      }
+      },
     },
   });
 
   async function onSubmit(event: EventType) {
     if (
       event.isRecurring &&
-      (!event.recurrencePattern?.frequency ||
+      (!event.recurrencePattern?.frequency || 
         !event.recurrencePattern?.endType ||
         (event.recurrencePattern.endType === "after" &&
           !event.recurrencePattern.occurrences) ||
@@ -89,7 +91,7 @@ export default function EventForm() {
     
 
     if (event.itsPomodoro) {
-      const pomodoroExists = events.some(e => e.itsPomodoro && moment(e.date).format('YYYY-MM-DD') === today); 
+      const pomodoroExists = events.some(e => e.itsPomodoro && moment(e.date).format('YYYY-MM-DD') === moment(event.date).format('YYYY-MM-DD')); 
       if (pomodoroExists) {
         form.setError("root.serverError", {
           type: "manual",
@@ -120,6 +122,53 @@ export default function EventForm() {
 
     form.reset();
   }
+  
+
+  function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const data = reader.result as string;
+        const parsedData = ical.parseICS(data);
+
+        Object.values(parsedData).forEach((component) => {
+          if (component.type === 'VEVENT') {
+            const startDate = component.start ? new Date(component.start) : new Date();
+            const endDate = component.end ? new Date(component.end) : new Date(startDate.getTime() + 60 * 60 * 1000); // Default to 1 hour if end is not defined
+
+            const event: EventType = {
+              title: component.summary || "",
+              date: startDate.toISOString(),
+              duration: (endDate.getTime() - startDate.getTime()) / 60000,
+              location: component.location,
+              isRecurring: !!component.recurrenceRule,
+              //aggiungo i miei valori di default
+              itsPomodoro: false, 
+              recurrencePattern: {
+                frequency: undefined,
+                endType: undefined,
+                occurrences: 1,
+                endDate: "",
+              },
+              pomodoro: {
+                initStudy: 30,
+                initRelax: 5,
+                cycles: 5,
+              },
+            };
+            form.reset(event); 
+          }
+        });
+      } catch (error) {
+        console.error("Error parsing ICS file:", error);
+      }
+    };
+    reader.readAsText(file);
+  }
+
 
   return (
     <Form {...form}>
@@ -127,7 +176,16 @@ export default function EventForm() {
         onSubmit={form.handleSubmit(onSubmit)}
         className="flex flex-col gap-2 mt-4 w-full max-w-sm md:max-w-md"
       >
+        
         {/* Campi normali dell'evento */}
+
+                <Input
+                  type="file"
+                  accept=".ics"
+                  ref={fileInputRef}
+                  onChange={handleFileChange}
+                  className="shad-input"
+                />
         <FormField
           control={form.control}
           name="title"

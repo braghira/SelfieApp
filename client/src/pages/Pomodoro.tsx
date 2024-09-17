@@ -241,6 +241,7 @@ export default function Pomodoro() {
                     <Button
                       onClick={() => {
                         start();
+  
 
                         const payload: NotificationPayload = {
                           title: "Pomodoro Timer",
@@ -353,6 +354,10 @@ export default function Pomodoro() {
             <AlertDialogAction
               onClick={() => {
                 if (blocker.state === "blocked") {
+                  const savedPomodoroData = localStorage.getItem("pomodoro_timer");
+                  if (savedPomodoroData) {
+                    localStorage.setItem("closedEarly", savedPomodoroData);
+                  }
                   blocker.proceed();
                   localStorage.removeItem("pomodoro_timer");
                 }
