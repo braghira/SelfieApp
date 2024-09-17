@@ -5,11 +5,11 @@ const Schema = mongoose.Schema;
 const eventSchema = new Schema({
     title: {
         type: String,
-        required: true
+        required: true,
     },
     date: {
         type: Date,
-        required: true
+        required: true,
     },
     duration: {
         type: Number,
@@ -17,11 +17,30 @@ const eventSchema = new Schema({
     },
     location: {
         type: String,
-        required: false 
+        required: false, 
     },
     isRecurring: {
         type: Boolean,
-        default: false
+        default: false,
+    },
+    itsPomodoro: {
+        type: Boolean,
+        default: false,
+    },
+    groupList:{
+        type: [String],
+        required: false,
+    },
+    pomodoro:{
+        initStudy: {
+                type: Number,
+            },
+        initRelax: {
+                type: Number,
+            },
+        cycles:{
+            type: Number,
+        },
     },
     recurrencePattern: {
         frequency: {

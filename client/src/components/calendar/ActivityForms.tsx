@@ -33,6 +33,7 @@ export default function ActivityForm() {
     defaultValues: {
       title: "",
       endDate: "",
+      groupList: [],
       completed: false,
     },
   });
@@ -46,7 +47,12 @@ export default function ActivityForm() {
     }
 
     try {
-      const response = await private_api.post("/api/activities", activity);
+      const allParameter = {
+        ...activity,
+        groupList: userList.map((u) => u._id), 
+      };
+
+      const response = await private_api.post("/api/activities", allParameter);
       // Controlliamo che lo schema sia corretto con zod
       const parsed = ActivitySchema.safeParse(response.data);
 
@@ -59,11 +65,12 @@ export default function ActivityForm() {
     } catch (error) {
       if (isAxiosError(error)) client_log("an error occurred:" + error.message);
     }
-
+//{userList[0]._id} 
     form.reset();
   }
 
   return (
+    <div>
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(onSubmit)}
@@ -105,11 +112,16 @@ export default function ActivityForm() {
             </FormItem>
           )}
         />
-        <UsersSearchBar userList={userList} setUsersList={setUsersList} />
+
+ 
         <Button type="submit" className="shad-button_primary">
           {form.formState.isSubmitting ? <Loader /> : "Add Activity"}
         </Button>
       </form>
     </Form>
+
+    <UsersSearchBar userList={userList} setUsersList={setUsersList} />
+
+</div>
   );
 }

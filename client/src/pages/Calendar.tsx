@@ -13,6 +13,7 @@ import useEventsApi from "@/hooks/useEventsApi.tsx";
 import usePushNotification, { NotificationPayload } from "@/hooks/usePushNotification";
 import { EventType } from "@/lib/utils";
 
+
 export default function CalendarPage() {
   const localizer = momentLocalizer(moment);
   const { activities, dispatch: dispatchA } = useActivities();
@@ -20,7 +21,12 @@ export default function CalendarPage() {
   const { user } = useAuth();
   const { getEvents } = useEventsApi();
   const { getActivities } = useActivitiesApi();
-  const { RequestPushSub, sendNotification } = usePushNotification();
+  const { RequestPushSub, sendNotification } = usePushNotification(); 
+  const [activeView, setActiveView] = useState<ViewType | null>(null);
+  type ViewType = 'eventForm' | 'activityForm' | 'activityList';
+  const handleToggle = (view: ViewType) => {
+    setActiveView(prev => prev === view ? null : view);
+  };
   const [notificationEventStatus, setNotificationEventStatus] = useState<NotificationEventStatus>(() => {
     const savedStatus = localStorage.getItem("notificationEventStatus");
     console.log("Loaded event status from localStorage", savedStatus);
@@ -42,24 +48,29 @@ export default function CalendarPage() {
   }, [dispatchA, dispatchE, user]);
 
   useEffect(() => {
-    localStorage.setItem("notificationEventStatus", JSON.stringify(notificationEventStatus));
+    if(notificationEventStatus){
+       localStorage.setItem("notificationEventStatus", JSON.stringify(notificationEventStatus));
+    }
   }, [notificationEventStatus]);
 
   useEffect(() => {
-    localStorage.setItem("notificationActivitiesStatus", JSON.stringify(notificationActivitiesStatus));
+    if(notificationActivitiesStatus){
+      localStorage.setItem("notificationActivitiesStatus", JSON.stringify(notificationActivitiesStatus));
+    }
   }, [notificationActivitiesStatus]);
 
   const colors = {
-    late: "#d15446",
+    late: "#ff7514",
     onTime: "#4087b3",
     event: "#3fb33f",
+    pomodoro: "#d15446",
   };
 
   interface CustomEvent {
     start: Date;
     end: Date;
     title: string;
-    type: "event" | "activity";
+    type: "event" | "activity" | "pomodoro";
   }
 
   type NotificationEventStatus = {
@@ -73,7 +84,6 @@ export default function CalendarPage() {
   useEffect(() => {
     const userID = user?._id;
     const now = moment();
-    const today = now.format("YYYY-MM-DD");
     if (userID && events) {
       const updatedEventStatus = { ...notificationEventStatus };
       events.forEach((event) => {
@@ -112,19 +122,12 @@ export default function CalendarPage() {
           const endDate = moment(activity.endDate);
           const daysOverdue = now.diff(endDate, "days");
           if (endDate.isBefore(now, "day")) {
-            if (!updatedActivityStatus[activityId]) {
-              updatedActivityStatus[activityId] = {};
-            }
-            const lastNotified = updatedActivityStatus[activityId].lastNotified;
-            if (lastNotified != today) {
               const activityName = activity.title;
-              sendActivityNotification(userID, daysOverdue, activityName);
-              updatedActivityStatus[activityId].lastNotified = today;
+              console.log("salvo per la prima volta e mando la notifica")
+              sendActivityNotification(userID, daysOverdue, activityName, activityId, updatedActivityStatus);     
             }
           }
-        }
       });
-      setNotificationActivitiesStatus(updatedActivityStatus);
     }
   }, [events, activities]);
 
@@ -137,13 +140,22 @@ export default function CalendarPage() {
     RequestPushSub(() => sendNotification(userID, payload));
   };
 
-  const sendActivityNotification = (userID: string, daysPassed: number, activityName: string) => {
-    const payload: NotificationPayload = {
-      title: "You are late to complete an activity!",
-      body: `L'attività: ${activityName} è scaduta da ${daysPassed} giorni. Ricordati di completarla!`,
-      url: `http://localhost:5173/calendar`,
-    };
-    RequestPushSub(() => sendNotification(userID, payload));
+  const sendActivityNotification = (userID: string, daysPassed: number, activityName: string, activityId: string, activityStatus:{ [activityId: string]:  { lastNotified?: string }}) => {
+    const today = moment().format("YYYY-MM-DD");
+    if (!activityStatus[activityId]) {
+      activityStatus[activityId] = {};
+    }
+    if(activityStatus[activityId].lastNotified != today){
+      console.log("notifica inviata");
+      const payload: NotificationPayload = {
+        title: "You are late to complete an activity!",
+        body: `L'attività: ${activityName} è scaduta da ${daysPassed} giorni. Ricordati di completarla!`,
+        url: `http://localhost:5173/calendar`,
+      };
+      RequestPushSub(() => sendNotification(userID, payload));
+      activityStatus[activityId].lastNotified = today;
+      setNotificationActivitiesStatus({...activityStatus})
+    }
   };
 
   const eventPropGetter = (event: CustomEvent) => {
@@ -153,12 +165,16 @@ export default function CalendarPage() {
 
     if (event.type === "event") {
       backgroundColor = colors.event;
-    } else if (event.type === "activity") {
+    } 
+    else if (event.type === "activity") {
       if (start.isBefore(now)) {
         backgroundColor = colors.late;
       } else {
         backgroundColor = colors.onTime;
       }
+    }
+    else if (event.type === "pomodoro"){
+      backgroundColor = colors.pomodoro;
     }
     return {
       style: {
@@ -170,7 +186,8 @@ export default function CalendarPage() {
 
   const handleSelected = (event: Event) => {
     const selectedEvent = event as CustomEvent;
-    if (selectedEvent.type === "event") {
+
+    if (selectedEvent.type === "event" || selectedEvent.type === "pomodoro") {
       const fullEvent = events?.find((e) => e.title === selectedEvent.title);
       if (fullEvent) {
         setSelectedEvent(fullEvent);
@@ -234,13 +251,21 @@ export default function CalendarPage() {
             });
           }
         }
-      } else {
+      } else if(event.itsPomodoro) {
         dates.push({
           start: momentDate.toDate(),
           end: momentDate.add(event.duration, "hour").toDate(),
           title: event.title,
-          type: "event",
+          type: "pomodoro",
         });
+      }
+        else {
+          dates.push({
+            start: momentDate.toDate(),
+            end: momentDate.add(event.duration, "hour").toDate(),
+            title: event.title,
+            type: "event",
+          });
       }
       return dates;
     }) || []),
@@ -279,10 +304,26 @@ export default function CalendarPage() {
         <div className="hidden lg:block">
           {activities && <ActivityList activities={activities} />}
         </div>
+        </div>
+        <div className="hidden md:flex flex-col items-center gap-4 mt-8 md:flex-row md:justify-around">
+          <EventForm />
+          <ActivityForm />
+        </div>
+      <div className="md:hidden flex gap-4">
+        <button className="bg-primary text-primary-foreground border-primary hover:bg-primary/90 shadow-none" onClick={() => handleToggle('eventForm')}>
+          Add Event
+        </button>
+        <button className="bg-primary text-primary-foreground border-primary hover:bg-primary/90 shadow-none" onClick={() => handleToggle('activityForm')}>
+          Add Activity
+        </button>
+        <button className="bg-primary text-primary-foreground border-primary hover:bg-primary/90 shadow-none" onClick={() => handleToggle('activityList')}>
+          Show Activities
+        </button>
       </div>
-      <div className="flex flex-col items-center gap-4 mt-8 sm:flex-row sm:justify-around">
-        <EventForm />
-        <ActivityForm />
+      <div className="md:hidden">
+        {activeView === 'eventForm' && <EventForm />}
+        {activeView === 'activityForm' && <ActivityForm />}
+        {activeView === 'activityList' && activities && <ActivityList activities={activities} />}
       </div>
     </div>
   );
