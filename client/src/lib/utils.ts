@@ -8,6 +8,7 @@ const recurrencePatternSchema = z.object({
   occurrences: z.number().optional(),
   endDate: z.string().optional(),
 });
+export type RecurrenceType = z.infer<typeof recurrencePatternSchema>;
 
 export const EventSchema = z.object({
   title: z.string().min(2, "Title must be at least 2 characters"),

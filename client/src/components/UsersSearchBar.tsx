@@ -1,6 +1,6 @@
 import useAxiosPrivate from "@/hooks/useAxiosPrivate";
 import { useEffect, useState } from "react";
-import { UserSchema, UserType } from "@/lib/utils";
+import { UserType } from "@/lib/utils";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -36,7 +35,7 @@ type PropsType = {
   setUsersList: React.Dispatch<React.SetStateAction<UserType[]>>;
 };
 
-export default function UsersSearchBar({ userList, setUsersList }: PropsType) {
+export default function UsersSearchBar({ setUsersList }: PropsType) {
   // Users initialized as an empty array
   const [fetchedUsers, setFetchedUsers] = useState<UserType[]>([]);
   const [usernameState, setUsername] = useState("");

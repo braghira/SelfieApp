@@ -196,7 +196,7 @@
   }
 
   .view-container {
-    @apply container mt-5 mb-16 sm:mb-5;
+    @apply container mb-14 pb-5 w-screen overflow-x-hidden md:pt-5 md:mt-0;
   }
 
   .logo-wrapper {

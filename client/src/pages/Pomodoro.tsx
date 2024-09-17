@@ -155,6 +155,7 @@ export default function Pomodoro() {
       title: "Pomodoro Timer",
       body: timer.isStudyCycle ? "Study timer started" : "Relax timer started",
       url: `${window.origin}/pomodoro`,
+      pomodoro: null,
     };
 
     const userID = user?._id;
@@ -169,6 +170,7 @@ export default function Pomodoro() {
       title: "Pomodoro Timer",
       body: "Pomodoro session finished! Wheew",
       url: `${window.origin}/pomodoro`,
+      pomodoro: null,
     };
 
     const userID = user?._id;
@@ -235,6 +237,7 @@ export default function Pomodoro() {
                           title: "Pomodoro Timer",
                           body: "Pomodoro session started",
                           url: `${window.origin}/pomodoro`,
+                          pomodoro: null,
                         };
 
                         const userID = user?._id;
