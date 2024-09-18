@@ -22,19 +22,24 @@ interface EventDetailsProps {
   open: boolean;
   setOpen: (open: boolean) => void;
 }
-
 export default function EventDetails({
   event,
   open,
   setOpen,
 }: EventDetailsProps) {
   const { user } = useAuth();
-  const { deleteEvent } = useEventsApi();
+  const { deleteEvent, updateUserList } = useEventsApi();
   const navigate = useNavigate();
 
   async function handleDelete() {
     if (user) {
       deleteEvent(event);
+    }
+  }
+  async function handleUpdate() {
+    if (user) {
+      await updateUserList(event);
+      setOpen(false);
     }
   }
 
@@ -79,7 +84,7 @@ export default function EventDetails({
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+  <Dialog open={open} onOpenChange={setOpen}>
   <DialogContent className="sm:max-w-[425px]">
     <DialogHeader className="flex-row">
       <DialogTitle>{event.title}</DialogTitle>
@@ -151,8 +156,12 @@ export default function EventDetails({
                   )}
               </div>
             )}
+            {event.author != user?.username && event.groupList.find(userItem => userItem === user?.username) && (<div>
+              <Button className="mt-2 " onClick={handleUpdate}>Refuse event</Button>
+            </div>)}
           </>
         )}
+
       </div>
       <DialogClose asChild>
         <Button variant="ghost" size={"icon"} onClick={handleDelete}>

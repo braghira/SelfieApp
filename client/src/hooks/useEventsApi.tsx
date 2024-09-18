@@ -113,5 +113,39 @@ async function getLastPomodoro() {
 }
 
 
-  return { getEvents, deleteEvent, getPomodoroClosedEarly, getLastPomodoro };
+async function updateUserList(event: EventType) {
+  try {
+    const response = await private_api.patch(
+      `/api/events/${event._id}`,
+      { groupList: event.groupList.filter(username => username !== user?.username) },
+      {
+        headers: { Authorization: `Bearer ${user?.accessToken}` },
+      }
+    );
+
+    const json = response.data;
+    const parsed = EventSchema.safeParse(json);
+
+    if (parsed.success) {
+      //aggiorno lo stato globale con il nuovo evento modificato
+      dispatch({ type: "UPDATE_EVENT", payload: parsed.data });
+      client_log("User successfully removed from groupList");
+
+      await getEvents(); // forzo il refresh per la view calendario
+    } else {
+      client_log("Error while validating updated item schema");
+    }
+  } catch (error) {
+    if (isAxiosError(error)) {
+      client_log(
+        `Error during completion of item ${event._id}: ` + error.message,
+        error.response?.data
+      );
+    }
+  }
+}
+
+
+
+  return { getEvents, deleteEvent, getPomodoroClosedEarly, getLastPomodoro, updateUserList };
 }

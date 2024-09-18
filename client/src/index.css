@@ -412,3 +412,14 @@
 .rotating-clock {
   animation: rotate 10s linear infinite;
 }
+
+.rbc-month-row {
+  min-height: 100px; 
+}
+
+@media (max-width: 640px) {
+  .rbc-show-more {
+    font-size: 60%;
+  }
+}
+

@@ -68,13 +68,14 @@ export default function CalendarPage() {
     onTime: "#4087b3",
     event: "#3fb33f",
     pomodoro: "#d15446",
+    notConfirmed: "#89AC76",
   };
 
   interface CustomEvent {
     start: Date;
     end: Date;
     title: string;
-    type: "event" | "activity" | "pomodoro";
+    type: "event" | "activity" | "pomodoro" | "group";
   }
 
   type NotificationEventStatus = {
@@ -180,6 +181,9 @@ export default function CalendarPage() {
     else if (event.type === "pomodoro"){
       backgroundColor = colors.pomodoro;
     }
+    else if (event.type === "group"){
+      backgroundColor = colors.notConfirmed;
+    }
     return {
       style: {
         backgroundColor,
@@ -191,7 +195,7 @@ export default function CalendarPage() {
   const handleSelected = (event: Event) => {
     const selectedEvent = event as CustomEvent;
 
-    if (selectedEvent.type === "event" || selectedEvent.type === "pomodoro") {
+    if (selectedEvent.type === "event" || selectedEvent.type === "pomodoro" || selectedEvent.type === "group" ) {
       const fullEvent = events?.find((e) => e.title === selectedEvent.title);
       if (fullEvent) {
         setSelectedEvent(fullEvent);
@@ -204,6 +208,13 @@ export default function CalendarPage() {
     ...(events?.flatMap((event) => {
       const momentDate = moment(new Date(event.date));
       const dates: CustomEvent[] = [];
+      let eventType: "event" | "group";
+      if (event.author !== user?.username && !event.itsPomodoro) {
+        eventType = "group";
+      }
+      else{
+        eventType = "event";
+      }
 
       if (event.isRecurring && event.recurrencePattern?.endType === "after") {
         for (let i = 0; i < (event.recurrencePattern.occurrences ?? 0); i++) {
@@ -219,7 +230,7 @@ export default function CalendarPage() {
             start: newDate.toDate(),
             end: newDate.add(event.duration, "hour").toDate(),
             title: event.title,
-            type: "event",
+            type: eventType,
           });
         }
       } else if (
@@ -236,7 +247,7 @@ export default function CalendarPage() {
               start: newDate.toDate(),
               end: newDate.clone().add(event.duration, "hour").toDate(),
               title: event.title,
-              type: "event",
+              type: eventType,
             });
             if (event.recurrencePattern?.frequency === "daily") {
               newDate = newDate.add(1, "days");
@@ -251,7 +262,7 @@ export default function CalendarPage() {
               start: endDate.toDate(),
               end: endDate.clone().add(event.duration, "hour").toDate(),
               title: event.title,
-              type: "event",
+              type: eventType,
             });
           }
         }
@@ -268,7 +279,7 @@ export default function CalendarPage() {
             start: momentDate.toDate(),
             end: momentDate.add(event.duration, "hour").toDate(),
             title: event.title,
-            type: "event",
+            type: eventType,
           });
       }
       return dates;
@@ -292,7 +303,7 @@ export default function CalendarPage() {
     <div className="container mb-2 mt-6">
       <div id="event-details-container">
         {selectedEvent && (
-          <EventDetails event={selectedEvent} open={open} setOpen={setOpen} />
+          <EventDetails event={selectedEvent} open={open} setOpen={setOpen}/>
         )}
       </div>
       <div className="flex flex-col gap-8 sm:grid lg:grid-cols-[3fr_1fr] sm:grid-cols-1">
@@ -325,7 +336,7 @@ export default function CalendarPage() {
           Show Activities
         </button>
       </div>
-      <div className="md:hidden">
+      <div className="lg:hidden">
         {activeView === 'eventForm' && <EventForm />}
         {activeView === 'activityForm' && <ActivityForm />}
         {activeView === 'activityList' && activities && <ActivityList activities={activities} />}
