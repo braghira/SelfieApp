@@ -3,21 +3,22 @@ import React, { PropsWithChildren, createContext, useContext, useReducer, useEff
 // Definisci i tipi di azione
 type ActionType =
   | { type: 'SET_DATE'; payload: Date }
-  | { type: 'TRAVEL_FORWARD'; payload: { days: number } }
-  | { type: 'TRAVEL_BACKWARD'; payload: { days: number } }
+  | { type: 'TRAVEL_FORWARD'; payload: { days: number, hours?: number, months?: number, years?: number, minutes?: number } }
+  | { type: 'TRAVEL_BACKWARD'; payload: { days: number, hours?: number, months?: number, years?: number, minutes?: number } }
   | { type: 'RESET_TO_REAL_TIME' }
   | { type: 'TICK' };  // Aggiungiamo l'azione per ogni tick dell'orologio
 
 // Stato del Time Machine
 type TimeStateType = {
-  currentDate: Date;
-  realDate: Date;
+  currentDate: Date;  // Data e ora correnti combinati
+  realDate: Date;     // Data e ora reali
   offsetInMilliseconds: number;  // Offset rispetto al tempo reale
 };
 
 // Context
 type TimeMachineContextType = {
   currentDate: Date;
+  currentTime: Date; // Separato per solo orario
   dispatch: React.Dispatch<ActionType>;
 };
 
@@ -29,20 +30,41 @@ function timeMachineReducer(state: TimeStateType, action: ActionType): TimeState
         ...state,
         offsetInMilliseconds: action.payload.getTime() - state.realDate.getTime(),
       };
-    case 'TRAVEL_FORWARD':
+    case 'TRAVEL_FORWARD': {
+      const { days, hours = 0, months = 0, years = 0, minutes = 0 } = action.payload;
+      const newDate = new Date(state.currentDate);
+
+      // Aggiungi anni, mesi, giorni, ore e minuti
+      newDate.setFullYear(newDate.getFullYear() + years);
+      newDate.setMonth(newDate.getMonth() + months);
+      newDate.setDate(newDate.getDate() + days);
+      newDate.setHours(newDate.getHours() + hours);
+      newDate.setMinutes(newDate.getMinutes() + minutes);
+
       return {
         ...state,
-        offsetInMilliseconds: state.offsetInMilliseconds + action.payload.days * 24 * 60 * 60 * 1000,
+        offsetInMilliseconds: newDate.getTime() - state.realDate.getTime(),
       };
-    case 'TRAVEL_BACKWARD':
+    }
+    case 'TRAVEL_BACKWARD': {
+      const { days, hours = 0, months = 0, years = 0, minutes = 0 } = action.payload;
+      const newDate = new Date(state.currentDate);
+
+      // Sottrai anni, mesi, giorni, ore e minuti
+      newDate.setFullYear(newDate.getFullYear() - years);
+      newDate.setMonth(newDate.getMonth() - months);
+      newDate.setDate(newDate.getDate() - days);
+      newDate.setHours(newDate.getHours() - hours);
+      newDate.setMinutes(newDate.getMinutes() - minutes);
+
       return {
         ...state,
-        offsetInMilliseconds: state.offsetInMilliseconds - action.payload.days * 24 * 60 * 60 * 1000,
+        offsetInMilliseconds: newDate.getTime() - state.realDate.getTime(),
       };
+    }
     case 'RESET_TO_REAL_TIME':
       return { ...state, offsetInMilliseconds: 0 };
     case 'TICK': {
-      // Aggiorna la data corrente in base al tempo reale e l'offset
       const realTime = new Date().getTime();
       return {
         ...state,
@@ -57,6 +79,7 @@ function timeMachineReducer(state: TimeStateType, action: ActionType): TimeState
 // Valore di default per il contesto
 const defaultContextValue: TimeMachineContextType = {
   currentDate: new Date(),
+  currentTime: new Date(),
   dispatch: () => {},
 };
 
@@ -112,8 +135,13 @@ export function TimeMachineProvider({ children }: PropsWithChildren) {
     saveOffsetToStorage(state.offsetInMilliseconds);
   }, [state.offsetInMilliseconds]);
 
+  // Calcola l'orario corrente separatamente dalla data
+  const currentTime = new Date(state.currentDate);
+  currentTime.setSeconds(0);
+  currentTime.setMilliseconds(0);
+
   return (
-    <TimeMachineContext.Provider value={{ currentDate: state.currentDate, dispatch }}>
+    <TimeMachineContext.Provider value={{ currentDate: state.currentDate, currentTime, dispatch }}>
       {children}
     </TimeMachineContext.Provider>
   );

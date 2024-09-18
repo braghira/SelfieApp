@@ -3,20 +3,23 @@ import { Button } from './ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
-import { useTimeMachineContext } from '@/context/TimeMachine'; 
+import { useTimeMachineContext } from '@/context/TimeMachine';
 import { format } from 'date-fns';
 
 const TimeMachinePopup = () => {
   const { currentDate, dispatch } = useTimeMachineContext();
-  const [days, setDays] = useState(1);
+
+  const [days, setDays] = useState(0);
+  const [hours, setHours] = useState(0);
+  const [months, setMonths] = useState(0);
+  const [years, setYears] = useState(0);
 
   const handleTravelForward = () => {
-    console.log("Travel Forward Clicked - Dispatching action");
-    dispatch({ type: 'TRAVEL_FORWARD', payload: { days } });
+    dispatch({ type: 'TRAVEL_FORWARD', payload: { days, hours, months, years } });
   };
 
   const handleTravelBackward = () => {
-    dispatch({ type: 'TRAVEL_BACKWARD', payload: { days } });
+    dispatch({ type: 'TRAVEL_BACKWARD', payload: { days, hours, months, years } });
   };
 
   const handleReset = () => {
@@ -46,8 +49,8 @@ const TimeMachinePopup = () => {
         </Button>
       </DialogTrigger>
 
-      <DialogContent 
-        className="bg-white dark:bg-black text-black dark:text-white p-6 rounded-xl border-lime-500 border-2 shadow-lg max-w-lg"
+      <DialogContent
+        className="bg-white dark:bg-black text-black dark:text-white p-6 rounded-xl border-lime-500 border-2 shadow-lg max-w-md"
         aria-labelledby="time-machine-dialog-title"
         aria-describedby="time-machine-dialog-description"
       >
@@ -59,17 +62,48 @@ const TimeMachinePopup = () => {
           Current Date: {format(currentDate, 'yyyy-MM-dd HH:mm:ss')}
         </p>
 
-        <div className="mb-4 w-full">
-          <Label htmlFor="days" className="text-sm text-lime-500">Enter Days</Label>
-          <Input 
-            id="days"
-            type="number" 
-            value={days} 
-            onChange={(e) => setDays(Number(e.target.value))} 
-            className="border-2 border-lime-500 rounded-lg p-2 w-full text-black dark:text-white bg-white dark:bg-black" 
-            min={1} 
-            aria-describedby="days-description"
-          />
+        {/* Layout a due colonne */}
+        <div className="grid grid-cols-2 gap-4 mb-4">
+          <div>
+            <Label htmlFor="years" className="text-sm text-lime-500">Years</Label>
+            <Input
+              id="years"
+              type="number"
+              value={years}
+              onChange={(e) => setYears(Number(e.target.value))}
+              className="border-2 border-lime-500 rounded-lg p-2 text-black dark:text-white bg-white dark:bg-black"
+            />
+          </div>
+          <div>
+            <Label htmlFor="months" className="text-sm text-lime-500">Months</Label>
+            <Input
+              id="months"
+              type="number"
+              value={months}
+              onChange={(e) => setMonths(Number(e.target.value))}
+              className="border-2 border-lime-500 rounded-lg p-2 text-black dark:text-white bg-white dark:bg-black"
+            />
+          </div>
+          <div>
+            <Label htmlFor="days" className="text-sm text-lime-500">Days</Label>
+            <Input
+              id="days"
+              type="number"
+              value={days}
+              onChange={(e) => setDays(Number(e.target.value))}
+              className="border-2 border-lime-500 rounded-lg p-2 text-black dark:text-white bg-white dark:bg-black"
+            />
+          </div>
+          <div>
+            <Label htmlFor="hours" className="text-sm text-lime-500">Hours</Label>
+            <Input
+              id="hours"
+              type="number"
+              value={hours}
+              onChange={(e) => setHours(Number(e.target.value))}
+              className="border-2 border-lime-500 rounded-lg p-2 text-black dark:text-white bg-white dark:bg-black"
+            />
+          </div>
         </div>
 
         <div className="flex justify-between gap-2 mt-4">
