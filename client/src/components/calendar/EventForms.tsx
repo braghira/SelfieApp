@@ -131,29 +131,37 @@ export default function EventForm() {
               ? new Date(component.end)
               : new Date(startDate.getTime() + 60 * 60 * 1000); // Default to 1 hour if end is not defined
             let endT: "after" | "until" | undefined;
-
+            let untilDate;
+            
             let freq: "daily" | "weekly" | "monthly" | undefined;
-            if (typeof component.frequency === "string") {
-              const lowerFreq = component.frequency.toLowerCase();
-              if (["daily", "weekly", "monthly"].includes(lowerFreq)) {
-                freq = lowerFreq as "daily" | "weekly" | "monthly";
-              } else {
-                freq = undefined;
-              }
+            if (component.rrule?.options.freq === 1) {
+              freq = "monthly";
             }
-
+            else if(component.rrule?.options.freq === 2){
+              freq = "weekly";
+            }
+            else if(component.rrule?.options.freq === 3){
+              freq = "daily";
+            }
+            else {
+              freq = undefined;
+            }
+            console.log(component)
             let occurrences: number | undefined;
-            if (typeof component.count === "number") {
+            if (component.rrule && component.rrule.options.count) {
               endT = "after";
-              occurrences = component.count;
-            } else if (typeof component.count === "string") {
-              const parsed = parseInt(component.count, 10);
-              occurrences = isNaN(parsed) ? 1 : parsed;
-              endT = "after";
+              occurrences = component.rrule.options.count;
             } else {
               endT = "until";
               occurrences = 1;
             }
+            if(component.rrule && component.rrule.options.until instanceof Date){
+              untilDate = new Date(component.rrule.options.until);
+            }
+            else{
+              untilDate = undefined;
+            }
+            
             console.log(freq, occurrences, component.endDate);
             form.setValue("title", component.summary || "");
             form.setValue("date", startDate.toISOString().substring(0, 16));
@@ -169,16 +177,13 @@ export default function EventForm() {
             form.setValue("recurrencePattern.frequency", freq);
             form.setValue("recurrencePattern.endType", endT);
             form.setValue("recurrencePattern.occurrences", occurrences);
-            form.setValue(
-              "recurrencePattern.endDate",
-              typeof component.endDate === "string" ? component.endDate : ""
-            );
+            form.setValue("recurrencePattern.endDate", undefined);                     
+            form.setValue("expectedPomodoro.study", 30);
+            form.setValue("expectedPomodoro.relax", 5);
+            form.setValue("expectedPomodoro.cycles", 5);
             form.setValue("currPomodoro.study", 30);
             form.setValue("currPomodoro.relax", 5);
-            form.setValue("currPomodoro.cycles", 5);
-            form.setValue("expectedPomodoro.study", 30);
-            form.setValue("expectedPomodoro.study", 5);
-            form.setValue("expectedPomodoro.study", 5);
+            form.setValue("currPomodoro.cycles", 5);            
           }
         });
       } catch (error) {
