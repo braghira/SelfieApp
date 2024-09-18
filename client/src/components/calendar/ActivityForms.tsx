@@ -1,6 +1,5 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useState } from "react";
 // types
 import { ActivitySchema, ActivityType, client_log } from "@/lib/utils";
 // components
@@ -18,15 +17,13 @@ import { useAuth } from "@/context/AuthContext";
 import { useActivities } from "@/context/ActivityContext";
 import useAxiosPrivate from "@/hooks/useAxiosPrivate";
 import Loader from "../Loader";
-import UsersSearchBar from "@/components/UsersSearchBar";
 import { isAxiosError } from "axios";
-import { UserType } from "@/lib/utils";
+import UserFinder from "@/components/UserFinder";
 
 export default function ActivityForm() {
   const { dispatch } = useActivities();
   const { user } = useAuth();
   const private_api = useAxiosPrivate();
-  const [userList, setUsersList] = useState<UserType[]>([]);
 
   const form = useForm<ActivityType>({
     resolver: zodResolver(ActivitySchema),
@@ -35,6 +32,7 @@ export default function ActivityForm() {
       endDate: "",
       groupList: [],
       completed: false,
+      author: user?.username || "",
     },
   });
 
@@ -45,14 +43,16 @@ export default function ActivityForm() {
       });
       return;
     }
-
+    if (activity.author !== user.username) {
+      form.setError("root.serverError", {
+        type: "Unauthorized",
+        message: "You are not authorized to create this activity.",
+      });
+      return;
+    }
     try {
-      const allParameter = {
-        ...activity,
-        groupList: userList.map((u) => u._id), 
-      };
 
-      const response = await private_api.post("/api/activities", allParameter);
+      const response = await private_api.post("/api/activities", activity);
       // Controlliamo che lo schema sia corretto con zod
       const parsed = ActivitySchema.safeParse(response.data);
 
@@ -113,14 +113,34 @@ export default function ActivityForm() {
           )}
         />
 
+          <div className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 mt-2">
+              Aggiungi utente:
+          </div>
+            <UserFinder 
+              onUserSelect={(username: string) => {
+                // Aggiungi l'username selezionato a specificAccess se non è già presente
+                if (!form.getValues("groupList").includes(username)) {
+                  form.setValue("groupList", [...form.getValues("groupList"), username]);
+                }
+              }}
+            />
+
+                {/* Visualizza gli utenti con accesso specifico */}
+            <div className="mt-4">
+              {form.getValues("groupList").map((username, index) => (
+                  <span key={index} className="inline-block bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-100 px-3 py-1 rounded-lg mr-2 mb-2">
+                    {username}
+                  </span>
+                ))}
+            </div>
+
  
         <Button type="submit" className="shad-button_primary">
+          
           {form.formState.isSubmitting ? <Loader /> : "Add Activity"}
         </Button>
       </form>
     </Form>
-
-    <UsersSearchBar userList={userList} setUsersList={setUsersList} />
 
 </div>
   );

@@ -29,7 +29,10 @@ const eventSchema = new Schema({
     },
     groupList: {
         type: [String],
-        required: false,
+    },
+    author: {
+        type: String,
+        required: true
     },
     currPomodoro: {
         study: {

@@ -1,7 +1,7 @@
 import { ReactElement, createContext, useContext, useReducer } from "react";
 import { ActivityType, client_log } from "@/lib/utils";
 
-// types for the reducer
+// update necessita di un oggetto singolo, non di un array
 type ActionType =
   | { type: "SET_ACTIVITIES"; payload: ActivityType[] }
   | { type: "CREATE_ACTIVITY"; payload: ActivityType[] }

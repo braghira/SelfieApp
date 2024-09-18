@@ -1,6 +1,6 @@
 import ical from "ical";
 import { useForm } from "react-hook-form";
-import { useState, useRef } from "react";
+import { useRef } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { EventSchema, EventType } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -47,6 +47,7 @@ export default function EventForm() {
       isRecurring: false,
       itsPomodoro: false,
       groupList: [],
+      author: user?.username || "",
       recurrencePattern: {
         frequency: undefined,
         endType: undefined,
@@ -122,39 +123,56 @@ export default function EventForm() {
         const parsedData = ical.parseICS(data);
 
         Object.values(parsedData).forEach((component) => {
-          if (component.type === "VEVENT") {
-            const startDate = component.start
-              ? new Date(component.start)
-              : new Date();
-            const endDate = component.end
-              ? new Date(component.end)
-              : new Date(startDate.getTime() + 60 * 60 * 1000); // Default to 1 hour if end is not defined
-
-            const event: EventType = {
-              title: component.summary || "",
-              date: startDate.toISOString(),
-              duration: (endDate.getTime() - startDate.getTime()) / 60000,
-              location: component.location,
-              isRecurring: !!component.recurrenceRule,
-              //aggiungo i miei valori di default
-              itsPomodoro: false,
-              recurrencePattern: {
-                frequency: undefined,
-                endType: undefined,
-                occurrences: 1,
-                endDate: "",
-              },
-              expectedPomodoro: {
-                study: 30,
-                relax: 5,
-                cycles: 5,
-              },
-            };
-            form.reset(event);
+          if (component.type === 'VEVENT') {
+            const startDate = component.start ? new Date(component.start) : new Date();
+            const endDate = component.end ? new Date(component.end) : new Date(startDate.getTime() + 60 * 60 * 1000); // Default to 1 hour if end is not defined
+            let endT: "after" | "until" | undefined;
+            
+            let freq: "daily" | "weekly" | "monthly" | undefined;
+            if (typeof component.frequency === 'string') {
+              const lowerFreq = component.frequency.toLowerCase();
+              if (["daily", "weekly", "monthly"].includes(lowerFreq)) {
+                freq = lowerFreq as "daily" | "weekly" | "monthly";
+              } else {
+                freq = undefined;
+              }
+            }
+            
+            let occurrences: number | undefined;
+            if (typeof component.count === 'number') {
+              endT = "after";
+              occurrences = component.count;
+            } else if (typeof component.count === 'string') {
+              const parsed = parseInt(component.count, 10);
+              occurrences = isNaN(parsed) ? 1 : parsed;
+              endT = "after";
+            } else {
+              endT = "until";
+              occurrences = 1;
+            }
+            console.log(freq, occurrences, component.endDate);
+            form.setValue("title", component.summary || "");
+            form.setValue("date", startDate.toISOString().substring(0, 16));
+            form.setValue("duration", (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60));
+            form.setValue("location", component.location || "");
+            form.setValue("isRecurring", !!component.rrule);
+            form.setValue("itsPomodoro", false); 
+            form.setValue("groupList", []);
+            form.setValue("author", user?.username || "");
+            form.setValue("recurrencePattern.frequency", freq);
+            form.setValue("recurrencePattern.endType", endT);
+            form.setValue("recurrencePattern.occurrences", occurrences);
+            form.setValue("recurrencePattern.endDate", typeof component.endDate === 'string' ? component.endDate : "");
+            form.setValue("pomodoro.initStudy", 30);
+            form.setValue("pomodoro.initRelax", 5);
+            form.setValue("pomodoro.cycles", 5);
           }
         });
       } catch (error) {
         console.error("Error parsing ICS file:", error);
+      }
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
       }
     };
     reader.readAsText(file);
@@ -167,7 +185,9 @@ export default function EventForm() {
         className="flex flex-col gap-2 mt-4 w-full max-w-sm md:max-w-md"
       >
         {/* Campi normali dell'evento */}
-
+        <div className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 mt-2">
+              Importa un evento:
+          </div>
         <Input
           type="file"
           accept=".ics"
@@ -365,12 +385,8 @@ export default function EventForm() {
               )}
             />
 
-            <UsersSearchBar userList={userList} setUsersList={setUsersList} />
-
-            {/* Recurring Details */}
             {form.watch("isRecurring") && (
               <>
-                {/* Frequency */}
                 <FormField
                   control={form.control}
                   name="recurrencePattern.frequency"
@@ -405,7 +421,6 @@ export default function EventForm() {
                   )}
                 />
 
-                {/* End Type */}
                 <FormField
                   control={form.control}
                   name="recurrencePattern.endType"
@@ -493,6 +508,28 @@ export default function EventForm() {
             )}
           </>
         )}
+
+        <div className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 mt-2">
+              Aggiungi utente:
+        </div>
+        <UserFinder 
+          onUserSelect={(username: string) => {
+            // Aggiungi l'username selezionato a specificAccess se non è già presente
+            if (!form.getValues("groupList").includes(username)) {
+              form.setValue("groupList", [...form.getValues("groupList"), username]);
+            }
+          }}
+        />
+
+            {/* Visualizza gli utenti con accesso specifico */}
+        <div className="mt-4">
+          {form.getValues("groupList").map((username, index) => (
+              <span key={index} className="inline-block bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-100 px-3 py-1 rounded-lg mr-2 mb-2">
+                {username}
+              </span>
+            ))}
+        </div>
+            
 
         {form.formState.errors.root && (
           <FormMessage>
