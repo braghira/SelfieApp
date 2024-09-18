@@ -16,6 +16,12 @@ const PomodoroSchema = z.object({
   cycles: z.number().optional(),
 })
 
+const PomodoroSchema = z.object({
+  initStudy: z.number().optional(),
+  initRelax: z.number().optional(),
+  cycles: z.number().optional(),
+})
+
 export const EventSchema = z.object({
   title: z.string().min(2, "Title must be at least 2 characters"),
   date: z.string(),
