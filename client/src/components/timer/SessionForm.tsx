@@ -13,6 +13,7 @@ import {
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { useState } from "react";
+import SharePomodoro from "./SharePomodoro";
 
 interface SessionProps {
   timer: PomodoroType;
@@ -223,6 +224,8 @@ export default function SessionForm({
             ))}
           </div>
         )}
+
+        <SharePomodoro />
       </form>
     </Form>
   );

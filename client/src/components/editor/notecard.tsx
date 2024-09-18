@@ -16,6 +16,7 @@ interface NoteCardProps {
   createdAt?: Date;
   updatedAt?: Date;
   author: string;
+  simplified: boolean;
 }
 
 export default function NoteCard({
@@ -26,6 +27,7 @@ export default function NoteCard({
   createdAt,
   updatedAt,
   author,
+  simplified,
 }: NoteCardProps) {
   const { user } = useAuth();
   const { deleteNote, duplicateNote } = useNotes();
@@ -34,14 +36,15 @@ export default function NoteCard({
   const navigate = useNavigate();
 
   const markdownContent = marked(content);
-  const previewContent = content.length > 200 ? `${content.slice(0, 200)}...` : content;
+  const previewContent =
+    content.length > 200 ? `${content.slice(0, 200)}...` : content;
 
   // Gestione dell'editing della nota
   const handleEdit = () => {
     if (user) {
       navigate(`/editor/${id}`);
     } else {
-      console.warn('Utente non autorizzato a modificare la nota.');
+      console.warn("Utente non autorizzato a modificare la nota.");
     }
   };
 
@@ -50,7 +53,7 @@ export default function NoteCard({
     if (user) {
       await deleteNote(id);
     } else {
-      console.warn('Utente non autorizzato a eliminare la nota.');
+      console.warn("Utente non autorizzato a eliminare la nota.");
     }
   };
 
@@ -59,15 +62,15 @@ export default function NoteCard({
     if (user) {
       const duplicatedNote = await duplicateNote(id);
     } else {
-      console.warn('Utente non autorizzato a duplicare la nota.');
+      console.warn("Utente non autorizzato a duplicare la nota.");
     }
   };
 
   // Copia il contenuto negli appunti
   const handleCopyContent = () => {
     navigator.clipboard.writeText(content).then(
-      () => console.log('Nota copiata negli appunti'),
-      (err) => console.error('Errore nella copia del testo:', err)
+      () => console.log("Nota copiata negli appunti"),
+      (err) => console.error("Errore nella copia del testo:", err)
     );
   };
 
@@ -81,55 +84,79 @@ export default function NoteCard({
     setIsPopupOpen(false);
   };
 
-  // Formatta la data
-  const formatDate = (date?: Date) => (date ? format(date, 'dd/MM/yyyy') : 'Data non disponibile');
+// Formatta la data
+  const formatDate = (date?: Date) =>
+    date ? format(date, "dd/MM/yyyy") : "Data non disponibile";
 
   return (
     <>
-      <Card className="note-card max-w-full w-full p-4" role="article" aria-labelledby={`note-title-${id}`}>
+      <Card
+        className="note-card max-w-full w-full p-4"
+        role="article"
+        aria-labelledby={`note-title-${id}`}
+      >
         <CardHeader className="flex flex-col mb-2">
-          <div className="flex space-x-2 mb-2">
-            {user && user.username === author && (
-              <>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={handleEdit}
-                  aria-label="Modifica nota"
-                  title="Modifica nota"
-                >
-                  <Edit className="h-5 w-5" aria-hidden="true" focusable="false" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={handleDuplicate}
-                  aria-label="Duplica nota"
-                  title="Duplica nota"
-                >
-                  <Plus className="h-5 w-5" aria-hidden="true" focusable="false" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={handleDelete}
-                  aria-label="Elimina nota"
-                  title="Elimina nota"
-                >
-                  <Trash2 className="h-5 w-5" aria-hidden="true" focusable="false" />
-                </Button>
-              </>
-            )}
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={handleCopyContent}
-              aria-label="Copia contenuto della nota"
-              title="Copia contenuto della nota"
-            >
-              <Copy className="h-5 w-5" aria-hidden="true" focusable="false" />
-            </Button>
-          </div>
+          {!simplified && (
+            <div className="flex space-x-2 mb-2">
+              {user && user.username === author && (
+                <>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={handleEdit}
+                    aria-label="Modifica nota"
+                    title="Modifica nota"
+                  >
+                    <Edit
+                      className="h-5 w-5"
+                      aria-hidden="true"
+                      focusable="false"
+                    />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={handleDuplicate}
+                    aria-label="Duplica nota"
+                    title="Duplica nota"
+                  >
+                    <Plus
+                      className="h-5 w-5"
+                      aria-hidden="true"
+                      focusable="false"
+                    />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={handleDelete}
+                    aria-label="Elimina nota"
+                    title="Elimina nota"
+                  >
+                    <Trash2
+                      className="h-5 w-5"
+                      aria-hidden="true"
+                      focusable="false"
+                    />
+                  </Button>
+                </>
+              )}
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleCopyContent}
+                aria-label="Copia contenuto della nota"
+                title="Copia contenuto della nota"
+              >
+                <Copy
+                  className="h-5 w-5"
+                  aria-hidden="true"
+                  focusable="false"
+                />
+              </Button>
+            </div>
+          )}
+          
           <CardTitle id={`note-title-${id}`} className="text-primary mt-2">
             {title}
           </CardTitle>
@@ -142,7 +169,7 @@ export default function NoteCard({
             }}
             role="document"
           />
-          {content.length > 200 && !isPopupOpen && (
+          {!simplified && content.length > 200 && !isPopupOpen && (
             <span
               onClick={handleSeeMore}
               className="font-bold italic cursor-pointer ml-1 text-red-600 dark:text-red-400"
@@ -154,15 +181,22 @@ export default function NoteCard({
               Vedi di più
             </span>
           )}
-          <div>
-            Categorie: <span className="font-semibold">{categories.join(', ')}</span>
-          </div>
-          <div>
-            Creata il: <span className="font-semibold">{formatDate(createdAt)}</span>
-          </div>
-          <div>
-            Aggiornata il: <span className="font-semibold">{formatDate(updatedAt)}</span>
-          </div>
+          {!simplified && (
+            <>
+              <div>
+                Categories:{" "}
+                <span className="font-semibold">{categories.join(", ")}</span>
+              </div>
+              <div>
+                Created:{" "}
+                <span className="font-semibold">{formatDate(createdAt)}</span>
+              </div>
+              <div>
+                Updated:{" "}
+                <span className="font-semibold">{formatDate(updatedAt)}</span>
+              </div>
+            </>
+          )}
           <div>
             Autore: <span className="font-semibold">{author}</span>
           </div>

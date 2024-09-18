@@ -1,12 +1,16 @@
-import { useEffect, useMemo, useCallback, useState } from 'react';
-import { Button } from '@/components/ui/button';
-import NoteCard from '@/components/editor/notecard';
-import { useNoteContext } from '@/context/NoteContext';
-import useNotes from '@/hooks/useNote';
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
-import { NoteType } from '@/lib/utils';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/context/AuthContext';
+import { useEffect, useMemo, useCallback, useState } from "react";
+import { Button } from "@/components/ui/button";
+import NoteCard from "@/components/editor/notecard";
+import { useNoteContext } from "@/context/NoteContext";
+import useNotes from "@/hooks/useNote";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
+import { NoteType } from "@/lib/utils";
+import { useNavigate } from "react-router-dom";
 
 function HomeNote() {
   const { notes } = useNoteContext(); // Ora notes viene direttamente dal contesto
@@ -34,14 +38,14 @@ function HomeNote() {
     const sortNotes = (notes: NoteType[], option: string): NoteType[] => {
       return [...notes].sort((a, b) => {
         switch (option) {
-          case 'title':
+          case "title":
             return a.title.localeCompare(b.title);
           case 'date': {
             const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
             const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
             return dateB - dateA; // Ordina dalla più recente alla più vecchia
-          }
-          case 'length':
+          }        
+          case "length":
             return b.content.length - a.content.length;
           default:
             return 0;
@@ -87,7 +91,10 @@ function HomeNote() {
         <Button onClick={handleCreateNewNote} aria-label="Crea una nuova nota">
           Nuova Nota
         </Button>
-        <Button onClick={handleDeleteAllNotes} aria-label="Elimina tutte le note">
+        <Button
+          onClick={handleDeleteAllNotes}
+          aria-label="Elimina tutte le note"
+        >
           Elimina Tutte le Note
         </Button>
         <DropdownMenu>
@@ -122,7 +129,8 @@ function HomeNote() {
               categories={note.categories}
               createdAt={note.createdAt}
               updatedAt={note.updatedAt}
-              author={note.author} // Passa l'autore
+              author={note.author}
+              simplified={false}
             />
           ))
         ) : (
