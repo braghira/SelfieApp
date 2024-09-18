@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { format } from 'date-fns';
 import { useNoteContext } from '@/context/NoteContext';
 import useNotes from '@/hooks/useNote';
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from '@/context/AuthContext';
 import { marked } from 'marked';
 import { useNavigate } from 'react-router-dom';
 
@@ -14,8 +14,8 @@ interface NoteCardProps {
   title: string;
   content: string;
   categories: string[];
-  createdAt?: Date; // Cambiato a opzionale
-  updatedAt?: Date; // Cambiato a opzionale
+  createdAt?: Date;
+  updatedAt?: Date;
   author: string;
 }
 
@@ -81,37 +81,55 @@ export default function NoteCard({
     setIsPopupOpen(false);
   };
 
-  // Funzione per formattare le date
   const formatDate = (date?: Date) => date ? format(date, 'dd/MM/yyyy') : 'Data non disponibile';
 
   return (
     <>
       <Card className="note-card max-w-full w-full p-4">
-        <CardHeader className="flex flex-col md:flex-row justify-between items-start md:items-center">
-          <CardTitle className="text-primary">{title}</CardTitle>
-          <div className="flex space-x-2 mt-2 md:mt-0 justify-center">
-  {user && user.username === author && ( // Aggiungi questa condizione per controllare l'autore
-    <>
-      <Button variant="ghost" size="icon" onClick={handleEdit} aria-label="Edit note">
-        <Edit className="h-5 w-5" />
-      </Button>
-      
-      <Button variant="ghost" size="icon" onClick={handleDuplicate} aria-label="Duplicate note">
-        <Plus className="h-5 w-5" />
-      </Button>
-      
-      <Button variant="ghost" size="icon" onClick={handleDelete} aria-label="Delete note">
-        <Trash2 className="h-5 w-5" />
-      </Button>
-    </>
-  )}
-  
-  <Button variant="ghost" size="icon" onClick={handleCopyContent} aria-label="Copy note">
-    <Copy className="h-5 w-5" />
-  </Button>
-</div>
-
-          
+        <CardHeader className="flex flex-col mb-2">
+          <div className="flex space-x-2 mb-2">
+            {user && user.username === author && (
+              <>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleEdit}
+                  aria-label="Edit note"
+                  title="Edit note"
+                >
+                  <Edit className="h-5 w-5" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleDuplicate}
+                  aria-label="Duplicate note"
+                  title="Duplicate note"
+                >
+                  <Plus className="h-5 w-5" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleDelete}
+                  aria-label="Delete note"
+                  title="Delete note"
+                >
+                  <Trash2 className="h-5 w-5" />
+                </Button>
+              </>
+            )}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleCopyContent}
+              aria-label="Copy note"
+              title="Copy note"
+            >
+              <Copy className="h-5 w-5" />
+            </Button>
+          </div>
+          <CardTitle className="text-primary mt-2">{title}</CardTitle>
         </CardHeader>
         <CardContent className="flex-col gap-3">
           <div
@@ -124,6 +142,8 @@ export default function NoteCard({
             <span
               onClick={handleSeeMore}
               className="font-bold italic cursor-pointer ml-1 text-red-600 dark:text-red-400"
+              role="button"
+              aria-label="See more content"
             >
               See more
             </span>
@@ -152,6 +172,7 @@ export default function NoteCard({
               size="icon"
               className="absolute top-3 right-3"
               aria-label="Close popup"
+              title="Close popup"
             >
               <X className="h-6 w-6" />
             </Button>
@@ -171,3 +192,4 @@ export default function NoteCard({
     </>
   );
 }
+

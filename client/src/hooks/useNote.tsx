@@ -1,6 +1,8 @@
-import useAxiosPrivate from './useAxiosPrivate';
-import { NoteType, client_log } from '@/lib/utils';
-import { isAxiosError } from 'axios';
+import { useAuth } from "@/context/AuthContext";
+import useAxiosPrivate from "./useAxiosPrivate";
+import { NoteType, client_log } from "@/lib/utils";
+import { isAxiosError } from "axios";
+import { useNoteContext } from "@/context/NoteContext"; // Assumendo che tu abbia un NotesContext
 
 interface UseNotesReturn {
   addNote: (note: NoteType) => void;
@@ -8,31 +10,46 @@ interface UseNotesReturn {
   deleteNote: (id: string) => void;
   duplicateNote: (id: string) => void;
   deleteAllNotes: () => void;
-  fetchNotes: () => Promise<NoteType[]>;
+  fetchNotes: () => Promise<void>;
 }
 
 const useNotes = (): UseNotesReturn => {
+  const { user } = useAuth();
   const private_api = useAxiosPrivate();
+  const { dispatch } = useNoteContext(); // Dispatcher del contesto
 
   // Funzione per recuperare le note dal server
-  const fetchNotes = async (): Promise<NoteType[]> => {
+  const fetchNotes = async (): Promise<void> => {
     try {
-      const response = await private_api.get('/api/notes');
-      return response.data;
+      const response = await private_api.get('/api/notes', {
+        headers: { Authorization: `Bearer ${user?.accessToken}` },
+      });
+      if (response.status === 200) {
+        const json: NoteType[] = response.data;
+        // Aggiorna lo stato globale delle note
+        dispatch({ type: 'SET_NOTES', payload: json });
+      } else {
+        console.error('Failed to fetch notes:', response.statusText);
+      }
     } catch (error) {
       if (isAxiosError(error)) {
         console.error('An error occurred while fetching notes:', error.message);
       } else {
         console.error('Uncaught error');
       }
-      return [];
     }
   };
 
   // Aggiungi una nuova nota
   const addNote = async (note: NoteType) => {
     try {
-      await private_api.post('/api/notes', note);
+      const response = await private_api.post('/api/notes', note, {
+        headers: { Authorization: `Bearer ${user?.accessToken}` },
+      });
+      if (response.status === 201) {
+        const newNote = response.data;
+        dispatch({ type: 'ADD_NOTE', payload: newNote });
+      }
     } catch (error) {
       if (isAxiosError(error)) {
         console.error('An error occurred while adding note:', error.message);
@@ -45,7 +62,12 @@ const useNotes = (): UseNotesReturn => {
   // Aggiorna una nota esistente
   const updateNote = async (updatedNote: NoteType) => {
     try {
-      await private_api.patch(`/api/notes/${updatedNote._id}`, updatedNote);
+      const response = await private_api.patch(`/api/notes/${updatedNote._id}`, updatedNote, {
+        headers: { Authorization: `Bearer ${user?.accessToken}` },
+      });
+      if (response.status === 200) {
+        dispatch({ type: 'UPDATE_NOTE', payload: response.data });
+      }
     } catch (error) {
       if (isAxiosError(error)) {
         console.error('An error occurred while updating note:', error.message);
@@ -58,8 +80,13 @@ const useNotes = (): UseNotesReturn => {
   // Elimina una nota creata dall'utente corrente
   const deleteNote = async (id: string) => {
     try {
-      await private_api.delete(`/api/notes/${id}`);
-      client_log(`Note with ID ${id} successfully deleted`);
+      const response = await private_api.delete(`/api/notes/${id}`, {
+        headers: { Authorization: `Bearer ${user?.accessToken}` },
+      });
+      if (response.status === 200) {
+        dispatch({ type: 'DELETE_NOTE', payload: id });
+        client_log(`Note with ID ${id} successfully deleted`);
+      }
     } catch (error) {
       if (isAxiosError(error)) {
         if (error.response?.status === 403) {
@@ -76,7 +103,12 @@ const useNotes = (): UseNotesReturn => {
   // Duplica una nota
   const duplicateNote = async (id: string) => {
     try {
-      await private_api.post(`/api/notes/${id}/duplicate`);
+      const response = await private_api.post(`/api/notes/${id}/duplicate`, {}, {
+        headers: { Authorization: `Bearer ${user?.accessToken}` },
+      });
+      if (response.status === 201) {
+        dispatch({ type: 'ADD_NOTE', payload: response.data });
+      }
     } catch (error) {
       if (isAxiosError(error)) {
         console.error('An error occurred while duplicating note:', error.message);
@@ -89,8 +121,13 @@ const useNotes = (): UseNotesReturn => {
   // Elimina tutte le note create dall'utente corrente
   const deleteAllNotes = async () => {
     try {
-      await private_api.delete('/api/notes');
-      client_log('All notes successfully deleted');
+      const response = await private_api.delete('/api/notes', {
+        headers: { Authorization: `Bearer ${user?.accessToken}` },
+      });
+      if (response.status === 200) {
+        dispatch({ type: 'DELETE_ALL_NOTES' });
+        client_log('All notes successfully deleted');
+      }
     } catch (error) {
       if (isAxiosError(error)) {
         if (error.response?.status === 403) {
