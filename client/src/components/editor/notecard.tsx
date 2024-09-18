@@ -57,6 +57,7 @@ export default function NoteCard({
   // Gestione della duplicazione della nota
   const handleDuplicate = async () => {
     if (user) {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const duplicatedNote = await duplicateNote(id);
     } else {
       console.warn('Utente non autorizzato a duplicare la nota.');
@@ -85,90 +86,65 @@ export default function NoteCard({
   const formatDate = (date?: Date) => (date ? format(date, 'dd/MM/yyyy') : 'Data non disponibile');
 
   return (
-    <>
-      <Card className="note-card max-w-full w-full p-4" role="article" aria-labelledby={`note-title-${id}`}>
-        <CardHeader className="flex flex-col mb-2">
-          <div className="flex space-x-2 mb-2">
-            {user && user.username === author && (
-              <>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={handleEdit}
-                  aria-label="Modifica nota"
-                  title="Modifica nota"
-                >
-                  <Edit className="h-5 w-5" aria-hidden="true" focusable="false" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={handleDuplicate}
-                  aria-label="Duplica nota"
-                  title="Duplica nota"
-                >
-                  <Plus className="h-5 w-5" aria-hidden="true" focusable="false" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={handleDelete}
-                  aria-label="Elimina nota"
-                  title="Elimina nota"
-                >
-                  <Trash2 className="h-5 w-5" aria-hidden="true" focusable="false" />
-                </Button>
-              </>
-            )}
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={handleCopyContent}
-              aria-label="Copia contenuto della nota"
-              title="Copia contenuto della nota"
-            >
-              <Copy className="h-5 w-5" aria-hidden="true" focusable="false" />
+    <><Card className="note-card w-full p-4 sm:w-full md:max-w-lg md:mx-auto">
+    <CardHeader className="flex flex-col mb-2">
+      <div className="flex space-x-2 mb-2">
+        {user && user.username === author && (
+          <>
+            <Button variant="ghost" size="icon" onClick={handleEdit} aria-label="Modifica nota" title="Modifica nota">
+              <Edit className="h-5 w-5" aria-hidden="true" focusable="false" />
             </Button>
-          </div>
-          <CardTitle id={`note-title-${id}`} className="text-primary mt-2">
-            {title}
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="flex-col gap-3">
-          <div
-            className="text-gray-600 dark:text-white mb-2"
-            dangerouslySetInnerHTML={{
-              __html: marked(previewContent),
-            }}
-            role="document"
-          />
-          {content.length > 200 && !isPopupOpen && (
-            <span
-              onClick={handleSeeMore}
-              className="font-bold italic cursor-pointer ml-1 text-red-600 dark:text-red-400"
-              role="button"
-              aria-label="Vedi tutto il contenuto"
-              tabIndex={0}
-              onKeyPress={(e) => e.key === 'Enter' && handleSeeMore()}
-            >
-              Vedi di più
-            </span>
-          )}
-          <div>
-            Categorie: <span className="font-semibold">{categories.join(', ')}</span>
-          </div>
-          <div>
-            Creata il: <span className="font-semibold">{formatDate(createdAt)}</span>
-          </div>
-          <div>
-            Aggiornata il: <span className="font-semibold">{formatDate(updatedAt)}</span>
-          </div>
-          <div>
-            Autore: <span className="font-semibold">{author}</span>
-          </div>
-        </CardContent>
-      </Card>
-
+            <Button variant="ghost" size="icon" onClick={handleDuplicate} aria-label="Duplica nota" title="Duplica nota">
+              <Plus className="h-5 w-5" aria-hidden="true" focusable="false" />
+            </Button>
+            <Button variant="ghost" size="icon" onClick={handleDelete} aria-label="Elimina nota" title="Elimina nota">
+              <Trash2 className="h-5 w-5" aria-hidden="true" focusable="false" />
+            </Button>
+          </>
+        )}
+        <Button variant="ghost" size="icon" onClick={handleCopyContent} aria-label="Copia contenuto della nota" title="Copia contenuto della nota">
+          <Copy className="h-5 w-5" aria-hidden="true" focusable="false" />
+        </Button>
+      </div>
+      <CardTitle id={`note-title-${id}`} className="text-primary mt-2 text-lg md:text-xl lg:text-2xl">
+        {title}
+      </CardTitle>
+    </CardHeader>
+    <CardContent className="flex-col gap-3 overflow-hidden">
+      <div
+        className="text-gray-600 dark:text-white mb-2 break-words"
+        dangerouslySetInnerHTML={{
+          __html: marked(previewContent),
+        }}
+        role="document"
+      />
+      {content.length > 200 && !isPopupOpen && (
+        <span
+          onClick={handleSeeMore}
+          className="font-bold italic cursor-pointer ml-1 text-red-600 dark:text-red-400"
+          role="button"
+          aria-label="Vedi tutto il contenuto"
+          tabIndex={0}
+          onKeyPress={(e) => e.key === 'Enter' && handleSeeMore()}
+        >
+          Vedi di più
+        </span>
+      )}
+      <div>
+        Categorie: <span className="font-semibold">{categories.join(', ')}</span>
+      </div>
+      <div>
+        Creata il: <span className="font-semibold">{formatDate(createdAt)}</span>
+      </div>
+      <div>
+        Aggiornata il: <span className="font-semibold">{formatDate(updatedAt)}</span>
+      </div>
+      <div>
+        Autore: <span className="font-semibold">{author}</span>
+      </div>
+    </CardContent>
+  </Card>
+  
       {isPopupOpen && (
         <div
           className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"
