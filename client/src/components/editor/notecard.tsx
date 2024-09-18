@@ -16,6 +16,7 @@ interface NoteCardProps {
   createdAt?: Date;
   updatedAt?: Date;
   author: string;
+  simplified: boolean;
 }
 
 export default function NoteCard({
@@ -26,6 +27,7 @@ export default function NoteCard({
   createdAt,
   updatedAt,
   author,
+  simplified,
 }: NoteCardProps) {
   const { user } = useAuth();
   const { deleteNote, duplicateNote } = useNotes();
@@ -34,117 +36,143 @@ export default function NoteCard({
   const navigate = useNavigate();
 
   const markdownContent = marked(content);
+
   const previewContent = content.length > 200 ? `${content.slice(0, 200)}...` : content;
 
-  // Gestione dell'editing della nota
   const handleEdit = () => {
     if (user) {
       navigate(`/editor/${id}`);
     } else {
-      console.warn('Utente non autorizzato a modificare la nota.');
+      console.warn('User not authorized to edit the note.');
     }
   };
 
-  // Gestione dell'eliminazione della nota
   const handleDelete = async () => {
     if (user) {
       await deleteNote(id);
     } else {
-      console.warn('Utente non autorizzato a eliminare la nota.');
+      console.warn('User not authorized to delete the note.');
     }
   };
 
-  // Gestione della duplicazione della nota
   const handleDuplicate = async () => {
     if (user) {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const duplicatedNote = await duplicateNote(id);
+      await duplicateNote(id);
     } else {
-      console.warn('Utente non autorizzato a duplicare la nota.');
+      console.warn('User not authorized to duplicate the note.');
     }
   };
 
-  // Copia il contenuto negli appunti
   const handleCopyContent = () => {
     navigator.clipboard.writeText(content).then(
-      () => console.log('Nota copiata negli appunti'),
-      (err) => console.error('Errore nella copia del testo:', err)
+      () => console.log('Note copied to clipboard'),
+      (err) => console.error('Error copying text:', err)
     );
   };
 
-  // Gestione della visualizzazione completa della nota
   const handleSeeMore = () => {
     setIsPopupOpen(true);
   };
 
-  // Chiudi il popup
   const closePopup = () => {
     setIsPopupOpen(false);
   };
 
-  // Formatta la data
-  const formatDate = (date?: Date) => (date ? format(date, 'dd/MM/yyyy') : 'Data non disponibile');
+  const formatDate = (date?: Date) => (date ? format(date, 'dd/MM/yyyy') : 'Date not available');
 
   return (
-    <><Card className="note-card w-full p-4 sm:w-full md:max-w-lg md:mx-auto">
-    <CardHeader className="flex flex-col mb-2">
-      <div className="flex space-x-2 mb-2">
-        {user && user.username === author && (
-          <>
-            <Button variant="ghost" size="icon" onClick={handleEdit} aria-label="Modifica nota" title="Modifica nota">
-              <Edit className="h-5 w-5" aria-hidden="true" focusable="false" />
-            </Button>
-            <Button variant="ghost" size="icon" onClick={handleDuplicate} aria-label="Duplica nota" title="Duplica nota">
-              <Plus className="h-5 w-5" aria-hidden="true" focusable="false" />
-            </Button>
-            <Button variant="ghost" size="icon" onClick={handleDelete} aria-label="Elimina nota" title="Elimina nota">
-              <Trash2 className="h-5 w-5" aria-hidden="true" focusable="false" />
-            </Button>
-          </>
-        )}
-        <Button variant="ghost" size="icon" onClick={handleCopyContent} aria-label="Copia contenuto della nota" title="Copia contenuto della nota">
-          <Copy className="h-5 w-5" aria-hidden="true" focusable="false" />
-        </Button>
-      </div>
-      <CardTitle id={`note-title-${id}`} className="text-primary mt-2 text-lg md:text-xl lg:text-2xl">
-        {title}
-      </CardTitle>
-    </CardHeader>
-    <CardContent className="flex-col gap-3 overflow-hidden">
-      <div
-        className="text-gray-600 dark:text-white mb-2 break-words"
-        dangerouslySetInnerHTML={{
-          __html: marked(previewContent),
-        }}
-        role="document"
-      />
-      {content.length > 200 && !isPopupOpen && (
-        <span
-          onClick={handleSeeMore}
-          className="font-bold italic cursor-pointer ml-1 text-red-600 dark:text-red-400"
-          role="button"
-          aria-label="Vedi tutto il contenuto"
-          tabIndex={0}
-          onKeyPress={(e) => e.key === 'Enter' && handleSeeMore()}
-        >
-          Vedi di più
-        </span>
-      )}
-      <div>
-        Categorie: <span className="font-semibold">{categories.join(', ')}</span>
-      </div>
-      <div>
-        Creata il: <span className="font-semibold">{formatDate(createdAt)}</span>
-      </div>
-      <div>
-        Aggiornata il: <span className="font-semibold">{formatDate(updatedAt)}</span>
-      </div>
-      <div>
-        Autore: <span className="font-semibold">{author}</span>
-      </div>
-    </CardContent>
-  </Card>
-  
+    <>
+      <Card className="note-card max-w-full w-full p-4" role="article" aria-labelledby={`note-title-${id}`}>
+        <CardHeader className="flex flex-col mb-1">
+          {!simplified && (
+            <div className="flex space-x-2 mb-2">
+              {user && user.username === author && (
+                <>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={handleEdit}
+                    aria-label="Edit note"
+                    title="Edit note"
+                  >
+                    <Edit className="h-5 w-5" aria-hidden="true" focusable="false" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={handleDuplicate}
+                    aria-label="Duplicate note"
+                    title="Duplicate note"
+                  >
+                    <Plus className="h-5 w-5" aria-hidden="true" focusable="false" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={handleDelete}
+                    aria-label="Delete note"
+                    title="Delete note"
+                  >
+                    <Trash2 className="h-5 w-5" aria-hidden="true" focusable="false" />
+                  </Button>
+                </>
+              )}
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleCopyContent}
+                aria-label="Copy note content"
+                title="Copy note content"
+              >
+                <Copy className="h-5 w-5" aria-hidden="true" focusable="false" />
+              </Button>
+            </div>
+          )}
+          <CardTitle
+            id={`note-title-${id}`}
+            className="text-primary mb-1 text-ellipsis overflow-hidden whitespace-normal break-words"
+            style={{ lineHeight: '1.2', paddingBottom: '4px' }}
+          >
+            {title}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="text-gray-600 dark:text-white">
+          <div
+            className="mb-2 text-ellipsis overflow-hidden whitespace-normal break-words"
+            dangerouslySetInnerHTML={{ __html: marked(previewContent) }}
+            role="document"
+          />
+          {!simplified && content.length > 200 && !isPopupOpen && (
+            <span
+              onClick={handleSeeMore}
+              className="font-bold italic cursor-pointer text-red-600 dark:text-red-400"
+              role="button"
+              aria-label="See full content"
+              tabIndex={0}
+              onKeyPress={(e) => e.key === 'Enter' && handleSeeMore()}
+            >
+              See more
+            </span>
+          )}
+          {!simplified && (
+            <>
+              <div className="mt-2">
+                Categories: <span className="font-semibold">{categories.join(', ')}</span>
+              </div>
+              <div className="mt-1">
+                Created: <span className="font-semibold">{formatDate(createdAt)}</span>
+              </div>
+              <div className="mt-1">
+                Updated: <span className="font-semibold">{formatDate(updatedAt)}</span>
+              </div>
+            </>
+          )}
+          <div className="mt-2">
+            Author: <span className="font-semibold">{author}</span>
+          </div>
+        </CardContent>
+      </Card>
+
       {isPopupOpen && (
         <div
           className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"
@@ -158,12 +186,15 @@ export default function NoteCard({
               variant="ghost"
               size="icon"
               className="absolute top-3 right-3"
-              aria-label="Chiudi popup"
-              title="Chiudi popup"
+              aria-label="Close popup"
+              title="Close popup"
             >
               <X className="h-6 w-6" aria-hidden="true" focusable="false" />
             </Button>
-            <h2 id={`popup-title-${id}`} className="text-2xl font-bold mb-4 text-gray-800 dark:text-gray-100">
+            <h2
+              id={`popup-title-${id}`}
+              className="text-2xl font-bold mb-4 text-gray-800 dark:text-gray-100"
+            >
               {title}
             </h2>
             <div
@@ -172,7 +203,7 @@ export default function NoteCard({
               role="document"
             />
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              <strong>Autore:</strong> {author}
+              <strong>Author:</strong> {author}
             </p>
           </div>
         </div>

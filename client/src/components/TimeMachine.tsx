@@ -24,13 +24,9 @@ const TimeMachinePopup = () => {
   };
 
   return (
-    <Dialog>
+    <Dialog aria-labelledby="time-machine-dialog-title" aria-describedby="time-machine-dialog-description">
       <DialogTrigger asChild>
-        <Button 
-          className="bg-lime-600 text-white hover:bg-lime-700 flex items-center gap-2"
-          aria-label="Open Time Machine dialog"
-        >
-          {/* Aggiunta dell'icona di orologio rotante con aria-label per accessibilità */}
+        <Button className="bg-lime-600 text-white hover:bg-lime-700 flex items-center gap-2" aria-label="Open Time Machine">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             className="h-5 w-5 rotating-clock"
@@ -38,7 +34,7 @@ const TimeMachinePopup = () => {
             viewBox="0 0 24 24"
             stroke="currentColor"
             strokeWidth="2"
-            aria-hidden="true" // Nasconde l'icona dagli screen reader
+            aria-hidden="true"
           >
             <path
               strokeLinecap="round"
@@ -46,62 +42,46 @@ const TimeMachinePopup = () => {
               d="M12 8v4l3 3m6 0a9 9 0 11-18 0 9 9 0 0118 0z"
             />
           </svg>
-          <span className="hidden md:inline">Open Time Machine</span> {/* Nascondi su mobile */}
+          <span className="hidden md:inline">Time Machine</span>
         </Button>
       </DialogTrigger>
 
-      {/* Assicurati che il focus vada sul dialog quando è aperto */}
       <DialogContent 
-        className="bg-black text-white p-6 rounded-xl border-lime-500 border-2 shadow-lg max-w-lg"
-        aria-live="assertive" // Annuncia ai lettori di schermo che è attivo
-        role="dialog"
-        aria-modal="true"
+        className="bg-white dark:bg-black text-black dark:text-white p-6 rounded-xl border-lime-500 border-2 shadow-lg max-w-lg"
+        aria-labelledby="time-machine-dialog-title"
+        aria-describedby="time-machine-dialog-description"
       >
         <DialogHeader>
-          <DialogTitle className="text-lime-500 text-2xl">Time Machine</DialogTitle>
+          <DialogTitle id="time-machine-dialog-title" className="text-lime-500 text-2xl">Time Machine</DialogTitle>
         </DialogHeader>
 
-        <p className="text-xl mb-4">
+        <p id="time-machine-dialog-description" className="text-xl mb-4">
           Current Date: {format(currentDate, 'yyyy-MM-dd HH:mm:ss')}
         </p>
 
         <div className="mb-4 w-full">
-          <Label htmlFor="days" className="text-sm text-lime-500">
-            Enter Days
-          </Label>
+          <Label htmlFor="days" className="text-sm text-lime-500">Enter Days</Label>
           <Input 
-            id="days" // Aggiunta l'attributo id per collegare l'etichetta al campo di input
+            id="days"
             type="number" 
             value={days} 
             onChange={(e) => setDays(Number(e.target.value))} 
-            className="border-2 border-lime-500 rounded-lg p-2 w-full text-white bg-black" 
+            className="border-2 border-lime-500 rounded-lg p-2 w-full text-black dark:text-white bg-white dark:bg-black" 
             min={1} 
-            aria-label="Enter number of days for time travel" // Etichetta per screen reader
+            aria-describedby="days-description"
           />
         </div>
 
         <div className="flex justify-between gap-2 mt-4">
-          <Button 
-            onClick={handleTravelBackward} 
-            className="bg-lime-600 text-black hover:bg-lime-700"
-            aria-label={`Travel backward ${days} days`}
-          >
+          <Button onClick={handleTravelBackward} className="bg-lime-600 text-black hover:bg-lime-700" aria-label="Travel Backward">
             Travel Backward
           </Button>
-          <Button 
-            onClick={handleTravelForward} 
-            className="bg-lime-600 text-black hover:bg-lime-700"
-            aria-label={`Travel forward ${days} days`}
-          >
+          <Button onClick={handleTravelForward} className="bg-lime-600 text-black hover:bg-lime-700" aria-label="Travel Forward">
             Travel Forward
           </Button>
         </div>
 
-        <Button 
-          onClick={handleReset} 
-          className="mt-4 w-full bg-lime-600 text-black hover:bg-lime-700"
-          aria-label="Reset to real time"
-        >
+        <Button onClick={handleReset} className="mt-4 w-full bg-lime-600 text-black hover:bg-lime-700" aria-label="Reset to Real Time">
           Reset to Real Time
         </Button>
       </DialogContent>

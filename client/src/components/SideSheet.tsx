@@ -15,6 +15,7 @@ import Loader from "./Loader";
 import { Bell } from "lucide-react";
 import usePushNotification from "@/hooks/usePushNotification";
 import { usePushContext } from "@/context/NotificationContext";
+import { useTimeMachineContext } from '@/context/TimeMachine';  // Importa il contesto della Time Machine
 
 export default function SideSheet() {
   const { logout } = useLogout();
@@ -22,6 +23,7 @@ export default function SideSheet() {
     usePushNotification();
   const { user } = useAuth();
   const { subscription } = usePushContext();
+  const { dispatch } = useTimeMachineContext();  // Usa il dispatch del contesto Time Machine
 
   return (
     <Sheet>
@@ -77,7 +79,10 @@ export default function SideSheet() {
           <Button
             className="mb-20"
             variant="destructive"
-            onClick={() => logout()}
+            onClick={() => {
+              dispatch({ type: 'RESET_TO_REAL_TIME' });  // Resetta la data al tempo reale
+              logout();  // Effettua il logout
+            }}
           >
             Logout
           </Button>
