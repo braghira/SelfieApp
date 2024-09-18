@@ -44,6 +44,7 @@ export default function EventDetails({
 
   function handleExportToCalendar() {
     let upperCase = "";
+
     if (event.recurrencePattern?.frequency) {
       upperCase = event.recurrencePattern.frequency.toUpperCase();
     }
@@ -82,16 +83,30 @@ export default function EventDetails({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader className="flex-row">
-          <DialogTitle>{event.title}</DialogTitle>
-        </DialogHeader>
-        <div className="flex justify-between items-start">
-          <div>
+  <DialogContent className="sm:max-w-[425px]">
+    <DialogHeader className="flex-row">
+      <DialogTitle>{event.title}</DialogTitle>
+    </DialogHeader>
+    <div className="flex justify-between items-start">
+      <div>
+        <div>
+          Date:{" "}
+          <span className="base-semibold">
+            {format(new Date(event.date), "dd/MM/yyyy HH:mm")}
+          </span>
+        </div>
+        {event.itsPomodoro ? (
+          <>
             <div>
-              Date:{" "}
+              Study Time:{" "}
               <span className="base-semibold">
-                {format(new Date(event.date), "dd/MM/yyyy HH:mm")}
+                {event.pomodoro?.initStudy ? (event.pomodoro.initStudy / 60000).toFixed(0) : "30"} minutes
+              </span>
+            </div>
+            <div>
+              Relax Time:{" "}
+              <span className="base-semibold">
+                {event.pomodoro?.initRelax ? (event.pomodoro.initRelax / 60000).toFixed(0) : "5"} minutes
               </span>
             </div>
             {event.itsPomodoro ? (
