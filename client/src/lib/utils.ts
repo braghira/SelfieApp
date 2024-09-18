@@ -8,12 +8,13 @@ const recurrencePatternSchema = z.object({
   occurrences: z.number().optional(),
   endDate: z.string().optional(),
 });
+export type RecurrenceType = z.infer<typeof recurrencePatternSchema>;
 
 const PomodoroSchema = z.object({
   initStudy: z.number().optional(),
   initRelax: z.number().optional(),
   cycles: z.number().optional(),
-})
+});
 
 export const EventSchema = z.object({
   title: z.string().min(2, "Title must be at least 2 characters"),
@@ -71,12 +72,8 @@ export const NoteSchema = z.object({
   author: z.string().trim().min(1, { message: "Author is required." }),
   accessType: z.enum(["public", "restricted", "private"]).default("private"),
   specificAccess: z.array(z.string().trim()).optional().default([]),
-  createdAt: z
-    .date()
-    .optional(), 
-  updatedAt: z
-    .date()
-    .optional(),  
+  createdAt: z.date().optional(),
+  updatedAt: z.date().optional(),
   _id: z.string().optional(),
 });
 export type NoteType = z.infer<typeof NoteSchema>;

@@ -35,7 +35,7 @@ type PropsType = {
   setUsersList: React.Dispatch<React.SetStateAction<UserType[]>>;
 };
 
-export default function UsersSearchBar({ userList, setUsersList }: PropsType) {
+export default function UsersSearchBar({ setUsersList }: PropsType) {
   // Users initialized as an empty array
   const [fetchedUsers, setFetchedUsers] = useState<UserType[]>([]);
   const [usernameState, setUsername] = useState("");

@@ -3,20 +3,21 @@ import { useEffect, useState } from "react";
 import useAxiosPrivate from "./useAxiosPrivate";
 import { client_log, getPushSub } from "@/lib/utils";
 import { usePushContext } from "@/context/NotificationContext";
-import { PomodoroType } from "./useTimer";
+import { PomodoroType, useTimer } from "./useTimer";
 import { useNavigate } from "react-router-dom";
 
 export type NotificationPayload = {
   title: string; // notification title
   body: string; // body of the notification
   url: string; // data containing url to get to when clicking, and a PomodoroTimer session if needed
-  pomodoro?: PomodoroType;  
+  pomodoro?: PomodoroType;
 };
 
 export default function usePushNotification() {
   const [sendLoading, setSendLoading] = useState(false);
   const [subLoading, setSubLoading] = useState(false);
   const [unsubLoading, setUnsubLoading] = useState(false);
+  const { timer, dispatch: timerDispatch } = useTimer();
   const private_api = useAxiosPrivate();
   const { user } = useAuth();
   const { dispatch } = usePushContext();
@@ -39,7 +40,22 @@ export default function usePushNotification() {
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.addEventListener("message", (event) => {
         const { url, pomodoro } = event.data;
-        console.log(`Message from service worker: ${url}, ${pomodoro}`);
+        client_log(
+          `Message from service worker: ${url}, ${JSON.stringify(pomodoro)}`
+        );
+
+        if (pomodoro) {
+          try {
+            // Verifica se pomodoro è una stringa, se no lo converte
+            const parsedPomodoro =
+              typeof pomodoro === "string" ? JSON.parse(pomodoro) : pomodoro;
+
+            const new_timer: PomodoroType = parsedPomodoro;
+            timerDispatch({ type: "SET", payload: new_timer });
+          } catch (error) {
+            console.error("Failed to parse pomodoro:", error);
+          }
+        }
 
         navigate(url);
       });

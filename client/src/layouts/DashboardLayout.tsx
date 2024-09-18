@@ -7,12 +7,14 @@ function DashboardLayout() {
   usePushNotification();
 
   return (
-    <div>
-      <Navbar />
+    <>
+      <header>
+        <Navbar />
+      </header>
       <main>
         <Outlet />
       </main>
-    </div>
+    </>
   );
 }
 
