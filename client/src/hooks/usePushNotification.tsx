@@ -17,7 +17,7 @@ export default function usePushNotification() {
   const [sendLoading, setSendLoading] = useState(false);
   const [subLoading, setSubLoading] = useState(false);
   const [unsubLoading, setUnsubLoading] = useState(false);
-  const { timer, dispatch: timerDispatch } = useTimer();
+  const { dispatch: timerDispatch, setInitialTimer } = useTimer();
   const private_api = useAxiosPrivate();
   const { user } = useAuth();
   const { dispatch } = usePushContext();
@@ -44,12 +44,14 @@ export default function usePushNotification() {
           `Message from service worker: ${url}, ${JSON.stringify(pomodoro)}`
         );
 
+        // Gestione del payload pomodoro
         if (pomodoro) {
           try {
             // Verifica se pomodoro è una stringa, se no lo converte
             const parsedPomodoro =
               typeof pomodoro === "string" ? JSON.parse(pomodoro) : pomodoro;
 
+            // sets the localstorage with the shared pomodoro
             const new_timer: PomodoroType = parsedPomodoro;
             timerDispatch({ type: "SET", payload: new_timer });
           } catch (error) {

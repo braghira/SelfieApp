@@ -11,8 +11,8 @@ const recurrencePatternSchema = z.object({
 export type RecurrenceType = z.infer<typeof recurrencePatternSchema>;
 
 const PomodoroSchema = z.object({
-  initStudy: z.number().optional(),
-  initRelax: z.number().optional(),
+  study: z.number().optional(),
+  relax: z.number().optional(),
   cycles: z.number().optional(),
 });
 
@@ -28,7 +28,8 @@ export const EventSchema = z.object({
   recurrencePattern: recurrencePatternSchema.optional(),
   _id: z.string().optional(),
   createdAt: z.string().optional(),
-  pomodoro: PomodoroSchema.optional(),
+  currPomodoro: PomodoroSchema.optional(),
+  expectedPomodoro: PomodoroSchema.optional(),
 });
 export type EventType = z.infer<typeof EventSchema>;
 

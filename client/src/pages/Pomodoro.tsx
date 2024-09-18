@@ -1,7 +1,7 @@
 import RelaxAnimation from "@/components/timer/RelaxAnimation";
 import StudyAnimation from "@/components/timer/StudyAnimation";
 import { Button } from "@/components/ui/button";
-import { PomodoroType, useTimer } from "@/hooks/useTimer";
+import { useTimer } from "@/hooks/useTimer";
 import { ChevronLast, Play, RotateCcwIcon, SkipForward } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
@@ -29,20 +29,18 @@ import { useAuth } from "@/context/AuthContext";
 import { BlockerFunction, useBlocker } from "react-router-dom";
 import useEventsApi from "@/hooks/useEventsApi";
 import { useEvents } from "@/context/EventContext";
+import { useTimeMachineContext } from "@/context/TimeMachine";
+import moment from "moment";
+import { EventType } from "@/lib/utils";
 
 export default function Pomodoro() {
   const { RequestPushSub, sendNotification } = usePushNotification();
   const { user } = useAuth();
-  const { events } = useEvents();
   const [open, setOpen] = useState(false);
-  const { getEvents } = useEventsApi();
-  const { timer, dispatch, InitialTimer, setInitialTimer } = useTimer(events);
-
-  useEffect(() => {
-    if (user) {
-      getEvents();
-    }
-  }, [dispatch, user]);
+  const { events } = useEvents();
+  const { getEvents, postEvent } = useEventsApi();
+  const { timer, dispatch, InitialTimer, setInitialTimer } = useTimer();
+  const { currentDate } = useTimeMachineContext();
 
   // Block navigating elsewhere when data has been entered into the input
   const shouldBlock = useCallback<BlockerFunction>(
@@ -54,12 +52,6 @@ export default function Pomodoro() {
   );
   const blocker = useBlocker(shouldBlock);
 
-  useEffect(() => {
-    if (blocker.state === "blocked") {
-      setOpen(true);
-    }
-  }, [blocker.state]);
-
   const remainder = useRef((timer.study.initialValue / 1000) % 5);
   const repetitions = useRef(
     (timer.study.initialValue / 1000 - remainder.current) / 10
@@ -67,10 +59,42 @@ export default function Pomodoro() {
   const timeDiff = useRef(timer.study.value);
 
   function start() {
+    // Set the initial timer correctly in case we didn't set the pomodoro session with the forms
+    setInitialTimer(timer);
+
     dispatch({
       type: "START",
       payload: null,
     });
+
+    let todayEvent = null;
+    // create new pomodoro event if today there were none
+    if (events && events.length > 0) {
+      const today = moment(currentDate);
+      todayEvent = events.find(
+        (event) => moment(event.date).isSame(today, "day") && event.itsPomodoro
+      );
+    }
+
+    const pomodoro = {
+      study: timer.study.initialValue / (1000 * 60),
+      relax: timer.relax.initialValue / (1000 * 60),
+      cycles: timer.cycles,
+    };
+
+    if (!todayEvent) {
+      const newPomodoroEvent: EventType = {
+        itsPomodoro: true,
+        date: currentDate.toDateString(),
+        duration: 0,
+        isRecurring: false,
+        title: "Pomodoro",
+        currPomodoro: pomodoro,
+        expectedPomodoro: pomodoro,
+      };
+      // crea il nuovo evento pomodoro di oggi
+      postEvent(newPomodoroEvent);
+    }
   }
 
   function reset() {
@@ -158,6 +182,18 @@ export default function Pomodoro() {
     }
   }
 
+  useEffect(() => {
+    if (user) {
+      getEvents();
+    }
+  }, [dispatch, user]);
+
+  useEffect(() => {
+    if (blocker.state === "blocked") {
+      setOpen(true);
+    }
+  }, [blocker.state]);
+
   // send a notification every time we start next phase
   useEffect(() => {
     const payload: NotificationPayload = {
@@ -239,7 +275,6 @@ export default function Pomodoro() {
                     <Button
                       onClick={() => {
                         start();
-  
 
                         const payload: NotificationPayload = {
                           title: "Pomodoro Timer",
@@ -351,7 +386,8 @@ export default function Pomodoro() {
             <AlertDialogAction
               onClick={() => {
                 if (blocker.state === "blocked") {
-                  const savedPomodoroData = localStorage.getItem("pomodoro_timer");
+                  const savedPomodoroData =
+                    localStorage.getItem("pomodoro_timer");
                   if (savedPomodoroData) {
                     localStorage.setItem("closedEarly", savedPomodoroData);
                   }
