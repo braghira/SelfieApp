@@ -1,21 +1,20 @@
-import { useState } from "react";
-import { Trash2, Copy, Edit, Plus, X } from "lucide-react";
-import { Button } from "../ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
-import { format } from "date-fns";
-import { useNoteContext } from "@/context/NoteContext";
-import useNotes from "@/hooks/useNote";
-import { useAuth } from "@/context/AuthContext";
-import { marked } from "marked";
-import { useNavigate } from "react-router-dom";
+import { useState } from 'react';
+import { Trash2, Copy, Edit, Plus, X } from 'lucide-react';
+import { Button } from '../ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
+import { format } from 'date-fns';
+import useNotes from '@/hooks/useNote';
+import { useAuth } from '@/context/AuthContext';
+import { marked } from 'marked';
+import { useNavigate } from 'react-router-dom';
 
 interface NoteCardProps {
   id: string;
   title: string;
   content: string;
   categories: string[];
-  createdAt?: Date; // Cambiato a opzionale
-  updatedAt?: Date; // Cambiato a opzionale
+  createdAt?: Date;
+  updatedAt?: Date;
   author: string;
   simplified: boolean;
 }
@@ -31,7 +30,6 @@ export default function NoteCard({
   simplified,
 }: NoteCardProps) {
   const { user } = useAuth();
-  const { dispatch } = useNoteContext();
   const { deleteNote, duplicateNote } = useNotes();
   const [isPopupOpen, setIsPopupOpen] = useState(false);
 
@@ -41,6 +39,7 @@ export default function NoteCard({
   const previewContent =
     content.length > 200 ? `${content.slice(0, 200)}...` : content;
 
+  // Gestione dell'editing della nota
   const handleEdit = () => {
     if (user) {
       navigate(`/editor/${id}`);
@@ -49,26 +48,25 @@ export default function NoteCard({
     }
   };
 
+  // Gestione dell'eliminazione della nota
   const handleDelete = async () => {
     if (user) {
       await deleteNote(id);
-      dispatch({ type: "DELETE_NOTE", payload: id });
     } else {
       console.warn("Utente non autorizzato a eliminare la nota.");
     }
   };
 
+  // Gestione della duplicazione della nota
   const handleDuplicate = async () => {
     if (user) {
       const duplicatedNote = await duplicateNote(id);
-      if (duplicatedNote !== undefined) {
-        dispatch({ type: "ADD_NOTE", payload: duplicatedNote });
-      }
     } else {
       console.warn("Utente non autorizzato a duplicare la nota.");
     }
   };
 
+  // Copia il contenuto negli appunti
   const handleCopyContent = () => {
     navigator.clipboard.writeText(content).then(
       () => console.log("Nota copiata negli appunti"),
@@ -76,67 +74,92 @@ export default function NoteCard({
     );
   };
 
+  // Gestione della visualizzazione completa della nota
   const handleSeeMore = () => {
     setIsPopupOpen(true);
   };
 
+  // Chiudi il popup
   const closePopup = () => {
     setIsPopupOpen(false);
   };
 
-  // Funzione per formattare le date
+// Formatta la data
   const formatDate = (date?: Date) =>
     date ? format(date, "dd/MM/yyyy") : "Data non disponibile";
 
   return (
     <>
-      <Card className="note-card max-w-full w-full p-4">
-        <CardHeader className="flex flex-col md:flex-row justify-between items-start md:items-center">
-          <CardTitle className="text-primary">{title}</CardTitle>
+      <Card
+        className="note-card max-w-full w-full p-4"
+        role="article"
+        aria-labelledby={`note-title-${id}`}
+      >
+        <CardHeader className="flex flex-col mb-2">
           {!simplified && (
-            <div className="flex space-x-2 mt-2 md:mt-0 justify-center">
-              {user &&
-                user.username === author && ( // Aggiungi questa condizione per controllare l'autore
-                  <>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={handleEdit}
-                      aria-label="Edit note"
-                    >
-                      <Edit className="h-5 w-5" />
-                    </Button>
-
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={handleDuplicate}
-                      aria-label="Duplicate note"
-                    >
-                      <Plus className="h-5 w-5" />
-                    </Button>
-
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={handleDelete}
-                      aria-label="Delete note"
-                    >
-                      <Trash2 className="h-5 w-5" />
-                    </Button>
-                  </>
-                )}
-
+            <div className="flex space-x-2 mb-2">
+              {user && user.username === author && (
+                <>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={handleEdit}
+                    aria-label="Modifica nota"
+                    title="Modifica nota"
+                  >
+                    <Edit
+                      className="h-5 w-5"
+                      aria-hidden="true"
+                      focusable="false"
+                    />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={handleDuplicate}
+                    aria-label="Duplica nota"
+                    title="Duplica nota"
+                  >
+                    <Plus
+                      className="h-5 w-5"
+                      aria-hidden="true"
+                      focusable="false"
+                    />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={handleDelete}
+                    aria-label="Elimina nota"
+                    title="Elimina nota"
+                  >
+                    <Trash2
+                      className="h-5 w-5"
+                      aria-hidden="true"
+                      focusable="false"
+                    />
+                  </Button>
+                </>
+              )}
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={handleCopyContent}
-                aria-label="Copy note"
+                aria-label="Copia contenuto della nota"
+                title="Copia contenuto della nota"
               >
-                <Copy className="h-5 w-5" />
+                <Copy
+                  className="h-5 w-5"
+                  aria-hidden="true"
+                  focusable="false"
+                />
               </Button>
             </div>
           )}
+          
+          <CardTitle id={`note-title-${id}`} className="text-primary mt-2">
+            {title}
+          </CardTitle>
         </CardHeader>
         <CardContent className="flex-col gap-3">
           <div
@@ -144,13 +167,18 @@ export default function NoteCard({
             dangerouslySetInnerHTML={{
               __html: marked(previewContent),
             }}
+            role="document"
           />
           {!simplified && content.length > 200 && !isPopupOpen && (
             <span
               onClick={handleSeeMore}
               className="font-bold italic cursor-pointer ml-1 text-red-600 dark:text-red-400"
+              role="button"
+              aria-label="Vedi tutto il contenuto"
+              tabIndex={0}
+              onKeyPress={(e) => e.key === 'Enter' && handleSeeMore()}
             >
-              See more
+              Vedi di più
             </span>
           )}
           {!simplified && (
@@ -170,32 +198,39 @@ export default function NoteCard({
             </>
           )}
           <div>
-            Author: <span className="font-semibold">{author}</span>
+            Autore: <span className="font-semibold">{author}</span>
           </div>
         </CardContent>
       </Card>
 
       {isPopupOpen && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+        <div
+          className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby={`popup-title-${id}`}
+        >
           <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-xl max-w-lg w-full relative h-3/4 overflow-y-auto">
             <Button
               onClick={closePopup}
               variant="ghost"
               size="icon"
               className="absolute top-3 right-3"
-              aria-label="Close popup"
+              aria-label="Chiudi popup"
+              title="Chiudi popup"
             >
-              <X className="h-6 w-6" />
+              <X className="h-6 w-6" aria-hidden="true" focusable="false" />
             </Button>
-            <h2 className="text-2xl font-bold mb-4 text-gray-800 dark:text-gray-100">
+            <h2 id={`popup-title-${id}`} className="text-2xl font-bold mb-4 text-gray-800 dark:text-gray-100">
               {title}
             </h2>
             <div
               className="mb-4 text-gray-600 dark:text-gray-300"
               dangerouslySetInnerHTML={{ __html: markdownContent }}
+              role="document"
             />
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              <strong>Author:</strong> {author}
+              <strong>Autore:</strong> {author}
             </p>
           </div>
         </div>
