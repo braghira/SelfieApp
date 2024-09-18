@@ -1,6 +1,6 @@
 import ical from "ical"
 import { useForm } from "react-hook-form";
-import { useState, useRef } from "react";
+import { useRef } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { EventSchema, EventType, client_log } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -27,17 +27,15 @@ import { useAuth } from "@/context/AuthContext";
 import { useEvents } from "@/context/EventContext";
 import useAxiosPrivate from "@/hooks/useAxiosPrivate";
 import { isAxiosError } from "axios";
-import { UserType } from "@/lib/utils";
-import UsersSearchBar from "@/components/UsersSearchBar";
 import moment from 'moment';
+import UserFinder from "@/components/UserFinder";
 
 
 export default function EventForm() {
   const { dispatch, events } = useEvents();
   const { user } = useAuth();
   const private_api = useAxiosPrivate();
-  const [userList, setUsersList] = useState<UserType[]>([]);
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
 
   const form = useForm<EventType>({
@@ -50,6 +48,7 @@ export default function EventForm() {
       isRecurring: false,
       itsPomodoro: false,
       groupList: [],
+      author: user?.username || "",
       recurrencePattern: {
         frequency: undefined,
         endType: undefined,
@@ -88,7 +87,13 @@ export default function EventForm() {
       });
       return;
     }
-    
+    if (event.author !== user.username) {
+      form.setError("root.serverError", {
+        type: "Unauthorized",
+        message: "You are not authorized to create this activity.",
+      });
+      return;
+    }
 
     if (event.itsPomodoro) {
       const pomodoroExists = events.some(e => e.itsPomodoro && moment(e.date).format('YYYY-MM-DD') === moment(event.date).format('YYYY-MM-DD')); 
@@ -138,32 +143,53 @@ export default function EventForm() {
           if (component.type === 'VEVENT') {
             const startDate = component.start ? new Date(component.start) : new Date();
             const endDate = component.end ? new Date(component.end) : new Date(startDate.getTime() + 60 * 60 * 1000); // Default to 1 hour if end is not defined
-
-            const event: EventType = {
-              title: component.summary || "",
-              date: startDate.toISOString(),
-              duration: (endDate.getTime() - startDate.getTime()) / 60000,
-              location: component.location,
-              isRecurring: !!component.recurrenceRule,
-              //aggiungo i miei valori di default
-              itsPomodoro: false, 
-              recurrencePattern: {
-                frequency: undefined,
-                endType: undefined,
-                occurrences: 1,
-                endDate: "",
-              },
-              pomodoro: {
-                initStudy: 30,
-                initRelax: 5,
-                cycles: 5,
-              },
-            };
-            form.reset(event); 
+            let endT: "after" | "until" | undefined;
+            
+            let freq: "daily" | "weekly" | "monthly" | undefined;
+            if (typeof component.frequency === 'string') {
+              const lowerFreq = component.frequency.toLowerCase();
+              if (["daily", "weekly", "monthly"].includes(lowerFreq)) {
+                freq = lowerFreq as "daily" | "weekly" | "monthly";
+              } else {
+                freq = undefined;
+              }
+            }
+            
+            let occurrences: number | undefined;
+            if (typeof component.count === 'number') {
+              endT = "after";
+              occurrences = component.count;
+            } else if (typeof component.count === 'string') {
+              const parsed = parseInt(component.count, 10);
+              occurrences = isNaN(parsed) ? 1 : parsed;
+              endT = "after";
+            } else {
+              endT = "until";
+              occurrences = 1;
+            }
+            console.log(freq, occurrences, component.endDate);
+            form.setValue("title", component.summary || "");
+            form.setValue("date", startDate.toISOString().substring(0, 16));
+            form.setValue("duration", (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60));
+            form.setValue("location", component.location || "");
+            form.setValue("isRecurring", !!component.rrule);
+            form.setValue("itsPomodoro", false); 
+            form.setValue("groupList", []);
+            form.setValue("author", user?.username || "");
+            form.setValue("recurrencePattern.frequency", freq);
+            form.setValue("recurrencePattern.endType", endT);
+            form.setValue("recurrencePattern.occurrences", occurrences);
+            form.setValue("recurrencePattern.endDate", typeof component.endDate === 'string' ? component.endDate : "");
+            form.setValue("pomodoro.initStudy", 30);
+            form.setValue("pomodoro.initRelax", 5);
+            form.setValue("pomodoro.cycles", 5);
           }
         });
       } catch (error) {
         console.error("Error parsing ICS file:", error);
+      }
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
       }
     };
     reader.readAsText(file);
@@ -178,14 +204,16 @@ export default function EventForm() {
       >
         
         {/* Campi normali dell'evento */}
-
-                <Input
-                  type="file"
-                  accept=".ics"
-                  ref={fileInputRef}
-                  onChange={handleFileChange}
-                  className="shad-input"
-                />
+        <div className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 mt-2">
+              Importa un evento:
+          </div>
+        <Input
+          type="file"
+          accept=".ics"
+          ref={fileInputRef}
+          onChange={handleFileChange}
+          className="shad-input"
+        />
         <FormField
           control={form.control}
           name="title"
@@ -372,12 +400,8 @@ export default function EventForm() {
               )}
             />
 
-            <UsersSearchBar userList={userList} setUsersList={setUsersList} />
-
-            {/* Recurring Details */}
             {form.watch("isRecurring") && (
               <>
-                {/* Frequency */}
                 <FormField
                   control={form.control}
                   name="recurrencePattern.frequency"
@@ -410,7 +434,6 @@ export default function EventForm() {
                   )}
                 />
 
-                {/* End Type */}
                 <FormField
                   control={form.control}
                   name="recurrencePattern.endType"
@@ -494,6 +517,28 @@ export default function EventForm() {
             )}
           </>
         )}
+
+        <div className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 mt-2">
+              Aggiungi utente:
+        </div>
+        <UserFinder 
+          onUserSelect={(username: string) => {
+            // Aggiungi l'username selezionato a specificAccess se non è già presente
+            if (!form.getValues("groupList").includes(username)) {
+              form.setValue("groupList", [...form.getValues("groupList"), username]);
+            }
+          }}
+        />
+
+            {/* Visualizza gli utenti con accesso specifico */}
+        <div className="mt-4">
+          {form.getValues("groupList").map((username, index) => (
+              <span key={index} className="inline-block bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-100 px-3 py-1 rounded-lg mr-2 mb-2">
+                {username}
+              </span>
+            ))}
+        </div>
+            
 
         {form.formState.errors.root && (
           <FormMessage>

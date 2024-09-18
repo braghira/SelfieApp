@@ -3,35 +3,56 @@ const mongoose = require('mongoose')
 
 // get all activities
 const getActivities = async(req, res) => {
-    const activities = await Activity.find({}).sort({createdAt: -1})
+    const { user } = req;
+    try {
+        const activities = await Activity.find({
+            $or: [
+                { author: user.username },
+                { groupList: { $in: [user.username] } }
+              ]}).sort({createdAt: -1})
 
-    res.status(200).json(activities)
+        res.status(200).json(activities)
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+  }
 }
 
 // get a single activity
 const getActivity = async(req, res) => {
-    const {id} = req.params
+    const {id} = req.params;
+    const { user } = req;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
         return res.status(404).json({error: 'No such activity'})
     }
 
-    const activity = await Activity.findById(id)
+    try {
+        const activity = await Activity.findById(id)
 
-    if (!activity) {
-        return res.status(404).json({error: 'No such activity'})
-    }
+        if (!activity) {
+            return res.status(404).json({error: 'No such activity'});
+        }
+            // Controlla i permessi di accesso
+        if (
+            (activity.author !== user.username) && (!activity.groupList.includes(user.username))
+        ) {
+            return res.status(403).json({ error: "Access denied" });
+        }
 
-    res.status(200).json(activity)
+        res.status(200).json(activity)
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+  }
 }
 
 // create a new activity
 const createActivity = async (req, res) => {
-    const { title, endDate, groupList, completed } = req.body
+    const { title, endDate, groupList, completed } = req.body;
+    const { user } = req;
 
     // add document to DB
     try {
-        const activity = await Activity.create({ title, endDate, groupList: Array.isArray(groupList) ? groupList : [], completed })
+        const activity = await Activity.create({ title, endDate, groupList: Array.isArray(groupList) ? groupList : [], completed, author: user.username })
         res.status(200).json(activity)
     }
     catch (error) {
@@ -41,24 +62,31 @@ const createActivity = async (req, res) => {
 
 // delete an activity
 const deleteActivity = async (req, res) => {
-    const { id } = req.params
+    const { id } = req.params;
+    const { user } = req;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
         return res.status(404).json({error: 'No such activity'})
     }
 
-    const activity = await Activity.findOneAndDelete({_id: id})
-    
-    if (!activity) {
-        return res.status(404).json({error: 'No such activity'})
-    }
+    try {
+        const activity = await Activity.findOneAndDelete({_id: id, author: user.username })
+        
+        if (!activity) {
+            return res.status(404).json({error: 'No such activity or unauthorized'})
+        }
 
-    res.status(200).json(activity)
+        res.status(200).json(activity)
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
 }
 
 const updateActivity = async (req, res) => {
     const { id } = req.params;
-    const { completed } = req.body; 
+    const { completed } = req.body;
+    const { user } = req;
+
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
         return res.status(404).json({ error: 'No such activity' });
@@ -67,13 +95,13 @@ const updateActivity = async (req, res) => {
     try {
         // Find and update the activity
         const updatedActivity = await Activity.findByIdAndUpdate(
-            id,
+            { _id: id, author: user.username},
             { completed },
             { new: true } // Return the updated document
         );
 
         if (!updatedActivity) {
-            return res.status(404).json({ error: 'No such activity' });
+            return res.status(404).json({ error: 'No such activity or unauthorized' });
         }
 
         res.status(200).json(updatedActivity);
