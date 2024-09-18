@@ -67,5 +67,51 @@ export default function useEventsApi() {
     }
   }
 
-  return { getEvents, deleteEvent };
+async function getPomodoroClosedEarly() {
+  const closedEarly = localStorage.getItem("closedEarly");
+  if (closedEarly) {
+    try {
+      const parsed = JSON.parse(closedEarly);
+      const { study, relax, cycles, isStudyCycle, totalTime } = parsed;
+      return {
+        studyInitialValue: study.initialValue,
+        studyValue: study.value,
+        relaxInitialValue: relax.initialValue,
+        relaxValue: relax.value,
+        cycles,
+        isStudyCycle,
+        totalTime,
+      };
+    } catch (error) {
+      console.error("Error parsing closedEarly from localStorage:", error);
+    }
+  }
+  return null;
+}
+
+
+async function getLastPomodoro() {
+  const last = localStorage.getItem("lastestPomodoro");
+  if (last) {
+    try {
+      const parsed = JSON.parse(last);
+      const { study, relax, cycles, isStudyCycle, totalTime } = parsed;
+      return {
+        studyInitialValue: study.initialValue,
+        studyValue: study.value,
+        relaxInitialValue: relax.initialValue,
+        relaxValue: relax.value,
+        cycles,
+        isStudyCycle,
+        totalTime,
+      };
+    } catch (error) {
+      console.error("Error parsing closedEarly from localStorage:", error);
+    }
+  }
+  return null;
+}
+
+
+  return { getEvents, deleteEvent, getPomodoroClosedEarly, getLastPomodoro };
 }

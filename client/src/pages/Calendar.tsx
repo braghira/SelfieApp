@@ -12,6 +12,7 @@ import useActivitiesApi from "@/hooks/useActivitiesApi";
 import useEventsApi from "@/hooks/useEventsApi.tsx";
 import usePushNotification, { NotificationPayload } from "@/hooks/usePushNotification";
 import { EventType } from "@/lib/utils";
+import { useTimeMachineContext } from "@/context/TimeMachine";
 
 
 export default function CalendarPage() {
@@ -39,7 +40,9 @@ export default function CalendarPage() {
   });
   const [selectedEvent, setSelectedEvent] = useState<EventType | null>(null);
   const [open, setOpen] = useState(false);
-
+  const { currentDate } = useTimeMachineContext();
+  
+  
   useEffect(() => {
     if (user) {
       getActivities();
@@ -58,6 +61,7 @@ export default function CalendarPage() {
       localStorage.setItem("notificationActivitiesStatus", JSON.stringify(notificationActivitiesStatus));
     }
   }, [notificationActivitiesStatus]);
+  
 
   const colors = {
     late: "#ff7514",
@@ -83,7 +87,7 @@ export default function CalendarPage() {
 
   useEffect(() => {
     const userID = user?._id;
-    const now = moment();
+    const now = moment(currentDate);
     if (userID && events) {
       const updatedEventStatus = { ...notificationEventStatus };
       events.forEach((event) => {
@@ -159,7 +163,7 @@ export default function CalendarPage() {
   };
 
   const eventPropGetter = (event: CustomEvent) => {
-    const now = moment();
+    const now = moment(currentDate);
     const start = moment(event.start);
     let backgroundColor;
 
@@ -300,6 +304,7 @@ export default function CalendarPage() {
           max={moment("2024-10-10T22:00:00").toDate()}
           eventPropGetter={eventPropGetter}
           onSelectEvent={handleSelected}
+          getNow={() => moment(currentDate).toDate()}
         />
         <div className="hidden lg:block">
           {activities && <ActivityList activities={activities} />}
