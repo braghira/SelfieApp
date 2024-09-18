@@ -1,11 +1,16 @@
-import { useEffect, useMemo, useCallback, useState } from 'react';
-import { Button } from '@/components/ui/button';
-import NoteCard from '@/components/editor/notecard';
-import { useNoteContext } from '@/context/NoteContext';
-import useNotes from '@/hooks/useNote';
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
-import { NoteType } from '@/lib/utils';
-import { useNavigate } from 'react-router-dom';
+import { useEffect, useMemo, useCallback, useState } from "react";
+import { Button } from "@/components/ui/button";
+import NoteCard from "@/components/editor/notecard";
+import { useNoteContext } from "@/context/NoteContext";
+import useNotes from "@/hooks/useNote";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
+import { NoteType } from "@/lib/utils";
+import { useNavigate } from "react-router-dom";
 
 function HomeNote() {
   const { notes, dispatch } = useNoteContext();
@@ -20,7 +25,10 @@ function HomeNote() {
       dispatch({ type: "SET_NOTES", payload: fetched });
       console.log("Note caricate con successo!");
     } catch (error) {
-      console.error("Errore nel caricamento delle note:", error instanceof Error ? error.message : "Errore sconosciuto");
+      console.error(
+        "Errore nel caricamento delle note:",
+        error instanceof Error ? error.message : "Errore sconosciuto"
+      );
     }
   }, [dispatch, fetchNotes]);
 
@@ -33,7 +41,7 @@ function HomeNote() {
     const sortNotes = (notes: NoteType[], option: string): NoteType[] => {
       return [...notes].sort((a, b) => {
         switch (option) {
-          case 'title':
+          case "title":
             return a.title.localeCompare(b.title);
           case "date": {
             const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
@@ -41,7 +49,6 @@ function HomeNote() {
             return dateB - dateA; // Ordina dalla più recente alla più vecchia
           }
 
-          
           case "length":
             return b.content.length - a.content.length;
           default:
@@ -65,7 +72,10 @@ function HomeNote() {
       dispatch({ type: "DELETE_ALL_NOTES" });
       console.log("Tutte le note sono state eliminate con successo!");
     } catch (error) {
-      console.error("Errore nell'eliminazione delle note:", error instanceof Error ? error.message : "Errore sconosciuto");
+      console.error(
+        "Errore nell'eliminazione delle note:",
+        error instanceof Error ? error.message : "Errore sconosciuto"
+      );
     }
   };
 
@@ -76,12 +86,15 @@ function HomeNote() {
   };
 
   return (
-    <div className="home-note p-4">
+    <div className="view-container px-4">
       <div className="flex justify-start items-center space-x-4 mb-4">
         <Button onClick={handleCreateNewNote} aria-label="Crea una nuova nota">
           Nuova Nota
         </Button>
-        <Button onClick={handleDeleteAllNotes} aria-label="Elimina tutte le note">
+        <Button
+          onClick={handleDeleteAllNotes}
+          aria-label="Elimina tutte le note"
+        >
           Elimina Tutte le Note
         </Button>
         <DropdownMenu>
@@ -89,13 +102,22 @@ function HomeNote() {
             <Button>Ordina per</Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent>
-            <DropdownMenuItem onClick={() => handleSortChange("title")} aria-label="Ordina per titolo">
+            <DropdownMenuItem
+              onClick={() => handleSortChange("title")}
+              aria-label="Ordina per titolo"
+            >
               Titolo
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleSortChange("date")} aria-label="Ordina per data">
+            <DropdownMenuItem
+              onClick={() => handleSortChange("date")}
+              aria-label="Ordina per data"
+            >
               Data
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleSortChange("length")} aria-label="Ordina per lunghezza">
+            <DropdownMenuItem
+              onClick={() => handleSortChange("length")}
+              aria-label="Ordina per lunghezza"
+            >
               Lunghezza
             </DropdownMenuItem>
           </DropdownMenuContent>
@@ -112,7 +134,8 @@ function HomeNote() {
               categories={note.categories}
               createdAt={note.createdAt}
               updatedAt={note.updatedAt}
-              author={note.author} // Passa anche l'autore
+              author={note.author}
+              simplified={false}
             />
           ))
         ) : (
