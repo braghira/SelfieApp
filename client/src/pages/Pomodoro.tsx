@@ -91,6 +91,7 @@ export default function Pomodoro() {
         title: "Pomodoro",
         currPomodoro: pomodoro,
         expectedPomodoro: pomodoro,
+        groupList: [],
       };
       // crea il nuovo evento pomodoro di oggi
       postEvent(newPomodoroEvent);

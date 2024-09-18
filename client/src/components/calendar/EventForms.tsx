@@ -123,13 +123,17 @@ export default function EventForm() {
         const parsedData = ical.parseICS(data);
 
         Object.values(parsedData).forEach((component) => {
-          if (component.type === 'VEVENT') {
-            const startDate = component.start ? new Date(component.start) : new Date();
-            const endDate = component.end ? new Date(component.end) : new Date(startDate.getTime() + 60 * 60 * 1000); // Default to 1 hour if end is not defined
+          if (component.type === "VEVENT") {
+            const startDate = component.start
+              ? new Date(component.start)
+              : new Date();
+            const endDate = component.end
+              ? new Date(component.end)
+              : new Date(startDate.getTime() + 60 * 60 * 1000); // Default to 1 hour if end is not defined
             let endT: "after" | "until" | undefined;
-            
+
             let freq: "daily" | "weekly" | "monthly" | undefined;
-            if (typeof component.frequency === 'string') {
+            if (typeof component.frequency === "string") {
               const lowerFreq = component.frequency.toLowerCase();
               if (["daily", "weekly", "monthly"].includes(lowerFreq)) {
                 freq = lowerFreq as "daily" | "weekly" | "monthly";
@@ -137,12 +141,12 @@ export default function EventForm() {
                 freq = undefined;
               }
             }
-            
+
             let occurrences: number | undefined;
-            if (typeof component.count === 'number') {
+            if (typeof component.count === "number") {
               endT = "after";
               occurrences = component.count;
-            } else if (typeof component.count === 'string') {
+            } else if (typeof component.count === "string") {
               const parsed = parseInt(component.count, 10);
               occurrences = isNaN(parsed) ? 1 : parsed;
               endT = "after";
@@ -153,26 +157,35 @@ export default function EventForm() {
             console.log(freq, occurrences, component.endDate);
             form.setValue("title", component.summary || "");
             form.setValue("date", startDate.toISOString().substring(0, 16));
-            form.setValue("duration", (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60));
+            form.setValue(
+              "duration",
+              (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60)
+            );
             form.setValue("location", component.location || "");
             form.setValue("isRecurring", !!component.rrule);
-            form.setValue("itsPomodoro", false); 
+            form.setValue("itsPomodoro", false);
             form.setValue("groupList", []);
             form.setValue("author", user?.username || "");
             form.setValue("recurrencePattern.frequency", freq);
             form.setValue("recurrencePattern.endType", endT);
             form.setValue("recurrencePattern.occurrences", occurrences);
-            form.setValue("recurrencePattern.endDate", typeof component.endDate === 'string' ? component.endDate : "");
-            form.setValue("pomodoro.initStudy", 30);
-            form.setValue("pomodoro.initRelax", 5);
-            form.setValue("pomodoro.cycles", 5);
+            form.setValue(
+              "recurrencePattern.endDate",
+              typeof component.endDate === "string" ? component.endDate : ""
+            );
+            form.setValue("currPomodoro.study", 30);
+            form.setValue("currPomodoro.relax", 5);
+            form.setValue("currPomodoro.cycles", 5);
+            form.setValue("expectedPomodoro.study", 30);
+            form.setValue("expectedPomodoro.study", 5);
+            form.setValue("expectedPomodoro.study", 5);
           }
         });
       } catch (error) {
         console.error("Error parsing ICS file:", error);
       }
       if (fileInputRef.current) {
-        fileInputRef.current.value = '';
+        fileInputRef.current.value = "";
       }
     };
     reader.readAsText(file);
@@ -186,8 +199,8 @@ export default function EventForm() {
       >
         {/* Campi normali dell'evento */}
         <div className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 mt-2">
-              Importa un evento:
-          </div>
+          Importa un evento:
+        </div>
         <Input
           type="file"
           accept=".ics"
@@ -510,26 +523,31 @@ export default function EventForm() {
         )}
 
         <div className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 mt-2">
-              Aggiungi utente:
+          Aggiungi utente:
         </div>
-        <UserFinder 
+        <UserFinder
           onUserSelect={(username: string) => {
             // Aggiungi l'username selezionato a specificAccess se non è già presente
             if (!form.getValues("groupList").includes(username)) {
-              form.setValue("groupList", [...form.getValues("groupList"), username]);
+              form.setValue("groupList", [
+                ...form.getValues("groupList"),
+                username,
+              ]);
             }
           }}
         />
 
-            {/* Visualizza gli utenti con accesso specifico */}
+        {/* Visualizza gli utenti con accesso specifico */}
         <div className="mt-4">
           {form.getValues("groupList").map((username, index) => (
-              <span key={index} className="inline-block bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-100 px-3 py-1 rounded-lg mr-2 mb-2">
-                {username}
-              </span>
-            ))}
+            <span
+              key={index}
+              className="inline-block bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-100 px-3 py-1 rounded-lg mr-2 mb-2"
+            >
+              {username}
+            </span>
+          ))}
         </div>
-            
 
         {form.formState.errors.root && (
           <FormMessage>
