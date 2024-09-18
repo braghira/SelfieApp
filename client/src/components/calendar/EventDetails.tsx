@@ -29,8 +29,8 @@ export default function EventDetails({
   setOpen,
 }: EventDetailsProps) {
   const { user } = useAuth();
-  const { deleteEvent } = useEventsApi();
-  const { dispatch, createTimer } = useTimer();
+  const { deleteEvent, updateUserList } = useEventsApi();
+  const { createTimer } = useTimer();
   const navigate = useNavigate();
 
   async function handleDelete() {
@@ -103,23 +103,13 @@ export default function EventDetails({
   }
 
   return (
-
-  <Dialog open={open} onOpenChange={setOpen}>
-  <DialogContent className="sm:max-w-[425px]">
-    <DialogHeader className="flex-row">
-      <DialogTitle>{event.title}</DialogTitle>
-    </DialogHeader>
-    <div className="flex justify-between items-start">
-      <div>
-        <div>
-          Date:{" "}
-          <span className="base-semibold">
-            {format(new Date(event.date), "dd/MM/yyyy HH:mm")}
-          </span>
-        </div>
-        {event.itsPomodoro ? (
-          <>
-
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader className="flex-row">
+          <DialogTitle>{event.title}</DialogTitle>
+        </DialogHeader>
+        <div className="flex justify-between items-start">
+          <div>
             <div>
               Date:{" "}
               <span className="base-semibold">
@@ -194,19 +184,31 @@ export default function EventDetails({
                       )}
                   </div>
                 )}
+                {event.author != user?.username &&
+                  event.groupList.find(
+                    (userItem) => userItem === user?.username
+                  ) && (
+                    <div>
+                      <Button className="mt-2 " onClick={handleUpdate}>
+                        Refuse event
+                      </Button>
+                    </div>
+                  )}
               </>
             )}
-            {event.author != user?.username && event.groupList.find(userItem => userItem === user?.username) && (<div>
-              <Button className="mt-2 " onClick={handleUpdate}>Refuse event</Button>
-            </div>)}
-          </>
-        )}
-
-      </div>
-      <DialogClose asChild>
-        <Button variant="ghost" size={"icon"} onClick={handleDelete}>
-          <Trash2 className="h-6 w-6" />
-
+          </div>
+          <DialogClose asChild>
+            <Button variant="ghost" size={"icon"} onClick={handleDelete}>
+              <Trash2 className="h-6 w-6" />
+            </Button>
+          </DialogClose>
+        </div>
+        <Button
+          variant="secondary"
+          className="bg-primary text-primary-foreground border-primary hover:bg-primary/90 shadow-none"
+          onClick={handleExportToCalendar}
+        >
+          Export
         </Button>
         {event.itsPomodoro && (
           <Button

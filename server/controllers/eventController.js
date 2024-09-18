@@ -2,15 +2,16 @@ const Event = require('../models/eventModel')
 const mongoose = require('mongoose')
 
 // get all events
-const getEvents = async(req, res) => {
+const getEvents = async (req, res) => {
     const { user } = req;
 
-    try{
+    try {
         const events = await Event.find({
             $or: [
                 { author: user.username },
                 { groupList: { $in: [user.username] } }
-              ]}).sort({createdAt: -1})
+            ]
+        }).sort({ createdAt: -1 })
         res.status(200).json(events)
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -18,8 +19,8 @@ const getEvents = async(req, res) => {
 }
 
 // get a single event
-const getEvent = async(req, res) => {
-    const {id} = req.params
+const getEvent = async (req, res) => {
+    const { id } = req.params
     const { user } = req;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -30,9 +31,9 @@ const getEvent = async(req, res) => {
         const event = await Event.findById(id)
 
         if (!event) {
-            return res.status(404).json({error: 'No such event'})
+            return res.status(404).json({ error: 'No such event' })
         }
-        
+
         if (
             (event.author !== user.username) && (!event.groupList.includes(user.username))
         ) {
@@ -47,12 +48,14 @@ const getEvent = async(req, res) => {
 // create a new event
 const createEvent = async (req, res) => {
     const { title, date, duration, location, isRecurring, itsPomodoro, groupList, recurrencePattern, expectedPomodoro, currPomodoro } = req.body
+    const { user } = req;
 
     // add document to DB
     try {
         const event = await Event.create({
             title, date, duration, location, isRecurring, itsPomodoro,
             groupList: Array.isArray(groupList) ? groupList : [],
+            author: user.username,
             recurrencePattern: isRecurring ? {
                 frequency: recurrencePattern.frequency,
                 endType: recurrencePattern.endType,
@@ -88,10 +91,10 @@ const deleteEvent = async (req, res) => {
         return res.status(404).json({ error: 'No such event' })
     }
     try {
-        const event = await Event.findOneAndDelete({_id: id, author: user.username})
-        
+        const event = await Event.findOneAndDelete({ _id: id, author: user.username })
+
         if (!event) {
-            return res.status(404).json({error: 'No such event or unauthorized'})
+            return res.status(404).json({ error: 'No such event or unauthorized' })
         }
         res.status(200).json(event)
     } catch (error) {
@@ -111,7 +114,7 @@ const updateEvent = async (req, res) => {
     try {
         const event = await Event.findById(id)
         if (!event) {
-            return res.status(404).json({error: 'No such event'})
+            return res.status(404).json({ error: 'No such event' })
         }
 
         if (!event.groupList.includes(user.username)) {

@@ -47,6 +47,8 @@ export default function useEventsApi() {
       const response = await private_api.post("/api/events", event);
       const parsed = EventSchema.safeParse(response.data);
 
+      console.log("EVENTO pom: ", event);
+
       if (parsed.success) {
         dispatch({ type: "CREATE_EVENT", payload: [response.data] });
         client_log("new event added", response.data);
@@ -54,7 +56,7 @@ export default function useEventsApi() {
         client_log("error while validating created event schema");
       }
     } catch (error) {
-      if (isAxiosError(error)) client_log("an error occurred:" + error.message);
+      if (isAxiosError(error)) client_log("an error occurred: ", error.message);
     }
   }
 
@@ -130,39 +132,48 @@ export default function useEventsApi() {
     return null;
   }
 
-async function updateUserList(event: EventType) {
-  try {
-    const response = await private_api.patch(
-      `/api/events/${event._id}`,
-      { groupList: event.groupList.filter(username => username !== user?.username) },
-      {
-        headers: { Authorization: `Bearer ${user?.accessToken}` },
-      }
-    );
-
-    const json = response.data;
-    const parsed = EventSchema.safeParse(json);
-
-    if (parsed.success) {
-      //aggiorno lo stato globale con il nuovo evento modificato
-      dispatch({ type: "UPDATE_EVENT", payload: parsed.data });
-      client_log("User successfully removed from groupList");
-
-      await getEvents(); // forzo il refresh per la view calendario
-    } else {
-      client_log("Error while validating updated item schema");
-    }
-  } catch (error) {
-    if (isAxiosError(error)) {
-      client_log(
-        `Error during completion of item ${event._id}: ` + error.message,
-        error.response?.data
+  async function updateUserList(event: EventType) {
+    try {
+      const response = await private_api.patch(
+        `/api/events/${event._id}`,
+        {
+          groupList: event.groupList.filter(
+            (username) => username !== user?.username
+          ),
+        },
+        {
+          headers: { Authorization: `Bearer ${user?.accessToken}` },
+        }
       );
+
+      const json = response.data;
+      const parsed = EventSchema.safeParse(json);
+
+      if (parsed.success) {
+        //aggiorno lo stato globale con il nuovo evento modificato
+        dispatch({ type: "UPDATE_EVENT", payload: parsed.data });
+        client_log("User successfully removed from groupList");
+
+        await getEvents(); // forzo il refresh per la view calendario
+      } else {
+        client_log("Error while validating updated item schema");
+      }
+    } catch (error) {
+      if (isAxiosError(error)) {
+        client_log(
+          `Error during completion of item ${event._id}: ` + error.message,
+          error.response?.data
+        );
+      }
     }
   }
-}
 
-
-
-  return { getEvents, postEvent, deleteEvent, getPomodoroClosedEarly, getLastPomodoro, updateUserList };
+  return {
+    getEvents,
+    postEvent,
+    deleteEvent,
+    getPomodoroClosedEarly,
+    getLastPomodoro,
+    updateUserList,
+  };
 }
