@@ -23,7 +23,7 @@ const getEvent = async(req, res) => {
     const { user } = req;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-        return res.status(404).json({error: 'No such event'})
+        return res.status(404).json({ error: 'No such event' })
     }
 
     try {
@@ -38,7 +38,6 @@ const getEvent = async(req, res) => {
         ) {
             return res.status(403).json({ error: "Access denied" });
         }
-
         res.status(200).json(event)
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -47,27 +46,32 @@ const getEvent = async(req, res) => {
 
 // create a new event
 const createEvent = async (req, res) => {
-    const { title, date, duration, location, isRecurring, itsPomodoro, groupList, recurrencePattern, pomodoro } = req.body;
-    const { user } = req;
+    const { title, date, duration, location, isRecurring, itsPomodoro, groupList, recurrencePattern, expectedPomodoro, currPomodoro } = req.body
 
     // add document to DB
     try {
-        const event = await Event.create({ title, date, duration, location, isRecurring, itsPomodoro,
-            groupList: Array.isArray(groupList) ? groupList : [], 
-            author: user.username,
+        const event = await Event.create({
+            title, date, duration, location, isRecurring, itsPomodoro,
+            groupList: Array.isArray(groupList) ? groupList : [],
             recurrencePattern: isRecurring ? {
                 frequency: recurrencePattern.frequency,
                 endType: recurrencePattern.endType,
                 occurrences: recurrencePattern.endType === 'after' ? recurrencePattern.occurrences : undefined,
                 endDate: recurrencePattern.endType === 'until' ? recurrencePattern.endDate : undefined
             } : undefined,
-            pomodoro: itsPomodoro ? {
-                initStudy: pomodoro.initStudy,
-                initRelax: pomodoro.initRelax,
-                cycles: pomodoro.cycles,
+            expectedPomodoro: itsPomodoro ? {
+                study: expectedPomodoro.study,
+                relax: expectedPomodoro.relax,
+                cycles: expectedPomodoro.cycles,
+            } : undefined,
+            currPomodoro: itsPomodoro ? {
+                study: currPomodoro.study,
+                relax: currPomodoro.relax,
+                cycles: currPomodoro.cycles,
             } : undefined,
         })
 
+        console.log("new event: ", event);
         res.status(200).json(event)
     }
     catch (error) {
@@ -81,16 +85,14 @@ const deleteEvent = async (req, res) => {
     const { user } = req;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-        return res.status(404).json({error: 'No such event'})
+        return res.status(404).json({ error: 'No such event' })
     }
-
     try {
         const event = await Event.findOneAndDelete({_id: id, author: user.username})
         
         if (!event) {
             return res.status(404).json({error: 'No such event or unauthorized'})
         }
-
         res.status(200).json(event)
     } catch (error) {
         res.status(400).json({ error: error.message });
@@ -103,7 +105,7 @@ const updateEvent = async (req, res) => {
     const { user } = req;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-        return res.status(404).json({error: 'No such event'})
+        return res.status(404).json({ error: 'No such event' })
     }
 
     try {

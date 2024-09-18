@@ -245,11 +245,12 @@ const sendNotification = async (req, res) => {
 
     console.log("payload: ", payload);
 
-    // cicle through all the user's devices to send them all a notification
+    let hasInvalidSubscriptions = false;
+
+    // Ciclo attraverso tutte le sottoscrizioni dell'utente per inviare le notifiche
     const promises = user.pushSubscriptions.map(subscription =>
       webpush.sendNotification(subscription, payload)
         .then((res) => {
-
           console.log("send push status code: ", res.statusCode);
 
           // Sub has expired, throw error and handle it by deleting the subscription from DB
@@ -258,31 +259,40 @@ const sendNotification = async (req, res) => {
               "Subscription has expired or is no longer valid: ",
               res.statusCode
             );
-            // subscription no longer valid
-            throw new Error("Subscription no longer valid");
+            // Subscription no longer valid, segnalare che ci sono sottoscrizioni non valide
+            hasInvalidSubscriptions = true;
+            user.pushSubscriptions = user.pushSubscriptions.filter(sub => sub.endpoint !== subscription.endpoint);
           } else if (res.statusCode === 201) {
             console.log("Notifications sent to all devices");
           }
         })
-        .catch(async (error) => {
-          // remove the old subscription and update DB
+        .catch(() => {
+          // Rimuove la sottoscrizione non valida (gestita sopra)
+          hasInvalidSubscriptions = true;
           user.pushSubscriptions = user.pushSubscriptions.filter(sub => sub.endpoint !== subscription.endpoint);
-          await user.save();
-        }))
+        })
+    );
 
-    // await all the promises of sending a notification
+    // Attendi che tutte le promesse siano risolte
     await Promise.all(promises);
 
-    if (promises.length === 0)
+    // Se sono state modificate le sottoscrizioni, salva l'utente una volta sola
+    if (hasInvalidSubscriptions) {
+      await user.save();
+    }
+
+    if (promises.length === 0) {
       res.status(202).json({ message: "No subscriptions for this user" });
-    else
+    } else {
       res.status(200).json({ message: 'Notification sent successfully' });
+    }
 
   } catch (error) {
     console.error('Promises error:', error);
     res.status(500).json({ message: 'Internal server error' });
   }
 };
+
 
 
 module.exports = { loginUser, signupUser, logoutUser, refreshToken, subscribe, unsubscribe, sendNotification };

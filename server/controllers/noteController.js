@@ -126,7 +126,7 @@ const duplicateNote = async (req, res) => {
     // Verifica i permessi di accesso
     if (
       (note.accessType === "private" && note.author !== user.username) ||
-      (note.accessType === "restricted" && !note.specificAccess.includes(user.username))
+      (note.accessType === "restricted" && note.author !== user.username && !note.specificAccess.includes(user.username))
     ) {
       return res.status(403).json({ error: "Access denied" });
     }
