@@ -25,16 +25,14 @@ import {
 import Loader from "@/components/Loader";
 import { useAuth } from "@/context/AuthContext";
 import { useEvents } from "@/context/EventContext";
-import { UserType } from "@/lib/utils";
-import UsersSearchBar from "@/components/UsersSearchBar";
 import moment from "moment";
 import useEventsApi from "@/hooks/useEventsApi";
+import UserFinder from "../UserFinder";
 
 export default function EventForm() {
   const { events } = useEvents();
   const { postEvent } = useEventsApi();
   const { user } = useAuth();
-  const [userList, setUsersList] = useState<UserType[]>([]);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const form = useForm<EventType>({
@@ -132,21 +130,18 @@ export default function EventForm() {
               : new Date(startDate.getTime() + 60 * 60 * 1000); // Default to 1 hour if end is not defined
             let endT: "after" | "until" | undefined;
             let untilDate;
-            
+
             let freq: "daily" | "weekly" | "monthly" | undefined;
             if (component.rrule?.options.freq === 1) {
               freq = "monthly";
-            }
-            else if(component.rrule?.options.freq === 2){
+            } else if (component.rrule?.options.freq === 2) {
               freq = "weekly";
-            }
-            else if(component.rrule?.options.freq === 3){
+            } else if (component.rrule?.options.freq === 3) {
               freq = "daily";
-            }
-            else {
+            } else {
               freq = undefined;
             }
-            console.log(component)
+            console.log(component);
             let occurrences: number | undefined;
             if (component.rrule && component.rrule.options.count) {
               endT = "after";
@@ -155,13 +150,15 @@ export default function EventForm() {
               endT = "until";
               occurrences = 1;
             }
-            if(component.rrule && component.rrule.options.until instanceof Date){
+            if (
+              component.rrule &&
+              component.rrule.options.until instanceof Date
+            ) {
               untilDate = new Date(component.rrule.options.until);
-            }
-            else{
+            } else {
               untilDate = undefined;
             }
-            
+
             console.log(freq, occurrences, component.endDate);
             form.setValue("title", component.summary || "");
             form.setValue("date", startDate.toISOString().substring(0, 16));
@@ -177,13 +174,13 @@ export default function EventForm() {
             form.setValue("recurrencePattern.frequency", freq);
             form.setValue("recurrencePattern.endType", endT);
             form.setValue("recurrencePattern.occurrences", occurrences);
-            form.setValue("recurrencePattern.endDate", undefined);                     
+            form.setValue("recurrencePattern.endDate", undefined);
             form.setValue("expectedPomodoro.study", 30);
             form.setValue("expectedPomodoro.relax", 5);
             form.setValue("expectedPomodoro.cycles", 5);
             form.setValue("currPomodoro.study", 30);
             form.setValue("currPomodoro.relax", 5);
-            form.setValue("currPomodoro.cycles", 5);            
+            form.setValue("currPomodoro.cycles", 5);
           }
         });
       } catch (error) {
