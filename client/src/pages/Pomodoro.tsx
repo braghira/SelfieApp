@@ -1,7 +1,7 @@
 import RelaxAnimation from "@/components/timer/RelaxAnimation";
 import StudyAnimation from "@/components/timer/StudyAnimation";
 import { Button } from "@/components/ui/button";
-import { useTimer } from "@/hooks/useTimer";
+import { PomodoroType, useTimer } from "@/hooks/useTimer";
 import { ChevronLast, Play, RotateCcwIcon, SkipForward } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
@@ -30,7 +30,6 @@ import { BlockerFunction, useBlocker } from "react-router-dom";
 import useEventsApi from "@/hooks/useEventsApi";
 import { useEvents } from "@/context/EventContext";
 
-
 export default function Pomodoro() {
   const { RequestPushSub, sendNotification } = usePushNotification();
   const { user } = useAuth();
@@ -38,7 +37,7 @@ export default function Pomodoro() {
   const [open, setOpen] = useState(false);
   const { getEvents } = useEventsApi();
   const { timer, dispatch, InitialTimer, setInitialTimer } = useTimer(events);
-  
+
   useEffect(() => {
     if (user) {
       getEvents();
@@ -59,7 +58,6 @@ export default function Pomodoro() {
     if (blocker.state === "blocked") {
       setOpen(true);
     }
-    console.log("breakpoint");
   }, [blocker.state]);
 
   const remainder = useRef((timer.study.initialValue / 1000) % 5);
@@ -166,7 +164,6 @@ export default function Pomodoro() {
       title: "Pomodoro Timer",
       body: timer.isStudyCycle ? "Study timer started" : "Relax timer started",
       url: `${window.origin}/pomodoro`,
-      pomodoro: null,
     };
 
     const userID = user?._id;
@@ -181,7 +178,6 @@ export default function Pomodoro() {
       title: "Pomodoro Timer",
       body: "Pomodoro session finished! Wheew",
       url: `${window.origin}/pomodoro`,
-      pomodoro: null,
     };
 
     const userID = user?._id;
@@ -248,7 +244,6 @@ export default function Pomodoro() {
                           title: "Pomodoro Timer",
                           body: "Pomodoro session started",
                           url: `${window.origin}/pomodoro`,
-                          pomodoro: null,
                         };
 
                         const userID = user?._id;
@@ -340,9 +335,8 @@ export default function Pomodoro() {
           <AlertDialogHeader>
             <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will delete all of your
-              Pomodoro Session progress. All non-completed cycles will be
-              automatically added to your next pomodoro session(s).
+              All non-completed cycles will be automatically added to your next
+              pomodoro session.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -356,8 +350,27 @@ export default function Pomodoro() {
             <AlertDialogAction
               onClick={() => {
                 if (blocker.state === "blocked") {
-                  blocker.proceed();
+                  // pomodoro will be resetted to cycle start
+                  const resetted: PomodoroType = {
+                    cycles: timer.cycles,
+                    isStudyCycle: true,
+                    study: {
+                      ...timer.study,
+                      value: timer.study.initialValue,
+                      started: false,
+                    },
+                    relax: {
+                      ...timer.relax,
+                      value: timer.relax.initialValue,
+                      started: false,
+                    },
+                    totalTime:
+                      timer.cycles *
+                      (timer.study.initialValue + timer.relax.initialValue),
+                  };
+                  // TODO: crea un nuovo evento pomodoro per oggi, altrimenti se passa la mezzanotte creane uno simile per il giorno dopo
                   localStorage.removeItem("pomodoro_timer");
+                  blocker.proceed();
                 }
               }}
             >

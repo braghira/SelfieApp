@@ -1,13 +1,13 @@
-import { useState } from 'react';
-import { Trash2, Copy, Edit, Plus, X } from 'lucide-react';
-import { Button } from '../ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
-import { format } from 'date-fns';
-import { useNoteContext } from '@/context/NoteContext';
-import useNotes from '@/hooks/useNote';
+import { useState } from "react";
+import { Trash2, Copy, Edit, Plus, X } from "lucide-react";
+import { Button } from "../ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+import { format } from "date-fns";
+import { useNoteContext } from "@/context/NoteContext";
+import useNotes from "@/hooks/useNote";
 import { useAuth } from "@/context/AuthContext";
-import { marked } from 'marked';
-import { useNavigate } from 'react-router-dom';
+import { marked } from "marked";
+import { useNavigate } from "react-router-dom";
 
 interface NoteCardProps {
   id: string;
@@ -17,6 +17,7 @@ interface NoteCardProps {
   createdAt?: Date; // Cambiato a opzionale
   updatedAt?: Date; // Cambiato a opzionale
   author: string;
+  simplified: boolean;
 }
 
 export default function NoteCard({
@@ -27,6 +28,7 @@ export default function NoteCard({
   createdAt,
   updatedAt,
   author,
+  simplified,
 }: NoteCardProps) {
   const { user } = useAuth();
   const { dispatch } = useNoteContext();
@@ -36,22 +38,23 @@ export default function NoteCard({
   const navigate = useNavigate();
 
   const markdownContent = marked(content);
-  const previewContent = content.length > 200 ? `${content.slice(0, 200)}...` : content;
+  const previewContent =
+    content.length > 200 ? `${content.slice(0, 200)}...` : content;
 
   const handleEdit = () => {
     if (user) {
       navigate(`/editor/${id}`);
     } else {
-      console.warn('Utente non autorizzato a modificare la nota.');
+      console.warn("Utente non autorizzato a modificare la nota.");
     }
   };
 
   const handleDelete = async () => {
     if (user) {
       await deleteNote(id);
-      dispatch({ type: 'DELETE_NOTE', payload: id });
+      dispatch({ type: "DELETE_NOTE", payload: id });
     } else {
-      console.warn('Utente non autorizzato a eliminare la nota.');
+      console.warn("Utente non autorizzato a eliminare la nota.");
     }
   };
 
@@ -59,17 +62,17 @@ export default function NoteCard({
     if (user) {
       const duplicatedNote = await duplicateNote(id);
       if (duplicatedNote !== undefined) {
-        dispatch({ type: 'ADD_NOTE', payload: duplicatedNote });
+        dispatch({ type: "ADD_NOTE", payload: duplicatedNote });
       }
     } else {
-      console.warn('Utente non autorizzato a duplicare la nota.');
+      console.warn("Utente non autorizzato a duplicare la nota.");
     }
   };
 
   const handleCopyContent = () => {
     navigator.clipboard.writeText(content).then(
-      () => console.log('Nota copiata negli appunti'),
-      (err) => console.error('Errore nella copia del testo:', err)
+      () => console.log("Nota copiata negli appunti"),
+      (err) => console.error("Errore nella copia del testo:", err)
     );
   };
 
@@ -82,36 +85,58 @@ export default function NoteCard({
   };
 
   // Funzione per formattare le date
-  const formatDate = (date?: Date) => date ? format(date, 'dd/MM/yyyy') : 'Data non disponibile';
+  const formatDate = (date?: Date) =>
+    date ? format(date, "dd/MM/yyyy") : "Data non disponibile";
 
   return (
     <>
       <Card className="note-card max-w-full w-full p-4">
         <CardHeader className="flex flex-col md:flex-row justify-between items-start md:items-center">
           <CardTitle className="text-primary">{title}</CardTitle>
-          <div className="flex space-x-2 mt-2 md:mt-0 justify-center">
-  {user && user.username === author && ( // Aggiungi questa condizione per controllare l'autore
-    <>
-      <Button variant="ghost" size="icon" onClick={handleEdit} aria-label="Edit note">
-        <Edit className="h-5 w-5" />
-      </Button>
-      
-      <Button variant="ghost" size="icon" onClick={handleDuplicate} aria-label="Duplicate note">
-        <Plus className="h-5 w-5" />
-      </Button>
-      
-      <Button variant="ghost" size="icon" onClick={handleDelete} aria-label="Delete note">
-        <Trash2 className="h-5 w-5" />
-      </Button>
-    </>
-  )}
-  
-  <Button variant="ghost" size="icon" onClick={handleCopyContent} aria-label="Copy note">
-    <Copy className="h-5 w-5" />
-  </Button>
-</div>
+          {!simplified && (
+            <div className="flex space-x-2 mt-2 md:mt-0 justify-center">
+              {user &&
+                user.username === author && ( // Aggiungi questa condizione per controllare l'autore
+                  <>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={handleEdit}
+                      aria-label="Edit note"
+                    >
+                      <Edit className="h-5 w-5" />
+                    </Button>
 
-          
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={handleDuplicate}
+                      aria-label="Duplicate note"
+                    >
+                      <Plus className="h-5 w-5" />
+                    </Button>
+
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={handleDelete}
+                      aria-label="Delete note"
+                    >
+                      <Trash2 className="h-5 w-5" />
+                    </Button>
+                  </>
+                )}
+
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleCopyContent}
+                aria-label="Copy note"
+              >
+                <Copy className="h-5 w-5" />
+              </Button>
+            </div>
+          )}
         </CardHeader>
         <CardContent className="flex-col gap-3">
           <div
@@ -120,7 +145,7 @@ export default function NoteCard({
               __html: marked(previewContent),
             }}
           />
-          {content.length > 200 && !isPopupOpen && (
+          {!simplified && content.length > 200 && !isPopupOpen && (
             <span
               onClick={handleSeeMore}
               className="font-bold italic cursor-pointer ml-1 text-red-600 dark:text-red-400"
@@ -128,15 +153,22 @@ export default function NoteCard({
               See more
             </span>
           )}
-          <div>
-            Categories: <span className="font-semibold">{categories.join(', ')}</span>
-          </div>
-          <div>
-            Created: <span className="font-semibold">{formatDate(createdAt)}</span>
-          </div>
-          <div>
-            Updated: <span className="font-semibold">{formatDate(updatedAt)}</span>
-          </div>
+          {!simplified && (
+            <>
+              <div>
+                Categories:{" "}
+                <span className="font-semibold">{categories.join(", ")}</span>
+              </div>
+              <div>
+                Created:{" "}
+                <span className="font-semibold">{formatDate(createdAt)}</span>
+              </div>
+              <div>
+                Updated:{" "}
+                <span className="font-semibold">{formatDate(updatedAt)}</span>
+              </div>
+            </>
+          )}
           <div>
             Author: <span className="font-semibold">{author}</span>
           </div>
@@ -160,7 +192,7 @@ export default function NoteCard({
             </h2>
             <div
               className="mb-4 text-gray-600 dark:text-gray-300"
-              dangerouslySetInnerHTML={{ __html: markdownContent }} 
+              dangerouslySetInnerHTML={{ __html: markdownContent }}
             />
             <p className="text-sm text-gray-500 dark:text-gray-400">
               <strong>Author:</strong> {author}
