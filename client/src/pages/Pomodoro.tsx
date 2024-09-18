@@ -239,6 +239,7 @@ export default function Pomodoro() {
                     <Button
                       onClick={() => {
                         start();
+  
 
                         const payload: NotificationPayload = {
                           title: "Pomodoro Timer",
@@ -350,25 +351,10 @@ export default function Pomodoro() {
             <AlertDialogAction
               onClick={() => {
                 if (blocker.state === "blocked") {
-                  // pomodoro will be resetted to cycle start
-                  const resetted: PomodoroType = {
-                    cycles: timer.cycles,
-                    isStudyCycle: true,
-                    study: {
-                      ...timer.study,
-                      value: timer.study.initialValue,
-                      started: false,
-                    },
-                    relax: {
-                      ...timer.relax,
-                      value: timer.relax.initialValue,
-                      started: false,
-                    },
-                    totalTime:
-                      timer.cycles *
-                      (timer.study.initialValue + timer.relax.initialValue),
-                  };
-                  // TODO: crea un nuovo evento pomodoro per oggi, altrimenti se passa la mezzanotte creane uno simile per il giorno dopo
+                  const savedPomodoroData = localStorage.getItem("pomodoro_timer");
+                  if (savedPomodoroData) {
+                    localStorage.setItem("closedEarly", savedPomodoroData);
+                  }
                   localStorage.removeItem("pomodoro_timer");
                   blocker.proceed();
                 }

@@ -1,6 +1,7 @@
 import { useReducer, useState } from "react";
 import moment from 'moment';
 import { EventType } from "@/lib/utils";
+import { useTimeMachineContext } from "@/context/TimeMachine";
 
 export type TimerType = {
   initialValue: number;
@@ -46,6 +47,18 @@ function timerReducer(
           isStudyCycle,
         })
       );
+
+      localStorage.setItem(
+        "lastestPomodoro",
+        JSON.stringify({
+          study,
+          relax,
+          cycles,
+          totalTime,
+          isStudyCycle,
+        })
+      );
+
       return {
         study: study,
         relax: relax,
@@ -184,7 +197,7 @@ function timerReducer(
 }
 
 export function useTimer(eventList: EventType[]) {
-  const today = moment().startOf('day');
+  const { currentDate } = useTimeMachineContext();
   let parsed_timer: PomodoroType | null = null;
 
   const storage = localStorage.getItem("pomodoro_timer");
@@ -195,6 +208,7 @@ export function useTimer(eventList: EventType[]) {
 
   let todayEvent = null;
   if (eventList && eventList.length > 0) {
+    const today = moment(currentDate);
     todayEvent = eventList.find(
       (event) => moment(event.date).isSame(today, 'day') && event.itsPomodoro
     );
