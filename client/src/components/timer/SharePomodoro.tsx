@@ -2,13 +2,11 @@ import {
   CommandDialog,
   CommandEmpty,
   CommandGroup,
-  CommandInput,
   CommandItem,
   CommandList,
   CommandSeparator,
-  CommandShortcut,
 } from "@/components/ui/command";
-import { CrossIcon, SendIcon, Share2Icon, XIcon } from "lucide-react";
+import { SendIcon, Share2Icon } from "lucide-react";
 import { Button } from "../ui/button";
 import { useEffect, useState } from "react";
 import { UserType } from "@/lib/utils";

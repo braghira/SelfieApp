@@ -1,5 +1,5 @@
 import { PomodoroAction, PomodoroType, TimerType } from "@/hooks/useTimer";
-import { timeToMs, UserType } from "@/lib/utils";
+import { timeToMs } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
