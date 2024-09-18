@@ -76,7 +76,7 @@ function HomeNote() {
   };
 
   return (
-    <div className="home-note p-4">
+    <div className="view-container px-4">
       <div className="flex justify-start items-center space-x-4 mb-4">
         <Button onClick={handleCreateNewNote} aria-label="Crea una nuova nota">
           Nuova Nota

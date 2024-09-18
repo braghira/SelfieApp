@@ -8,6 +8,7 @@ const recurrencePatternSchema = z.object({
   occurrences: z.number().optional(),
   endDate: z.string().optional(),
 });
+export type RecurrenceType = z.infer<typeof recurrencePatternSchema>;
 
 const PomodoroSchema = z.object({
   initStudy: z.number().optional(),
