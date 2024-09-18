@@ -2,10 +2,11 @@ import { ReactElement, createContext, useContext, useReducer } from "react";
 import { EventType, client_log } from "@/lib/utils";
 
 // types for the reducer
-type ActionType = {
-  type: "SET_EVENTS" | "CREATE_EVENT" | "DELETE_EVENT";
-  payload: EventType[];
-};
+type ActionType = 
+  | { type: "SET_EVENTS"; payload: EventType[] }
+  | { type: "CREATE_EVENT"; payload: EventType[] }
+  | { type: "DELETE_EVENT"; payload: EventType[] }
+  | { type: "UPDATE_EVENT"; payload: EventType }
 
 export type EventContextType =
   | {
@@ -27,6 +28,10 @@ function eventsReducer(state: EventType[], action: ActionType): EventType[] {
       else return action.payload;
     case "DELETE_EVENT":
       return state.filter((event) => event._id !== action.payload[0]._id);
+    case "UPDATE_EVENT":
+      return state.map((event) =>
+        event._id === action.payload._id ? action.payload : event
+      );
     default:
       throw Error("action selected is not defined");
   }

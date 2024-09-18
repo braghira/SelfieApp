@@ -22,19 +22,24 @@ interface EventDetailsProps {
   open: boolean;
   setOpen: (open: boolean) => void;
 }
-
 export default function EventDetails({
   event,
   open,
   setOpen,
 }: EventDetailsProps) {
   const { user } = useAuth();
-  const { deleteEvent } = useEventsApi();
+  const { deleteEvent, updateUserList } = useEventsApi();
   const navigate = useNavigate();
 
   async function handleDelete() {
     if (user) {
       deleteEvent(event);
+    }
+  }
+  async function handleUpdate() {
+    if (user) {
+      await updateUserList(event);
+      setOpen(false);
     }
   }
 
@@ -81,13 +86,23 @@ export default function EventDetails({
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader className="flex-row">
-          <DialogTitle>{event.title}</DialogTitle>
-        </DialogHeader>
-        <div className="flex justify-between items-start">
-          <div>
+
+  <Dialog open={open} onOpenChange={setOpen}>
+  <DialogContent className="sm:max-w-[425px]">
+    <DialogHeader className="flex-row">
+      <DialogTitle>{event.title}</DialogTitle>
+    </DialogHeader>
+    <div className="flex justify-between items-start">
+      <div>
+        <div>
+          Date:{" "}
+          <span className="base-semibold">
+            {format(new Date(event.date), "dd/MM/yyyy HH:mm")}
+          </span>
+        </div>
+        {event.itsPomodoro ? (
+          <>
+
             <div>
               Date:{" "}
               <span className="base-semibold">
@@ -164,19 +179,17 @@ export default function EventDetails({
                 )}
               </>
             )}
-          </div>
-          <DialogClose asChild>
-            <Button variant="ghost" size={"icon"} onClick={handleDelete}>
-              <Trash2 className="h-6 w-6" />
-            </Button>
-          </DialogClose>
-        </div>
-        <Button
-          variant="secondary"
-          className="bg-primary text-primary-foreground border-primary hover:bg-primary/90 shadow-none"
-          onClick={handleExportToCalendar}
-        >
-          Export
+            {event.author != user?.username && event.groupList.find(userItem => userItem === user?.username) && (<div>
+              <Button className="mt-2 " onClick={handleUpdate}>Refuse event</Button>
+            </div>)}
+          </>
+        )}
+
+      </div>
+      <DialogClose asChild>
+        <Button variant="ghost" size={"icon"} onClick={handleDelete}>
+          <Trash2 className="h-6 w-6" />
+
         </Button>
         {event.itsPomodoro && (
           <Button
