@@ -1,8 +1,8 @@
-import ical from "ical"
+import ical from "ical";
 import { useForm } from "react-hook-form";
 import { useState, useRef } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { EventSchema, EventType, client_log } from "@/lib/utils";
+import { EventSchema, EventType } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -25,20 +25,17 @@ import {
 import Loader from "@/components/Loader";
 import { useAuth } from "@/context/AuthContext";
 import { useEvents } from "@/context/EventContext";
-import useAxiosPrivate from "@/hooks/useAxiosPrivate";
-import { isAxiosError } from "axios";
 import { UserType } from "@/lib/utils";
 import UsersSearchBar from "@/components/UsersSearchBar";
-import moment from 'moment';
-
+import moment from "moment";
+import useEventsApi from "@/hooks/useEventsApi";
 
 export default function EventForm() {
-  const { dispatch, events } = useEvents();
+  const { events } = useEvents();
+  const { postEvent } = useEventsApi();
   const { user } = useAuth();
-  const private_api = useAxiosPrivate();
   const [userList, setUsersList] = useState<UserType[]>([]);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-
 
   const form = useForm<EventType>({
     resolver: zodResolver(EventSchema),
@@ -56,9 +53,9 @@ export default function EventForm() {
         occurrences: 1,
         endDate: "",
       },
-      pomodoro:{
-        initStudy: 30,
-        initRelax: 5,
+      expectedPomodoro: {
+        study: 30,
+        relax: 5,
         cycles: 5,
       },
     },
@@ -67,7 +64,7 @@ export default function EventForm() {
   async function onSubmit(event: EventType) {
     if (
       event.isRecurring &&
-      (!event.recurrencePattern?.frequency || 
+      (!event.recurrencePattern?.frequency ||
         !event.recurrencePattern?.endType ||
         (event.recurrencePattern.endType === "after" &&
           !event.recurrencePattern.occurrences) ||
@@ -88,41 +85,31 @@ export default function EventForm() {
       });
       return;
     }
-    
 
+    // check if pomodoro event for today already exists
     if (event.itsPomodoro) {
-      const pomodoroExists = events.some(e => e.itsPomodoro && moment(e.date).format('YYYY-MM-DD') === moment(event.date).format('YYYY-MM-DD')); 
+      const pomodoroExists = events.some(
+        (e) =>
+          e.itsPomodoro &&
+          moment(e.date).format("YYYY-MM-DD") ===
+            moment(event.date).format("YYYY-MM-DD")
+      );
       if (pomodoroExists) {
         form.setError("root.serverError", {
           type: "manual",
           message: "You cannot create more than one Pomodoro event.",
         });
         return;
-      }
-      else if (event.pomodoro) {
-        event.pomodoro.initStudy = (event.pomodoro.initStudy ?? 30) * 60000;
-        event.pomodoro.initRelax = (event.pomodoro.initRelax ?? 5) * 60000;
+      } else if (event.expectedPomodoro) {
+        // if the expected pomodoro has been created, update the currPomodoro field
+        event.currPomodoro = event.expectedPomodoro;
       }
     }
 
-
-    try {
-      const response = await private_api.post("/api/events", event);
-      const parsed = EventSchema.safeParse(response.data);
-
-      if (parsed.success) {
-        dispatch({ type: "CREATE_EVENT", payload: [response.data] });
-        client_log("new event added", response.data);
-      } else {
-        client_log("error while validating created event schema");
-      }
-    } catch (error) {
-      if (isAxiosError(error)) client_log("an error occurred:" + error.message);
-    }
+    postEvent(event);
 
     form.reset();
   }
-  
 
   function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
@@ -135,9 +122,13 @@ export default function EventForm() {
         const parsedData = ical.parseICS(data);
 
         Object.values(parsedData).forEach((component) => {
-          if (component.type === 'VEVENT') {
-            const startDate = component.start ? new Date(component.start) : new Date();
-            const endDate = component.end ? new Date(component.end) : new Date(startDate.getTime() + 60 * 60 * 1000); // Default to 1 hour if end is not defined
+          if (component.type === "VEVENT") {
+            const startDate = component.start
+              ? new Date(component.start)
+              : new Date();
+            const endDate = component.end
+              ? new Date(component.end)
+              : new Date(startDate.getTime() + 60 * 60 * 1000); // Default to 1 hour if end is not defined
 
             const event: EventType = {
               title: component.summary || "",
@@ -146,20 +137,20 @@ export default function EventForm() {
               location: component.location,
               isRecurring: !!component.recurrenceRule,
               //aggiungo i miei valori di default
-              itsPomodoro: false, 
+              itsPomodoro: false,
               recurrencePattern: {
                 frequency: undefined,
                 endType: undefined,
                 occurrences: 1,
                 endDate: "",
               },
-              pomodoro: {
-                initStudy: 30,
-                initRelax: 5,
+              expectedPomodoro: {
+                study: 30,
+                relax: 5,
                 cycles: 5,
               },
             };
-            form.reset(event); 
+            form.reset(event);
           }
         });
       } catch (error) {
@@ -169,23 +160,21 @@ export default function EventForm() {
     reader.readAsText(file);
   }
 
-
   return (
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(onSubmit)}
         className="flex flex-col gap-2 mt-4 w-full max-w-sm md:max-w-md"
       >
-        
         {/* Campi normali dell'evento */}
 
-                <Input
-                  type="file"
-                  accept=".ics"
-                  ref={fileInputRef}
-                  onChange={handleFileChange}
-                  className="shad-input"
-                />
+        <Input
+          type="file"
+          accept=".ics"
+          ref={fileInputRef}
+          onChange={handleFileChange}
+          className="shad-input"
+        />
         <FormField
           control={form.control}
           name="title"
@@ -242,11 +231,11 @@ export default function EventForm() {
           )}
         />
 
-{form.watch("itsPomodoro") && (
+        {form.watch("itsPomodoro") && (
           <>
             <FormField
               control={form.control}
-              name="pomodoro.initStudy"
+              name="expectedPomodoro.study"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Study Time (m)</FormLabel>
@@ -267,7 +256,7 @@ export default function EventForm() {
 
             <FormField
               control={form.control}
-              name="pomodoro.initRelax"
+              name="expectedPomodoro.relax"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Relax Time (m)</FormLabel>
@@ -288,7 +277,7 @@ export default function EventForm() {
 
             <FormField
               control={form.control}
-              name="pomodoro.cycles"
+              name="expectedPomodoro.cycles"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Number of Cycles</FormLabel>
@@ -318,7 +307,9 @@ export default function EventForm() {
               name="duration"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="shad-form_label">Duration (h)</FormLabel>
+                  <FormLabel className="shad-form_label">
+                    Duration (h)
+                  </FormLabel>
                   <FormControl>
                     <Input
                       type="number"
@@ -360,7 +351,9 @@ export default function EventForm() {
               name="isRecurring"
               render={({ field }) => (
                 <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                  <FormLabel className="shad-form_label">Is Recurring</FormLabel>
+                  <FormLabel className="shad-form_label">
+                    Is Recurring
+                  </FormLabel>
                   <FormControl>
                     <Checkbox
                       checked={field.value}
@@ -383,7 +376,9 @@ export default function EventForm() {
                   name="recurrencePattern.frequency"
                   render={() => (
                     <FormItem>
-                      <FormLabel className="shad-form_label">Frequency</FormLabel>
+                      <FormLabel className="shad-form_label">
+                        Frequency
+                      </FormLabel>
                       <FormControl>
                         <Select
                           onValueChange={(value) =>
@@ -416,7 +411,9 @@ export default function EventForm() {
                   name="recurrencePattern.endType"
                   render={() => (
                     <FormItem>
-                      <FormLabel className="shad-form_label">End Type</FormLabel>
+                      <FormLabel className="shad-form_label">
+                        End Type
+                      </FormLabel>
                       <FormControl>
                         <Select
                           onValueChange={(value) =>
@@ -477,7 +474,9 @@ export default function EventForm() {
                     name="recurrencePattern.endDate"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="shad-form_label">End Date</FormLabel>
+                        <FormLabel className="shad-form_label">
+                          End Date
+                        </FormLabel>
                         <FormControl>
                           <Input
                             type="datetime-local"

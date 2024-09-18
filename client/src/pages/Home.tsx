@@ -64,13 +64,13 @@ import { useTimer } from "@/hooks/useTimer";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { RadialPomodoroChart } from "@/components/RadialPomodoroChart";
+import { RadialPomodoroChart } from "@/components/dashboard/RadialPomodoroChart";
 import NoteCard from "@/components/editor/notecard";
-import SendMessage from "@/components/SendMessage";
+import SendMessage from "@/components/dashboard/SendMessage";
 
 export default function Home() {
   const { events } = useEvents();
-  const { notes, dispatch } = useNoteContext();
+  const { notes } = useNoteContext();
   const { activities } = useActivities();
   const { getEvents } = useEventsApi();
   const { fetchNotes } = useNotes();

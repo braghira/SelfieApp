@@ -16,6 +16,7 @@ import { useAuth } from "@/context/AuthContext";
 import useEventsApi from "@/hooks/useEventsApi.tsx";
 import { ICalendar, CalendarOptions } from "datebook";
 import * as FileSaver from "file-saver";
+import { useTimer } from "@/hooks/useTimer";
 
 interface EventDetailsProps {
   event: EventType;
@@ -30,6 +31,7 @@ export default function EventDetails({
 }: EventDetailsProps) {
   const { user } = useAuth();
   const { deleteEvent } = useEventsApi();
+  const { dispatch, createTimer } = useTimer();
   const navigate = useNavigate();
 
   async function handleDelete() {
@@ -39,7 +41,22 @@ export default function EventDetails({
   }
 
   function handleGoToPomodoro() {
-    navigate("/pomodoro");
+    if (
+      event.currPomodoro?.study &&
+      event.currPomodoro?.relax &&
+      event.currPomodoro?.cycles
+    ) {
+      const eventTimer = createTimer(
+        event.currPomodoro?.study,
+        event.currPomodoro?.relax,
+        event.currPomodoro?.cycles
+      );
+
+      // set localstorage before switching views
+      localStorage.setItem("pomodoro_timer", JSON.stringify(eventTimer));
+
+      navigate("/pomodoro");
+    }
   }
 
   function handleExportToCalendar() {
@@ -99,8 +116,8 @@ export default function EventDetails({
                 <div>
                   Study Time:{" "}
                   <span className="base-semibold">
-                    {event.pomodoro?.initStudy
-                      ? (event.pomodoro.initStudy / 60000).toFixed(0)
+                    {event.expectedPomodoro?.study
+                      ? event.expectedPomodoro.study
                       : "30"}{" "}
                     minutes
                   </span>
@@ -108,8 +125,8 @@ export default function EventDetails({
                 <div>
                   Relax Time:{" "}
                   <span className="base-semibold">
-                    {event.pomodoro?.initRelax
-                      ? (event.pomodoro.initRelax / 60000).toFixed(0)
+                    {event.expectedPomodoro?.relax
+                      ? event.expectedPomodoro.relax
                       : "5"}{" "}
                     minutes
                   </span>
@@ -117,7 +134,7 @@ export default function EventDetails({
                 <div>
                   Cycles:{" "}
                   <span className="base-semibold">
-                    {event.pomodoro?.cycles ?? 5}
+                    {event.expectedPomodoro?.cycles ?? 5}
                   </span>
                 </div>
               </>

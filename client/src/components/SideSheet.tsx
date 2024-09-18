@@ -7,7 +7,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import ProfilePhoto from "./ProfilePhoto";
-import { ModeToggle } from "./ModeToggle";
+import { ModeToggle } from "./dashboard/ModeToggle";
 import { Button } from "./ui/button";
 import useLogout from "@/hooks/useLogout";
 import { useAuth } from "@/context/AuthContext";

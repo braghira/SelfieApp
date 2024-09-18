@@ -2,24 +2,24 @@ const Event = require('../models/eventModel')
 const mongoose = require('mongoose')
 
 // get all events
-const getEvents = async(req, res) => {
-    const events = await Event.find({}).sort({createdAt: -1})
+const getEvents = async (req, res) => {
+    const events = await Event.find({}).sort({ createdAt: -1 })
 
     res.status(200).json(events)
 }
 
 // get a single event
-const getEvent = async(req, res) => {
-    const {id} = req.params
+const getEvent = async (req, res) => {
+    const { id } = req.params
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-        return res.status(404).json({error: 'No such event'})
+        return res.status(404).json({ error: 'No such event' })
     }
 
     const event = await Event.findById(id)
 
     if (!event) {
-        return res.status(404).json({error: 'No such event'})
+        return res.status(404).json({ error: 'No such event' })
     }
 
     res.status(200).json(event)
@@ -27,25 +27,32 @@ const getEvent = async(req, res) => {
 
 // create a new event
 const createEvent = async (req, res) => {
-    const { title, date, duration, location, isRecurring, itsPomodoro, groupList, recurrencePattern, pomodoro } = req.body
+    const { title, date, duration, location, isRecurring, itsPomodoro, groupList, recurrencePattern, expectedPomodoro, currPomodoro } = req.body
 
     // add document to DB
     try {
-        const event = await Event.create({ title, date, duration, location, isRecurring, itsPomodoro,
-            groupList: Array.isArray(groupList) ? groupList : [], 
+        const event = await Event.create({
+            title, date, duration, location, isRecurring, itsPomodoro,
+            groupList: Array.isArray(groupList) ? groupList : [],
             recurrencePattern: isRecurring ? {
                 frequency: recurrencePattern.frequency,
                 endType: recurrencePattern.endType,
                 occurrences: recurrencePattern.endType === 'after' ? recurrencePattern.occurrences : undefined,
                 endDate: recurrencePattern.endType === 'until' ? recurrencePattern.endDate : undefined
             } : undefined,
-            pomodoro: itsPomodoro ? {
-                initStudy: pomodoro.initStudy,
-                initRelax: pomodoro.initRelax,
-                cycles: pomodoro.cycles,
+            expectedPomodoro: itsPomodoro ? {
+                study: expectedPomodoro.study,
+                relax: expectedPomodoro.relax,
+                cycles: expectedPomodoro.cycles,
+            } : undefined,
+            currPomodoro: itsPomodoro ? {
+                study: currPomodoro.study,
+                relax: currPomodoro.relax,
+                cycles: currPomodoro.cycles,
             } : undefined,
         })
 
+        console.log("new event: ", event);
         res.status(200).json(event)
     }
     catch (error) {
@@ -58,13 +65,13 @@ const deleteEvent = async (req, res) => {
     const { id } = req.params
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-        return res.status(404).json({error: 'No such event'})
+        return res.status(404).json({ error: 'No such event' })
     }
 
-    const event = await Event.findOneAndDelete({_id: id})
-    
+    const event = await Event.findOneAndDelete({ _id: id })
+
     if (!event) {
-        return res.status(404).json({error: 'No such event'})
+        return res.status(404).json({ error: 'No such event' })
     }
 
     res.status(200).json(event)
@@ -75,16 +82,16 @@ const updateEvent = async (req, res) => {
     const { id } = req.params
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-        return res.status(404).json({error: 'No such event'})
+        return res.status(404).json({ error: 'No such event' })
     }
 
-    const event = await Event.findOneAndUpdate({_id: id}, {
+    const event = await Event.findOneAndUpdate({ _id: id }, {
         // spread out object properies so the schema fields are updated in correct order
         ...req.body
     })
 
     if (!event) {
-        return res.status(404).json({error: 'No such event'})
+        return res.status(404).json({ error: 'No such event' })
     }
 
     res.status(200).json(event)
