@@ -89,9 +89,9 @@ export default function EventForm() {
     if (event.itsPomodoro) {
       const pomodoroExists = events.some(
         (e) =>
-          e.itsPomodoro &&
+          (e.itsPomodoro &&
           moment(e.date).format("YYYY-MM-DD") ===
-            moment(event.date).format("YYYY-MM-DD")
+            moment(event.date).format("YYYY-MM-DD"))
       );
       if (pomodoroExists) {
         form.setError("root.serverError", {
@@ -148,7 +148,7 @@ export default function EventForm() {
               occurrences = component.rrule.options.count;
             } else {
               endT = "until";
-              occurrences = 1;
+              occurrences = undefined;
             }
             if (
               component.rrule &&
@@ -156,9 +156,8 @@ export default function EventForm() {
             ) {
               untilDate = new Date(component.rrule.options.until);
             } else {
-              untilDate = undefined;
+              untilDate = new Date();
             }
-
             console.log(freq, occurrences, component.endDate);
             form.setValue("title", component.summary || "");
             form.setValue("date", startDate.toISOString().substring(0, 16));
@@ -174,7 +173,7 @@ export default function EventForm() {
             form.setValue("recurrencePattern.frequency", freq);
             form.setValue("recurrencePattern.endType", endT);
             form.setValue("recurrencePattern.occurrences", occurrences);
-            form.setValue("recurrencePattern.endDate", undefined);
+            form.setValue("recurrencePattern.endDate", untilDate.toISOString().substring(0, 16));
             form.setValue("expectedPomodoro.study", 30);
             form.setValue("expectedPomodoro.relax", 5);
             form.setValue("expectedPomodoro.cycles", 5);
@@ -521,10 +520,7 @@ export default function EventForm() {
                 )}
               </>
             )}
-          </>
-        )}
-
-        <div className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 mt-2">
+            <div className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 mt-2">
           Aggiungi utente:
         </div>
         <UserFinder
@@ -550,6 +546,8 @@ export default function EventForm() {
             </span>
           ))}
         </div>
+          </>
+        )}
 
         {form.formState.errors.root && (
           <FormMessage>
