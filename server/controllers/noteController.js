@@ -168,10 +168,12 @@ const deleteNote = async (req, res) => {
   }
 };
 
-// Elimina tutte le note
+//elimina tutte le note che hai creato
 const deleteAllNotes = async (req, res) => {
+  const { user } = req;
+
   try {
-    await Note.deleteMany({});
+    await Note.deleteMany({ author: user.username });
     res.status(204).end(); // No Content
   } catch (error) {
     res.status(500).json({ error: error.message });

@@ -128,34 +128,38 @@ export default function CalendarPage() {
           const daysOverdue = now.diff(endDate, "days");
           if (endDate.isBefore(now, "day")) {
               const activityName = activity.title;
-              console.log("salvo per la prima volta e mando la notifica")
-              sendActivityNotification(userID, daysOverdue, activityName, activityId, updatedActivityStatus);     
+              sendActivityNotification(userID, daysOverdue, activityName, activityId, updatedActivityStatus);    
             }
           }
       });
     }
-  }, [events, activities]);
+  }, [currentDate]);
 
   const sendEventNotification = (userID: string, timeLeft: string, eventTitle: string) => {
     const payload: NotificationPayload = {
       title: "Upcoming Event!!!",
       body: `Check out your calendar, ${timeLeft} hours left until the event: ${eventTitle}`,
-      url: `http://localhost:5173/calendar`,
+      url: `/calendar`,
     };
     RequestPushSub(() => sendNotification(userID, payload));
   };
 
   const sendActivityNotification = (userID: string, daysPassed: number, activityName: string, activityId: string, activityStatus:{ [activityId: string]:  { lastNotified?: string }}) => {
-    const today = moment().format("YYYY-MM-DD");
+    const today = moment(currentDate).format("YYYY-MM-DD");
+    let title = "You are late to complete an activity!";
     if (!activityStatus[activityId]) {
       activityStatus[activityId] = {};
     }
+    if(daysPassed>=2 && daysPassed<5){
+      title = "This activity isn't complete yet, FINISH IT!"
+    } else if(daysPassed>=5){
+      title =  "YOU HAVE TO FINISH THIS ACTIVITY NOW!!!"
+    }
     if(activityStatus[activityId].lastNotified != today){
-      console.log("notifica inviata");
       const payload: NotificationPayload = {
-        title: "You are late to complete an activity!",
-        body: `L'attività: ${activityName} è scaduta da ${daysPassed} giorni. Ricordati di completarla!`,
-        url: `http://localhost:5173/calendar`,
+        title: title,
+        body: `L'attività: ${activityName} è scaduta da ${++daysPassed} giorni. Ricordati di completarla!`,
+        url: `/calendar`,
       };
       RequestPushSub(() => sendNotification(userID, payload));
       activityStatus[activityId].lastNotified = today;
@@ -295,7 +299,7 @@ export default function CalendarPage() {
               type: "activity" as const,
             } as CustomEvent)
           : null;
-      })
+        })
       .filter((activity) => activity !== null) || []),
   ];
 

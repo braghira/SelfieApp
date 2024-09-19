@@ -12,19 +12,19 @@ import {
 import { NoteType } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
+import { Plus, Trash, SortAsc, Eye, EyeOff } from "lucide-react"; // Importa le icone
 
 function HomeNote() {
-  const { notes } = useNoteContext(); // Ora notes viene direttamente dal contesto
+  const { notes } = useNoteContext();
   const { fetchNotes, deleteAllNotes } = useNotes();
   const { user } = useAuth();
   const [sortOption, setSortOption] = useState<string>("default");
-  const [showOnlyOwnNotes, setShowOnlyOwnNotes] = useState(false); // Stato per il filtro delle note
+  const [showOnlyOwnNotes, setShowOnlyOwnNotes] = useState(false);
   const navigate = useNavigate();
 
-  // Carica le note dal server al montaggio del componente
   const loadNotes = useCallback(async () => {
     try {
-      await fetchNotes(); // Non è necessario il dispatch, fetchNotes aggiorna direttamente il contesto
+      await fetchNotes();
     } catch (error) {
       console.error(
         "Errore nel caricamento delle note:",
@@ -37,7 +37,6 @@ function HomeNote() {
     loadNotes();
   }, [loadNotes]);
 
-  // Ordina le note
   const sortedNotes = useMemo(() => {
     const sortNotes = (notes: NoteType[], option: string): NoteType[] => {
       return [...notes].sort((a, b) => {
@@ -47,7 +46,7 @@ function HomeNote() {
           case "date": {
             const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
             const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-            return dateB - dateA; // Ordina dalla più recente alla più vecchia
+            return dateB - dateA;
           }
           case "length":
             return b.content.length - a.content.length;
@@ -59,23 +58,19 @@ function HomeNote() {
     return sortNotes(notes, sortOption);
   }, [notes, sortOption]);
 
-  // Filtra le note per autore
   const filteredNotes = useMemo(() => {
     return showOnlyOwnNotes
       ? sortedNotes.filter((note) => note.author === user?.username)
       : sortedNotes;
   }, [sortedNotes, showOnlyOwnNotes, user]);
 
-  // Crea una nuova nota
   const handleCreateNewNote = () => {
     navigate("/editor");
   };
 
-  // Elimina tutte le note
   const handleDeleteAllNotes = async () => {
     try {
       await deleteAllNotes();
-      // Il contesto viene aggiornato da useNotes, quindi non serve il dispatch qui
     } catch (error) {
       console.error(
         "Errore nell'eliminazione delle note:",
@@ -84,32 +79,49 @@ function HomeNote() {
     }
   };
 
-  // Cambia l'ordinamento
   const handleSortChange = (option: string) => {
     setSortOption(option);
   };
 
-  // Toggle per mostrare solo le proprie note
   const toggleShowOwnNotes = () => {
     setShowOnlyOwnNotes((prev) => !prev);
   };
 
   return (
     <div className="home-note p-4">
-      <div className="flex justify-start items-center space-x-4 mb-4">
-        <Button onClick={handleCreateNewNote} aria-label="Crea una nuova nota">
-          Nuova Nota
+      <div className="flex justify-start items-center space-x-2 mb-4">
+        <Button
+          onClick={handleCreateNewNote}
+          aria-label="Crea una nuova nota"
+          className="p-2 sm:p-4"
+        >
+          <span className="block sm:hidden" aria-hidden="true">
+            <Plus className="w-5 h-5" />
+          </span>
+          <span className="hidden sm:block">Nuova Nota</span>
         </Button>
         <Button
           onClick={handleDeleteAllNotes}
           aria-label="Elimina tutte le note"
+          className="p-2 sm:p-4"
         >
-          Elimina Tutte le Note
+          <span className="block sm:hidden" aria-hidden="true">
+            <Trash className="w-5 h-5" />
+          </span>
+          <span className="hidden sm:block">Elimina Tutte le Note</span>
         </Button>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button aria-haspopup="listbox" aria-expanded="false">
-              Ordina per
+            <Button
+              aria-haspopup="true"
+              aria-expanded="false"
+              aria-label="Ordina per"
+              className="p-2 sm:p-4"
+            >
+              <span className="block sm:hidden" aria-hidden="true">
+                <SortAsc className="w-5 h-5" />
+              </span>
+              <span className="hidden sm:block">Ordina per</span>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent>
@@ -135,11 +147,26 @@ function HomeNote() {
         </DropdownMenu>
         <Button
           onClick={toggleShowOwnNotes}
-          aria-label="Mostra solo le tue note"
+          aria-label={
+            showOnlyOwnNotes ? "Mostra tutte le note" : "Mostra solo le tue note"
+          }
+          className="p-2 sm:p-4"
         >
-          {showOnlyOwnNotes
-            ? "Mostra tutte le note"
-            : "Mostra solo le tue note"}
+          {showOnlyOwnNotes ? (
+            <>
+              <span className="block sm:hidden" aria-hidden="true">
+                <EyeOff className="w-5 h-5" />
+              </span>
+              <span className="hidden sm:block">Mostra tutte le note</span>
+            </>
+          ) : (
+            <>
+              <span className="block sm:hidden" aria-hidden="true">
+                <Eye className="w-5 h-5" />
+              </span>
+              <span className="hidden sm:block">Mostra solo le tue note</span>
+            </>
+          )}
         </Button>
       </div>
 
