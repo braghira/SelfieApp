@@ -15,6 +15,7 @@ import Loader from "./Loader";
 import { Bell } from "lucide-react";
 import usePushNotification from "@/hooks/usePushNotification";
 import { usePushContext } from "@/context/NotificationContext";
+import { useNavigate } from "react-router-dom";
 
 export default function SideSheet() {
   const { logout } = useLogout();
@@ -22,6 +23,7 @@ export default function SideSheet() {
     usePushNotification();
   const { user } = useAuth();
   const { subscription } = usePushContext();
+  const navigate = useNavigate();
 
   return (
     <Sheet>
@@ -32,7 +34,14 @@ export default function SideSheet() {
       <SheetContent className="w-60 sm:w-[20rem]" side={"right"}>
         <SheetHeader className="mb-5">
           <SheetTitle>{`${user?.name} ${user?.surname}`}</SheetTitle>
-          <SheetDescription>Account settings</SheetDescription>
+          <SheetDescription>
+            <Button
+              variant="link"
+              onClick={() => navigate("/editprofile")}
+            >
+              Change account settings
+            </Button>
+          </SheetDescription>
         </SheetHeader>
 
         <div className="h-full flex flex-col items-start justify-between">

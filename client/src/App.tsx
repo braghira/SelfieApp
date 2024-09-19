@@ -19,6 +19,8 @@ import AuthLayout from "./layouts/AuthLayout";
 import Pomodoro from "./pages/Pomodoro";
 import Notes from "./pages/Notes";
 import Editor from "./pages/Editor";
+import Editprofile from "./pages/Editprofile";
+
 
 // Per come è impostata la nostra app tutte le route devono stare dentro ad una route che fa da
 // padre a tutte le altre senza aggiungere layout o path
@@ -33,6 +35,7 @@ const router = createBrowserRouter(
           <Route path="/calendar" element={<Calendar />} />
           <Route path="/notes" element={<Notes />} />
           <Route path="/editor/:id?" element={<Editor />} />
+          <Route path="/editprofile" element={<Editprofile />} />
         </Route>
       </Route>
       <Route element={<AuthLayout />}>
