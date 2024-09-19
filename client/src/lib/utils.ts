@@ -17,7 +17,7 @@ const PomodoroSchema = z.object({
 });
 
 export const EventSchema = z.object({
-  title: z.string().min(2, "Title must be at least 2 characters"),
+  title: z.string().min(2, "Title must be at least 2 characters").max(20),
   date: z.string(),
   duration: z.number().nonnegative(),
   location: z.string().optional(),
@@ -34,7 +34,7 @@ export const EventSchema = z.object({
 export type EventType = z.infer<typeof EventSchema>;
 
 export const ActivitySchema = z.object({
-  title: z.string().min(2, "Title must be at least 2 characters"),
+  title: z.string().min(2, "Title must be at least 2 characters").max(20),
   endDate: z.string().nullable().optional(),
   groupList: z.string().array(),
   completed: z.boolean(),
