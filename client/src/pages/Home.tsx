@@ -488,8 +488,8 @@ export default function Home() {
               <DataTable
                 data={activities}
                 columns={activityColumns}
-                filterColumnID="title"
-                filterTitleID="completed"
+                filterColumnID="completed"
+                filterTitleID="title"
                 filterName="Status"
                 filterOptions={statuses}
               ></DataTable>

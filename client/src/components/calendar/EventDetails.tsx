@@ -21,7 +21,7 @@ import { useTimer } from "@/hooks/useTimer";
 interface EventDetailsProps {
   event: EventType;
   open: boolean;
-  setOpen: (open: boolean) => void;
+  setOpen: (isEventDetailsOpen: boolean) => void;
 }
 export default function EventDetails({
   event,
@@ -36,8 +36,17 @@ export default function EventDetails({
   async function handleDelete() {
     if (user) {
       deleteEvent(event);
+      const notificationEventStatus = localStorage.getItem("notificationEventStatus");
+      if (notificationEventStatus) {
+        const events = JSON.parse(notificationEventStatus);
+        
+        const updatedEvents = events.filter(
+          (notificationEvent: { id: string }) => notificationEvent.id !== event._id
+        );
+        localStorage.setItem("notificationEventStatus", JSON.stringify(updatedEvents));
     }
   }
+}
   async function handleUpdate() {
     if (user) {
       await updateUserList(event);
@@ -194,6 +203,17 @@ export default function EventDetails({
                       </Button>
                     </div>
                   )}
+                  {event.groupList.length>0 && (
+                    <div>
+                      Shared with:{" "}
+                      <span className="base-semibold">{event.groupList.map((group, index) => (
+                          <span key={index}>
+                            {group}
+                            {index < event.groupList.length - 1 && ", "}
+                          </span>
+                      ))}</span>
+                    </div>
+                  )}
               </>
             )}
           </div>
@@ -209,6 +229,14 @@ export default function EventDetails({
           onClick={handleExportToCalendar}
         >
           Export
+        </Button>
+        <Button
+          className="bg-primary text-primary-foreground border-primary hover:bg-primary/90 shadow-none"
+          onClick={() => {
+            window.location.href = `mailto:support@example.com?subject=Invio%20evento%20calendario&body=`;
+          }}
+        >
+          Email
         </Button>
         {event.itsPomodoro && (
           <Button
