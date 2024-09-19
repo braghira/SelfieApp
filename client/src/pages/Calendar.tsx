@@ -39,9 +39,9 @@ export default function CalendarPage() {
     return savedStatus ? JSON.parse(savedStatus) : {};
   });
   const [selectedEvent, setSelectedEvent] = useState<EventType | null>(null);
-  const [open, setOpen] = useState(false);
+  const [isEventDetailsOpen, setIsEventDetailsOpen] = useState(false);
   const { currentDate } = useTimeMachineContext();
-  
+  //  console.log(isEventDetailsOpen);
   
   useEffect(() => {
     if (user) {
@@ -62,7 +62,6 @@ export default function CalendarPage() {
     }
   }, [notificationActivitiesStatus]);
   
-
   const colors = {
     late: "#ff7514",
     onTime: "#4087b3",
@@ -203,7 +202,7 @@ export default function CalendarPage() {
       const fullEvent = events?.find((e) => e.title === selectedEvent.title);
       if (fullEvent) {
         setSelectedEvent(fullEvent);
-        setOpen(true);
+        setIsEventDetailsOpen(true);
       }
     }
   };
@@ -304,10 +303,10 @@ export default function CalendarPage() {
   ];
 
   return (
-    <div className="container mb-2 mt-6">
+    <div className="container mb-12 mt-6">
       <div id="event-details-container">
         {selectedEvent && (
-          <EventDetails event={selectedEvent} open={open} setOpen={setOpen}/>
+          <EventDetails event={selectedEvent} open={isEventDetailsOpen} setOpen={setIsEventDetailsOpen}/>
         )}
       </div>
       <div className="flex flex-col gap-8 sm:grid lg:grid-cols-[3fr_1fr] sm:grid-cols-1">
@@ -322,28 +321,28 @@ export default function CalendarPage() {
           getNow={() => moment(currentDate).toDate()}
         />
         <div className="hidden lg:block">
-          {activities && <ActivityList activities={activities} />}
+          {activities && <ActivityList/>}
         </div>
         </div>
         <div className="hidden md:flex flex-col items-center gap-4 mt-8 md:flex-row md:justify-around">
           <EventForm />
           <ActivityForm />
         </div>
-      <div className="md:hidden flex gap-4">
-        <button className="bg-primary text-primary-foreground border-primary hover:bg-primary/90 shadow-none" onClick={() => handleToggle('eventForm')}>
+      <div className="md:hidden flex gap-4 items-center justify-around mt-4">
+        <button className="bg-primary rounded-md text-primary-foreground border-primary hover:bg-primary/90 shadow-none p-1" onClick={() => handleToggle('eventForm')}>
           Add Event
         </button>
-        <button className="bg-primary text-primary-foreground border-primary hover:bg-primary/90 shadow-none" onClick={() => handleToggle('activityForm')}>
+        <button className="bg-primary rounded-md text-primary-foreground border-primary hover:bg-primary/90 shadow-none p-1" onClick={() => handleToggle('activityForm')}>
           Add Activity
         </button>
-        <button className="bg-primary text-primary-foreground border-primary hover:bg-primary/90 shadow-none" onClick={() => handleToggle('activityList')}>
-          Show Activities
+        <button className="bg-primary rounded-md text-primary-foreground border-primary hover:bg-primary/90 shadow-none p-1" onClick={() => handleToggle('activityList')}>
+          Activities List
         </button>
       </div>
       <div className="lg:hidden">
         {activeView === 'eventForm' && <EventForm />}
         {activeView === 'activityForm' && <ActivityForm />}
-        {activeView === 'activityList' && activities && <ActivityList activities={activities} />}
+        {activeView === 'activityList' && activities && <ActivityList/>}
       </div>
     </div>
   );
