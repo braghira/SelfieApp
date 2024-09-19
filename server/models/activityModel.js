@@ -17,7 +17,11 @@ const activitySchema = new Schema({
     completed: {
         type: Boolean,
         default: false
-    }
+    },
+    author: {
+        type: String,
+        required: true
+    },
 }, { timestamps: true });
 
 module.exports = mongoose.model('Activity', activitySchema);

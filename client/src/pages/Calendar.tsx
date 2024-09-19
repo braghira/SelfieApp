@@ -68,13 +68,14 @@ export default function CalendarPage() {
     onTime: "#4087b3",
     event: "#3fb33f",
     pomodoro: "#d15446",
+    notConfirmed: "#89AC76",
   };
 
   interface CustomEvent {
     start: Date;
     end: Date;
     title: string;
-    type: "event" | "activity" | "pomodoro";
+    type: "event" | "activity" | "pomodoro" | "group";
   }
 
   type NotificationEventStatus = {
@@ -127,34 +128,38 @@ export default function CalendarPage() {
           const daysOverdue = now.diff(endDate, "days");
           if (endDate.isBefore(now, "day")) {
               const activityName = activity.title;
-              console.log("salvo per la prima volta e mando la notifica")
-              sendActivityNotification(userID, daysOverdue, activityName, activityId, updatedActivityStatus);     
+              sendActivityNotification(userID, daysOverdue, activityName, activityId, updatedActivityStatus);    
             }
           }
       });
     }
-  }, [events, activities]);
+  }, [currentDate]);
 
   const sendEventNotification = (userID: string, timeLeft: string, eventTitle: string) => {
     const payload: NotificationPayload = {
       title: "Upcoming Event!!!",
       body: `Check out your calendar, ${timeLeft} hours left until the event: ${eventTitle}`,
-      url: `http://localhost:5173/calendar`,
+      url: `/calendar`,
     };
     RequestPushSub(() => sendNotification(userID, payload));
   };
 
   const sendActivityNotification = (userID: string, daysPassed: number, activityName: string, activityId: string, activityStatus:{ [activityId: string]:  { lastNotified?: string }}) => {
-    const today = moment().format("YYYY-MM-DD");
+    const today = moment(currentDate).format("YYYY-MM-DD");
+    let title = "You are late to complete an activity!";
     if (!activityStatus[activityId]) {
       activityStatus[activityId] = {};
     }
+    if(daysPassed>=2 && daysPassed<5){
+      title = "This activity isn't complete yet, FINISH IT!"
+    } else if(daysPassed>=5){
+      title =  "YOU HAVE TO FINISH THIS ACTIVITY NOW!!!"
+    }
     if(activityStatus[activityId].lastNotified != today){
-      console.log("notifica inviata");
       const payload: NotificationPayload = {
-        title: "You are late to complete an activity!",
-        body: `L'attività: ${activityName} è scaduta da ${daysPassed} giorni. Ricordati di completarla!`,
-        url: `http://localhost:5173/calendar`,
+        title: title,
+        body: `L'attività: ${activityName} è scaduta da ${++daysPassed} giorni. Ricordati di completarla!`,
+        url: `/calendar`,
       };
       RequestPushSub(() => sendNotification(userID, payload));
       activityStatus[activityId].lastNotified = today;
@@ -180,6 +185,9 @@ export default function CalendarPage() {
     else if (event.type === "pomodoro"){
       backgroundColor = colors.pomodoro;
     }
+    else if (event.type === "group"){
+      backgroundColor = colors.notConfirmed;
+    }
     return {
       style: {
         backgroundColor,
@@ -191,7 +199,7 @@ export default function CalendarPage() {
   const handleSelected = (event: Event) => {
     const selectedEvent = event as CustomEvent;
 
-    if (selectedEvent.type === "event" || selectedEvent.type === "pomodoro") {
+    if (selectedEvent.type === "event" || selectedEvent.type === "pomodoro" || selectedEvent.type === "group" ) {
       const fullEvent = events?.find((e) => e.title === selectedEvent.title);
       if (fullEvent) {
         setSelectedEvent(fullEvent);
@@ -204,6 +212,13 @@ export default function CalendarPage() {
     ...(events?.flatMap((event) => {
       const momentDate = moment(new Date(event.date));
       const dates: CustomEvent[] = [];
+      let eventType: "event" | "group";
+      if (event.author !== user?.username && !event.itsPomodoro) {
+        eventType = "group";
+      }
+      else{
+        eventType = "event";
+      }
 
       if (event.isRecurring && event.recurrencePattern?.endType === "after") {
         for (let i = 0; i < (event.recurrencePattern.occurrences ?? 0); i++) {
@@ -219,7 +234,7 @@ export default function CalendarPage() {
             start: newDate.toDate(),
             end: newDate.add(event.duration, "hour").toDate(),
             title: event.title,
-            type: "event",
+            type: eventType,
           });
         }
       } else if (
@@ -236,7 +251,7 @@ export default function CalendarPage() {
               start: newDate.toDate(),
               end: newDate.clone().add(event.duration, "hour").toDate(),
               title: event.title,
-              type: "event",
+              type: eventType,
             });
             if (event.recurrencePattern?.frequency === "daily") {
               newDate = newDate.add(1, "days");
@@ -251,7 +266,7 @@ export default function CalendarPage() {
               start: endDate.toDate(),
               end: endDate.clone().add(event.duration, "hour").toDate(),
               title: event.title,
-              type: "event",
+              type: eventType,
             });
           }
         }
@@ -268,7 +283,7 @@ export default function CalendarPage() {
             start: momentDate.toDate(),
             end: momentDate.add(event.duration, "hour").toDate(),
             title: event.title,
-            type: "event",
+            type: eventType,
           });
       }
       return dates;
@@ -284,7 +299,7 @@ export default function CalendarPage() {
               type: "activity" as const,
             } as CustomEvent)
           : null;
-      })
+        })
       .filter((activity) => activity !== null) || []),
   ];
 
@@ -292,7 +307,7 @@ export default function CalendarPage() {
     <div className="container mb-2 mt-6">
       <div id="event-details-container">
         {selectedEvent && (
-          <EventDetails event={selectedEvent} open={open} setOpen={setOpen} />
+          <EventDetails event={selectedEvent} open={open} setOpen={setOpen}/>
         )}
       </div>
       <div className="flex flex-col gap-8 sm:grid lg:grid-cols-[3fr_1fr] sm:grid-cols-1">
@@ -325,7 +340,7 @@ export default function CalendarPage() {
           Show Activities
         </button>
       </div>
-      <div className="md:hidden">
+      <div className="lg:hidden">
         {activeView === 'eventForm' && <EventForm />}
         {activeView === 'activityForm' && <ActivityForm />}
         {activeView === 'activityList' && activities && <ActivityList activities={activities} />}

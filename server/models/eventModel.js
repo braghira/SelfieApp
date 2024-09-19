@@ -13,11 +13,11 @@ const eventSchema = new Schema({
     },
     duration: {
         type: Number,
-        required: true, 
+        required: true,
     },
     location: {
         type: String,
-        required: false, 
+        required: false,
     },
     isRecurring: {
         type: Boolean,
@@ -27,18 +27,32 @@ const eventSchema = new Schema({
         type: Boolean,
         default: false,
     },
-    groupList:{
+    groupList: {
         type: [String],
-        required: false,
     },
-    pomodoro:{
-        initStudy: {
-                type: Number,
-            },
-        initRelax: {
-                type: Number,
-            },
-        cycles:{
+    author: {
+        type: String,
+        required: true
+    },
+    currPomodoro: {
+        study: {
+            type: Number,
+        },
+        relax: {
+            type: Number,
+        },
+        cycles: {
+            type: Number,
+        },
+    },
+    expectedPomodoro: {
+        study: {
+            type: Number,
+        },
+        relax: {
+            type: Number,
+        },
+        cycles: {
             type: Number,
         },
     },
@@ -46,7 +60,7 @@ const eventSchema = new Schema({
         frequency: {
             type: String,
             enum: ['daily', 'weekly', 'monthly'],
-            required: function() { return this.isRecurring; }
+            required: function () { return this.isRecurring; }
         },
         endType: {
             type: String,
@@ -54,11 +68,11 @@ const eventSchema = new Schema({
         },
         occurrences: {
             type: Number,
-            required: function() { return this.recurrencePattern.endType === 'after'; } 
+            required: function () { return this.recurrencePattern.endType === 'after'; }
         },
         endDate: {
             type: Date,
-            required: function() { return this.recurrencePattern.endType === 'until'; }
+            required: function () { return this.recurrencePattern.endType === 'until'; }
         }
     },
 }, { timestamps: true });

@@ -1,4 +1,4 @@
-import { PartyPopperIcon, TrendingUp } from "lucide-react";
+import { PartyPopperIcon } from "lucide-react";
 import {
   Label,
   PolarGrid,

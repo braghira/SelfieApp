@@ -1,4 +1,3 @@
-import Loader from "@/components/Loader";
 import {
   CheckCircle2,
   Clock,
@@ -61,21 +60,22 @@ import {
 } from "@/components/ui/carousel";
 import { Separator } from "@/components/ui/separator";
 import { useNavigate } from "react-router-dom";
-import { PomodoroType } from "@/hooks/useTimer";
+import { useTimer } from "@/hooks/useTimer";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { RadialPomodoroChart } from "@/components/RadialPomodoroChart";
+import { RadialPomodoroChart } from "@/components/dashboard/RadialPomodoroChart";
+import NoteCard from "@/components/editor/notecard";
+import SendMessage from "@/components/dashboard/SendMessage";
 
 export default function Home() {
   const { events } = useEvents();
-  const { notes, dispatch } = useNoteContext();
+  const { notes } = useNoteContext();
   const { activities } = useActivities();
   const { getEvents } = useEventsApi();
   const { fetchNotes } = useNotes();
   const { getActivities } = useActivitiesApi();
-  const [lastPomdoro, setLastPomodoro] = useState<PomodoroType>();
-  const [initialPomdoro, setInitialPomodoro] = useState<PomodoroType>();
+  const { timer, InitialTimer } = useTimer(events);
   const [pomodoroSwitch, setPomodoroSwitch] = useState(false);
   const [pomodoroProgress, setPomodoroProgress] = useState(0);
   const navigate = useNavigate();
@@ -327,186 +327,176 @@ export default function Home() {
     getEvents();
     getActivities();
     fetchNotes();
-    // setLastPomodoro(getLastPomodoro());
-    setLastPomodoro({
-      totalTime: 10500000 - 2100000 * 3,
-      cycles: 3,
-      study: { initialValue: 1800000, value: 1800000, started: false },
-      relax: { initialValue: 300000, value: 300000, started: false },
-      isStudyCycle: true,
-    });
-    setInitialPomodoro({
-      totalTime: 10500000,
-      cycles: 5,
-      study: { initialValue: 1800000, value: 1800000, started: false },
-      relax: { initialValue: 300000, value: 300000, started: false },
-      isStudyCycle: true,
-    });
-  }, []);
 
-  useEffect(() => {
     let percentage = 0;
-    if (lastPomdoro && initialPomdoro)
-      percentage = lastPomdoro?.cycles / initialPomdoro?.cycles;
+    if (InitialTimer)
+      percentage = (InitialTimer.cycles - timer.cycles) / InitialTimer.cycles;
+
+    console.log(`timer cycles: ${percentage}, initial cycles: ${timer.cycles}`);
 
     setPomodoroProgress(percentage);
-  }, [initialPomdoro, lastPomdoro]);
+  }, []);
 
   return (
-    <div className="view-container grid grid-cols-1 md:grid-rows-3 md:grid-cols-2 gap-5">
-      <div className="row-span-1">
-        <Card className="bg-background h-full">
-          <CardHeader>
-            <CardTitle className="flex w-full justify-between">
-              Pomodoro
-              <div className="flex items-center space-x-2">
-                <Switch
-                  id="pomodoro-preview"
-                  checked={pomodoroSwitch}
-                  onCheckedChange={() => setPomodoroSwitch(!pomodoroSwitch)}
-                />
-                <Label htmlFor="pomodoro-preview">Report View</Label>
-              </div>
-            </CardTitle>
+    <>
+      {/* Send message to user Button, aprt from normal document flow */}
+      <div className="fixed bottom-14 left-5 z-10">
+        <SendMessage />
+      </div>
 
-            <CardDescription>Last pomodoro Session</CardDescription>
-          </CardHeader>
+      <div className="view-container grid grid-cols-1 md:grid-rows-3 md:grid-cols-2 gap-5">
+        <div className="row-span-1">
+          <Card className="bg-background h-full">
+            <CardHeader>
+              <CardTitle className="flex w-full justify-between">
+                Pomodoro
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="pomodoro-preview"
+                    checked={pomodoroSwitch}
+                    onCheckedChange={() => setPomodoroSwitch(!pomodoroSwitch)}
+                  />
+                  <Label htmlFor="pomodoro-preview">Report View</Label>
+                </div>
+              </CardTitle>
 
-          {!pomodoroSwitch && (
-            <RadialPomodoroChart
-              progress={pomodoroProgress}
-            ></RadialPomodoroChart>
-          )}
-          {pomodoroSwitch && (
-            <CardContent>
-              <div className="flex flex-col justify-center items-center gap-5 md:flex-row">
-                <div className="flex flex-col justify-center items-center gap-2">
-                  <div className="bg-primary h-[200px] w-[200px] md:h-[150px] md:w-[150px] rounded-full flex-center font-bold text-red-50">
-                    {lastPomdoro && msToTime(lastPomdoro.study.value)}
+              <CardDescription>Last pomodoro Session</CardDescription>
+            </CardHeader>
+
+            {!pomodoroSwitch && (
+              <RadialPomodoroChart
+                progress={pomodoroProgress}
+              ></RadialPomodoroChart>
+            )}
+            {pomodoroSwitch && (
+              <CardContent>
+                <div className="flex flex-col justify-center items-center gap-5 md:flex-row">
+                  <div className="flex flex-col justify-center items-center gap-2">
+                    <div className="bg-primary h-[200px] w-[200px] md:h-[150px] md:w-[150px] rounded-full flex-center font-bold text-red-50">
+                      {msToTime(timer.study.value)}
+                    </div>
+                    <Badge>Study</Badge>
                   </div>
-                  <Badge>Study</Badge>
-                </div>
-                <div className="flex flex-col justify-center items-center gap-2">
-                  <div className="bg-yellow-600 h-[200px] w-[200px] md:h-[150px] md:w-[150px] rounded-full flex-center font-bold text-yellow-50">
-                    {lastPomdoro && msToTime(lastPomdoro.relax.value)}
+                  <div className="flex flex-col justify-center items-center gap-2">
+                    <div className="bg-yellow-600 h-[200px] w-[200px] md:h-[150px] md:w-[150px] rounded-full flex-center font-bold text-yellow-50">
+                      {msToTime(timer.relax.value)}
+                    </div>
+                    <Badge className="bg-yellow-600">Relax</Badge>
                   </div>
-                  <Badge className="bg-yellow-600">Relax</Badge>
                 </div>
-              </div>
-              <Separator className="my-4" />
-              <Table>
-                <TableCaption>Pomodoro Stats</TableCaption>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead colSpan={3} className="w-[100px] text-right">
-                      Cycles
-                    </TableHead>
-                    <TableHead colSpan={2}>Session Length</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  <TableRow>
-                    <TableCell>Last Session</TableCell>
-                    <TableCell colSpan={2} className="font-medium text-right">
-                      {lastPomdoro?.cycles}
-                    </TableCell>
-                    <TableCell>
-                      {lastPomdoro && msToTime(lastPomdoro?.totalTime)}
-                    </TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell>Expected Session</TableCell>
-                    <TableCell colSpan={2} className="font-medium text-right">
-                      {initialPomdoro?.cycles}
-                    </TableCell>
-                    <TableCell>
-                      {initialPomdoro && msToTime(initialPomdoro?.totalTime)}
-                    </TableCell>
-                  </TableRow>
-                </TableBody>
-                <TableFooter>
-                  <TableRow>
-                    <TableCell colSpan={1}>Progress Made</TableCell>
-                    <TableCell colSpan={4} className="text-right">
-                      {lastPomdoro &&
-                        initialPomdoro &&
-                        (lastPomdoro.cycles / initialPomdoro?.cycles) * 100}
-                      %
-                    </TableCell>
-                  </TableRow>
-                </TableFooter>
-              </Table>
+                <Separator className="my-4" />
+                <Table>
+                  <TableCaption>Pomodoro Stats</TableCaption>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead colSpan={3} className="w-[100px] text-right">
+                        Cycles
+                      </TableHead>
+                      <TableHead colSpan={2}>Session Length</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    <TableRow>
+                      <TableCell>Last Session</TableCell>
+                      <TableCell colSpan={2} className="font-medium text-right">
+                        {InitialTimer.cycles - timer.cycles}
+                      </TableCell>
+                      <TableCell>
+                        {msToTime(InitialTimer.totalTime - timer.totalTime)}
+                      </TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>Expected Session</TableCell>
+                      <TableCell colSpan={2} className="font-medium text-right">
+                        {InitialTimer.cycles}
+                      </TableCell>
+                      <TableCell>{msToTime(InitialTimer.totalTime)}</TableCell>
+                    </TableRow>
+                  </TableBody>
+                  <TableFooter>
+                    <TableRow>
+                      <TableCell colSpan={1}>Progress Made</TableCell>
+                      <TableCell colSpan={4} className="text-right">
+                        {((InitialTimer.cycles - timer.cycles) /
+                          InitialTimer.cycles) *
+                          100}
+                        %
+                      </TableCell>
+                    </TableRow>
+                  </TableFooter>
+                </Table>
+              </CardContent>
+            )}
+          </Card>
+        </div>
+
+        <div className="row-span-1 w-full h-full">
+          <Card className="bg-background w-full h-full">
+            <CardHeader>
+              <CardTitle>Notes</CardTitle>
+            </CardHeader>
+            <CardContent className="flex-center md:px-14">
+              <Carousel className="w-full max-w-xs">
+                <CarouselContent>
+                  {notes.map((note) => (
+                    <CarouselItem key={note._id}>
+                      <NoteCard
+                        key={note._id}
+                        id={note._id as string}
+                        title={note.title}
+                        content={note.content}
+                        categories={note.categories}
+                        createdAt={note.createdAt}
+                        updatedAt={note.updatedAt}
+                        author={note.author}
+                        simplified={true}
+                      />
+                    </CarouselItem>
+                  ))}
+                </CarouselContent>
+                <CarouselPrevious className="max-md:hidden" />
+                <CarouselNext className="max-md:hidden" />
+              </Carousel>
             </CardContent>
-          )}
-        </Card>
-      </div>
+          </Card>
+        </div>
 
-      <div className="row-span-1 w-full h-full">
-        <Card className="bg-background w-full h-full">
-          <CardHeader>
-            <CardTitle>Notes</CardTitle>
-          </CardHeader>
-          <CardContent className="flex-center md:px-14">
-            <Carousel className="w-full max-w-xs">
-              <CarouselContent>
-                {events.map((event) => (
-                  <CarouselItem key={event._id}>
-                    <Card>
-                      <CardHeader>
-                        <CardTitle className="text-primary">
-                          {event.title}
-                        </CardTitle>
-                      </CardHeader>
+        <div className="row-span-2">
+          <Card className="bg-background">
+            <CardHeader>
+              <CardTitle>Events</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <DataTable
+                data={events}
+                columns={eventColumns}
+                filterTitleID="title"
+                filterColumnID="recurrencePattern"
+                filterName="Recurrence"
+                filterOptions={frequencies}
+              ></DataTable>
+            </CardContent>
+          </Card>
+        </div>
 
-                      <CardContent className="flex aspect-square items-center justify-center p-6">
-                        {event.date}
-                      </CardContent>
-                    </Card>
-                  </CarouselItem>
-                ))}
-              </CarouselContent>
-              <CarouselPrevious className="max-md:hidden" />
-              <CarouselNext className="max-md:hidden" />
-            </Carousel>
-          </CardContent>
-        </Card>
+        <div className="row-span-2">
+          <Card className="bg-background">
+            <CardHeader>
+              <CardTitle>Activities</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <DataTable
+                data={activities}
+                columns={activityColumns}
+                filterColumnID="title"
+                filterTitleID="completed"
+                filterName="Status"
+                filterOptions={statuses}
+              ></DataTable>
+            </CardContent>
+          </Card>
+        </div>
       </div>
-
-      <div className="row-span-2">
-        <Card className="bg-background">
-          <CardHeader>
-            <CardTitle>Activities</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <DataTable
-              data={events}
-              columns={eventColumns}
-              filterTitleID="title"
-              filterColumnID="recurrencePattern"
-              filterName="Recurrence"
-              filterOptions={frequencies}
-            ></DataTable>
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="row-span-2">
-        <Card className="bg-background">
-          <CardHeader>
-            <CardTitle>Events</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <DataTable
-              data={activities}
-              columns={activityColumns}
-              filterColumnID="title"
-              filterTitleID="completed"
-              filterName="Status"
-              filterOptions={statuses}
-            ></DataTable>
-          </CardContent>
-        </Card>
-      </div>
-    </div>
+    </>
   );
 }
