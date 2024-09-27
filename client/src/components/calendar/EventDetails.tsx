@@ -121,8 +121,8 @@ export default function EventDetails({
                 <div>
                   Study Time:{" "}
                   <span className="base-semibold">
-                    {event.expectedPomodoro?.study
-                      ? event.expectedPomodoro.study
+                    {event.currPomodoro?.study
+                      ? event.currPomodoro.study
                       : "30"}{" "}
                     minutes
                   </span>
@@ -130,16 +130,14 @@ export default function EventDetails({
                 <div>
                   Relax Time:{" "}
                   <span className="base-semibold">
-                    {event.expectedPomodoro?.relax
-                      ? event.expectedPomodoro.relax
-                      : "5"}{" "}
+                    {event.currPomodoro?.relax ? event.currPomodoro.relax : "5"}{" "}
                     minutes
                   </span>
                 </div>
                 <div>
-                  Cycles:{" "}
+                  Remaining cyles:{" "}
                   <span className="base-semibold">
-                    {event.expectedPomodoro?.cycles ?? 5}
+                    {event.currPomodoro?.cycles ?? 5}
                   </span>
                 </div>
               </>

@@ -56,6 +56,7 @@ const eventSchema = new Schema({
             type: Number,
         },
     },
+    summed: { type: Number, },
     recurrencePattern: {
         frequency: {
             type: String,
