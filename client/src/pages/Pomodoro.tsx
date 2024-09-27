@@ -38,7 +38,7 @@ export default function Pomodoro() {
   const { user } = useAuth();
   const [open, setOpen] = useState(false);
   const { events } = useEvents();
-  const { getEvents, postEvent } = useEventsApi();
+  const { getEvents, postEvent, updatePomodoro } = useEventsApi();
   const { timer, dispatch, InitialTimer, setInitialTimer } = useTimer();
   const { currentDate } = useTimeMachineContext();
 
@@ -86,7 +86,7 @@ export default function Pomodoro() {
       const newPomodoroEvent: EventType = {
         itsPomodoro: true,
         date: currentDate.toDateString(),
-        duration: 0,
+        duration: 1,
         isRecurring: false,
         title: "Pomodoro",
         currPomodoro: pomodoro,
@@ -220,6 +220,25 @@ export default function Pomodoro() {
     const userID = user?._id;
 
     if (userID && timer.totalTime === 0 && timer.relax.started) {
+      // Update today's pomodoro event
+      let todayEvent = null;
+
+      console.log("EHI");
+
+      // create new pomodoro event if today there were none
+      if (events && events.length > 0) {
+        const today = moment(currentDate);
+        todayEvent = events.find(
+          (event) =>
+            moment(event.date).isSame(today, "day") && event.itsPomodoro
+        );
+      }
+
+      if (todayEvent?.currPomodoro) {
+        todayEvent.currPomodoro.cycles = 0;
+        updatePomodoro(todayEvent);
+      }
+
       RequestPushSub(() => sendNotification(userID, payload));
     }
   }, [timer.totalTime]);
@@ -387,11 +406,24 @@ export default function Pomodoro() {
             <AlertDialogAction
               onClick={() => {
                 if (blocker.state === "blocked") {
-                  const savedPomodoroData =
-                    localStorage.getItem("pomodoro_timer");
-                  if (savedPomodoroData) {
-                    localStorage.setItem("closedEarly", savedPomodoroData);
+                  // Update today's pomodoro event
+                  let todayEvent = null;
+
+                  // create new pomodoro event if today there were none
+                  if (events && events.length > 0) {
+                    const today = moment(currentDate);
+                    todayEvent = events.find(
+                      (event) =>
+                        moment(event.date).isSame(today, "day") &&
+                        event.itsPomodoro
+                    );
                   }
+
+                  if (todayEvent?.currPomodoro) {
+                    todayEvent.currPomodoro.cycles = timer.cycles;
+                    updatePomodoro(todayEvent);
+                  }
+
                   localStorage.removeItem("pomodoro_timer");
                   blocker.proceed();
                 }
