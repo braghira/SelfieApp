@@ -4,6 +4,9 @@ async function getMatchingUsers(req, res) {
     const { string } = req.params;
 
     try {
+        // redundant check, since route matching takes care of that
+        if (string === "") throw Error("Search parameter empty");
+
         // array of users matching the param, case insensitive
         const users = await User.find({ username: { $regex: string, $options: 'i' } })
 

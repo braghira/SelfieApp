@@ -15,15 +15,6 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 
-/**
- * - [ ] Form per cercare utenti da aggiungere alla lista degli amici
- * - [ ] Ad ogni digitazione nell'input di ricerca viene fatta una fetch degli utenti che contengono il valore del campo nello username
- * - [ ] Vengono consigliati utenti sotto alla barra in base al contenuto del campo, e sono cliccabili per un autocompletamento
- * - [ ] Gli utenti selezionati vengono mostrati sotto alla barra di ricerca
- * - [ ] Il componente dovrebbe aggiornare l'array degli utenti selezionati passato come prop
- * in questo modo si possono inviare facilmente al backend sia richieste che notifiche
- */
-
 const FormSchema = z.object({
   username: z.string().toLowerCase().min(1),
 });

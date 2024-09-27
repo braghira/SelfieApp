@@ -28,7 +28,6 @@ export default function StudyAnimation({
       timeDiff.current = parsed_timer.study.value;
       dispatch({ payload: parsed_timer, type: "SET" });
     }
-    console.log("Timer after notification received", timer);
   }, [timer.study.initialValue]);
 
   useEffect(() => {

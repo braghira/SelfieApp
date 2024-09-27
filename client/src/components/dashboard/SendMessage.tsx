@@ -37,6 +37,13 @@ const FormSchema = z.object({
   }),
 });
 
+/**
+ * Invia facilmente al backend sia richieste che notifiche
+ * - [x] Form per cercare utenti da aggiungere alla lista degli amici
+ * - [x] Ad ogni digitazione nell'input di ricerca viene fatta una fetch degli utenti che contengono il valore del campo nello username
+ * - [ ] Vengono consigliati utenti sotto alla barra in base al contenuto del campo, e sono cliccabili per un autocompletamento
+ * - [x] Gli utenti selezionati vengono mostrati sotto alla barra di ricerca
+ */
 export default function SendMessage() {
   const [open, setOpen] = useState(false);
   const [fetchedUsers, setFetchedUsers] = useState<UserType[]>([]);
@@ -52,24 +59,28 @@ export default function SendMessage() {
 
   // GET matching users for easy search
   function onChange(value: string) {
-    private_api
-      .get(`/api/users/${value}`)
-      .then((response) => {
-        if (response.status === 200) {
-          const USERS: UserType[] = response.data;
+    console.log("value length: ", value.length);
 
-          // Filtra per escludere l'utente corrente (ME)
-          const filteredUsers = USERS.filter(
-            (user) => user.username !== ME?.username
-          );
+    if (value.length === 0) setFetchedUsers([]);
+    else
+      private_api
+        .get(`/api/users/${value}`)
+        .then((response) => {
+          if (response.status === 200) {
+            const USERS: UserType[] = response.data;
 
-          setFetchedUsers(filteredUsers);
-        }
-      })
-      .catch(() => {
-        setFetchedUsers([]);
-        console.error("Couldn't fetch matching users");
-      });
+            // Filtra per escludere l'utente corrente (ME)
+            const filteredUsers = USERS.filter(
+              (user) => user.username !== ME?.username
+            );
+
+            setFetchedUsers(filteredUsers);
+          } else throw Error(`Unknown Error status: ${response.status}`);
+        })
+        .catch((error) => {
+          setFetchedUsers([]);
+          console.error("Couldn't fetch matching users: ", error);
+        });
   }
 
   function onSelect(value: string) {
