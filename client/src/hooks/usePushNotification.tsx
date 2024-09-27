@@ -17,7 +17,7 @@ export default function usePushNotification() {
   const [sendLoading, setSendLoading] = useState(false);
   const [subLoading, setSubLoading] = useState(false);
   const [unsubLoading, setUnsubLoading] = useState(false);
-  const { dispatch: timerDispatch, setInitialTimer } = useTimer();
+  const { dispatch: timerDispatch } = useTimer();
   const private_api = useAxiosPrivate();
   const { user } = useAuth();
   const { dispatch } = usePushContext();

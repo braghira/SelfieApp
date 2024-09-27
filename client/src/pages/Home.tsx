@@ -6,6 +6,7 @@ import {
   CalendarRangeIcon,
   CalendarX2Icon,
   CalendarFoldIcon,
+  ClockIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -35,13 +36,7 @@ import useNotes from "@/hooks/useNote";
 import { useEffect, useState } from "react";
 import { DataTable } from "@/components/ui/data-table";
 import { ColumnDef, FilterFn, Row } from "@tanstack/react-table";
-import {
-  ActivityType,
-  cn,
-  EventType,
-  msToTime,
-  RecurrenceType,
-} from "@/lib/utils";
+import { ActivityType, cn, EventType, RecurrenceType } from "@/lib/utils";
 import { ArrowUpDown, MoreHorizontal } from "lucide-react";
 import {
   DropdownMenu,
@@ -60,7 +55,6 @@ import {
 } from "@/components/ui/carousel";
 import { Separator } from "@/components/ui/separator";
 import { useNavigate } from "react-router-dom";
-import { useTimer } from "@/hooks/useTimer";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
@@ -72,10 +66,10 @@ export default function Home() {
   const { events } = useEvents();
   const { notes } = useNoteContext();
   const { activities } = useActivities();
-  const { getEvents } = useEventsApi();
+  const { getEvents, getLastPomodoro } = useEventsApi();
+  const [pomodoroEvent, setPomodoroEvent] = useState<EventType | null>(null);
   const { fetchNotes } = useNotes();
   const { getActivities } = useActivitiesApi();
-  const { timer, InitialTimer } = useTimer(events);
   const [pomodoroSwitch, setPomodoroSwitch] = useState(false);
   const [pomodoroProgress, setPomodoroProgress] = useState(0);
   const navigate = useNavigate();
@@ -166,6 +160,11 @@ export default function Home() {
       value: "daily",
       label: "Daily",
       icon: CalendarFoldIcon,
+    },
+    {
+      value: "pomodoro",
+      label: "Pomodoro",
+      icon: ClockIcon,
     },
     {
       value: "none",
@@ -323,18 +322,40 @@ export default function Home() {
   ];
 
   useEffect(() => {
-    // GET events, last note, activities and last pomodoro session
-    getEvents();
-    getActivities();
-    fetchNotes();
+    async function getAll() {
+      // GET events, last note, activities and last pomodoro session
+      getEvents();
+      getActivities();
+      fetchNotes();
 
-    let percentage = 0;
-    if (InitialTimer)
-      percentage = (InitialTimer.cycles - timer.cycles) / InitialTimer.cycles;
+      const pomodoro = await getLastPomodoro();
+      if (pomodoro) {
+        setPomodoroEvent(pomodoro);
 
-    console.log(`timer cycles: ${percentage}, initial cycles: ${timer.cycles}`);
+        const currTimerCycles = pomodoro.currPomodoro?.cycles;
+        const expectedTimerCycles = pomodoro.expectedPomodoro?.cycles;
 
-    setPomodoroProgress(percentage);
+        console.log(
+          `curr cycles: ${currTimerCycles}, expected cycles: ${expectedTimerCycles}`
+        );
+
+        let percentage = 0;
+
+        if (
+          currTimerCycles !== undefined &&
+          expectedTimerCycles !== undefined
+        ) {
+          percentage =
+            (expectedTimerCycles - currTimerCycles) / expectedTimerCycles;
+
+          console.log(`cycles percentage: ${percentage}`);
+
+          setPomodoroProgress(percentage);
+        }
+      }
+    }
+
+    getAll();
   }, []);
 
   return (
@@ -373,13 +394,17 @@ export default function Home() {
                 <div className="flex flex-col justify-center items-center gap-5 md:flex-row">
                   <div className="flex flex-col justify-center items-center gap-2">
                     <div className="bg-primary h-[200px] w-[200px] md:h-[150px] md:w-[150px] rounded-full flex-center font-bold text-red-50">
-                      {msToTime(timer.study.value)}
+                      {pomodoroEvent?.expectedPomodoro?.study &&
+                        pomodoroEvent?.expectedPomodoro?.study}
+                      m
                     </div>
                     <Badge>Study</Badge>
                   </div>
                   <div className="flex flex-col justify-center items-center gap-2">
                     <div className="bg-yellow-600 h-[200px] w-[200px] md:h-[150px] md:w-[150px] rounded-full flex-center font-bold text-yellow-50">
-                      {msToTime(timer.relax.value)}
+                      {pomodoroEvent?.expectedPomodoro?.relax &&
+                        pomodoroEvent?.expectedPomodoro?.relax}
+                      m
                     </div>
                     <Badge className="bg-yellow-600">Relax</Badge>
                   </div>
@@ -399,28 +424,43 @@ export default function Home() {
                     <TableRow>
                       <TableCell>Last Session</TableCell>
                       <TableCell colSpan={2} className="font-medium text-right">
-                        {InitialTimer.cycles - timer.cycles}
+                        {pomodoroEvent?.expectedPomodoro?.cycles &&
+                          pomodoroEvent?.currPomodoro?.cycles &&
+                          pomodoroEvent?.expectedPomodoro?.cycles -
+                            pomodoroEvent?.currPomodoro?.cycles}
                       </TableCell>
                       <TableCell>
-                        {msToTime(InitialTimer.totalTime - timer.totalTime)}
+                        {pomodoroEvent?.expectedPomodoro?.study &&
+                          pomodoroEvent?.expectedPomodoro?.relax &&
+                          pomodoroEvent?.expectedPomodoro?.cycles &&
+                          (pomodoroEvent?.expectedPomodoro?.study +
+                            pomodoroEvent?.expectedPomodoro?.relax) *
+                            pomodoroEvent?.expectedPomodoro?.cycles}{" "}
+                        m
                       </TableCell>
                     </TableRow>
                     <TableRow>
                       <TableCell>Expected Session</TableCell>
                       <TableCell colSpan={2} className="font-medium text-right">
-                        {InitialTimer.cycles}
+                        {pomodoroEvent?.expectedPomodoro?.cycles &&
+                          pomodoroEvent?.expectedPomodoro?.cycles}
                       </TableCell>
-                      <TableCell>{msToTime(InitialTimer.totalTime)}</TableCell>
+                      <TableCell>
+                        {pomodoroEvent?.expectedPomodoro?.study &&
+                          pomodoroEvent?.expectedPomodoro?.relax &&
+                          pomodoroEvent?.expectedPomodoro?.cycles &&
+                          (pomodoroEvent?.expectedPomodoro?.study +
+                            pomodoroEvent?.expectedPomodoro?.relax) *
+                            pomodoroEvent?.expectedPomodoro?.cycles}{" "}
+                        m
+                      </TableCell>
                     </TableRow>
                   </TableBody>
                   <TableFooter>
                     <TableRow>
                       <TableCell colSpan={1}>Progress Made</TableCell>
                       <TableCell colSpan={4} className="text-right">
-                        {((InitialTimer.cycles - timer.cycles) /
-                          InitialTimer.cycles) *
-                          100}
-                        %
+                        {pomodoroProgress * 100}%
                       </TableCell>
                     </TableRow>
                   </TableFooter>

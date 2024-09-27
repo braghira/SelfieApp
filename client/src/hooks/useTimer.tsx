@@ -171,10 +171,6 @@ function timerReducer(
 
     case "SET":
       if (action.payload) {
-        console.log(
-          "pomodoro timer before dispatch: ",
-          JSON.stringify(action.payload)
-        );
         localStorage.setItem("pomodoro_timer", JSON.stringify(action.payload));
         return action.payload;
       }
