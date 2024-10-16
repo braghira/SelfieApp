@@ -1,4 +1,4 @@
-const Event = require('../models/eventModel')
+const { Event, addEvent } = require('../models/eventModel')
 const mongoose = require('mongoose')
 
 // get all events
@@ -11,8 +11,9 @@ const getEvents = async (req, res) => {
                 { author: user.username },
                 { groupList: { $in: [user.username] } }
             ]
-        }).sort({ createdAt: -1 })
-        res.status(200).json(events)
+        }).sort({ createdAt: -1 });
+
+        res.status(200).json(events);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -47,38 +48,17 @@ const getEvent = async (req, res) => {
 
 // create a new event
 const createEvent = async (req, res) => {
-    const { title, date, duration, location, isRecurring, itsPomodoro, groupList, recurrencePattern, expectedPomodoro, currPomodoro } = req.body
     const { user } = req;
 
     // add document to DB
     try {
-        const event = await Event.create({
-            title, date, duration, location, isRecurring, itsPomodoro,
-            groupList: Array.isArray(groupList) ? groupList : [],
-            author: user.username,
-            recurrencePattern: isRecurring ? {
-                frequency: recurrencePattern.frequency,
-                endType: recurrencePattern.endType,
-                occurrences: recurrencePattern.endType === 'after' ? recurrencePattern.occurrences : undefined,
-                endDate: recurrencePattern.endType === 'until' ? recurrencePattern.endDate : undefined
-            } : undefined,
-            expectedPomodoro: itsPomodoro ? {
-                study: expectedPomodoro.study,
-                relax: expectedPomodoro.relax,
-                cycles: expectedPomodoro.cycles,
-            } : undefined,
-            currPomodoro: itsPomodoro ? {
-                study: currPomodoro.study,
-                relax: currPomodoro.relax,
-                cycles: currPomodoro.cycles,
-            } : undefined,
-            summed: false,
-        })
+        const event = await addEvent(req.body, user);
 
         console.log("new event: ", event);
         res.status(200).json(event)
     }
     catch (error) {
+        console.log("error while posting new event: ", error);
         res.status(400).json({ error: error.message })
     }
 }
@@ -103,69 +83,39 @@ const deleteEvent = async (req, res) => {
     }
 }
 
-// update an event grouplist
+// update an event
 const updateEvent = async (req, res) => {
     const { id } = req.params;
     const { user } = req;
 
+    console.log(req.body);
+
     if (!mongoose.Types.ObjectId.isValid(id)) {
-        return res.status(404).json({ error: 'No such event' })
+        return res.status(404).json({ error: 'ID not valid' })
     }
 
     try {
         const event = await Event.findById(id)
+
         if (!event) {
-            return res.status(404).json({ error: 'No such event' })
+            return res.status(404).json({ error: 'Event not found' })
         }
 
-        if (!event.groupList.includes(user.username)) {
-            return res.status(403).json({ error: 'Unauthorized' });
-        }
+        // Update grouplist first
         const updatedGroupList = event.groupList.filter(username => username !== user.username);
 
         const updatedEvent = await Event.findByIdAndUpdate(
             id,
-            { groupList: updatedGroupList },
+            { ...req.body, groupList: updatedGroupList },
             { new: true } // Restituisce il documento aggiornato
         );
+
 
         if (!updatedEvent) {
             return res.status(404).json({ error: 'No such event' });
         }
 
-        res.status(200).json(updatedEvent)
-    } catch (error) {
-        console.error("Error updating event:", error);
-        res.status(500).json({ error: 'Server error' });
-    }
-}
-
-// update an event grouplist
-const updatePomodoro = async (req, res) => {
-    const { event: newEvent } = req.body;
-
-    console.log("body of update Pomodoro", req.body);
-
-    if (!mongoose.Types.ObjectId.isValid(newEvent._id)) {
-        return res.status(404).json({ error: 'No such event' })
-    }
-
-    try {
-        const event = await Event.findById(newEvent._id)
-
-        if (!event) {
-            return res.status(404).json({ error: 'No such event' })
-        }
-
-        const updatedEvent = await Event.findByIdAndUpdate(
-            newEvent._id,
-            newEvent,
-            { new: true } // Restituisce il documento aggiornato
-        );
-
-        if (!updatedEvent) {
-            return res.status(404).json({ error: 'No such event' });
-        }
+        console.log("Updated Event: ", updatedEvent);
 
         res.status(200).json(updatedEvent)
     } catch (error) {
@@ -180,5 +130,4 @@ module.exports = {
     createEvent,
     deleteEvent,
     updateEvent,
-    updatePomodoro
 }

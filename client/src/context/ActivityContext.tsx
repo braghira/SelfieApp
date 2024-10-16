@@ -1,5 +1,5 @@
 import { ReactElement, createContext, useContext, useReducer } from "react";
-import { ActivityType, client_log } from "@/lib/utils";
+import { ActivityType } from "@/lib/utils";
 
 // update necessita di un oggetto singolo, non di un array
 type ActionType =
@@ -7,7 +7,6 @@ type ActionType =
   | { type: "CREATE_ACTIVITY"; payload: ActivityType[] }
   | { type: "DELETE_ACTIVITY"; payload: ActivityType[] }
   | { type: "UPDATE_ACTIVITY"; payload: ActivityType };
-
 
 export type ActivityContextType =
   | {
@@ -21,8 +20,6 @@ function activitiesReducer(
   state: ActivityType[],
   action: ActionType
 ): ActivityType[] {
-  client_log("state: ", state);
-  client_log("payload: ", action.payload);
   switch (action.type) {
     case "SET_ACTIVITIES":
       // potrebbero non esserci documenti nel database, in quel caso il backend restituisce un array vuoto
@@ -34,7 +31,8 @@ function activitiesReducer(
       return state.filter((activity) => activity._id !== action.payload[0]._id);
     case "UPDATE_ACTIVITY":
       return state.map((activity) =>
-        activity._id === action.payload._id ? action.payload : activity);
+        activity._id === action.payload._id ? action.payload : activity
+      );
     default:
       throw Error("action selected is not defined");
   }

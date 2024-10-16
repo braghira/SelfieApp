@@ -29,27 +29,37 @@ export default function EventDetails({
   setOpen,
 }: EventDetailsProps) {
   const { user } = useAuth();
-  const { deleteEvent, updateUserList } = useEventsApi();
+  const { deleteEvent, updateEvent } = useEventsApi();
   const { createTimer } = useTimer();
   const navigate = useNavigate();
 
   async function handleDelete() {
     if (user) {
       deleteEvent(event);
-      const notificationEventStatus = localStorage.getItem("notificationEventStatus");
+      const notificationEventStatus = localStorage.getItem(
+        "notificationEventStatus"
+      );
+
       if (notificationEventStatus) {
         const events = JSON.parse(notificationEventStatus);
-        
-        const updatedEvents = events.filter(
-          (notificationEvent: { id: string }) => notificationEvent.id !== event._id
-        );
-        localStorage.setItem("notificationEventStatus", JSON.stringify(updatedEvents));
+
+        if (Array.isArray(events)) {
+          const updatedEvents = events.filter(
+            (notificationEvent: { id: string }) =>
+              notificationEvent.id !== event._id
+          );
+
+          localStorage.setItem(
+            "notificationEventStatus",
+            JSON.stringify(updatedEvents)
+          );
+        }
+      }
     }
   }
-}
   async function handleUpdate() {
     if (user) {
-      await updateUserList(event);
+      await updateEvent(event);
       setOpen(false);
     }
   }
@@ -61,8 +71,8 @@ export default function EventDetails({
       event.currPomodoro?.cycles
     ) {
       const eventTimer = createTimer(
-        event.currPomodoro?.study,
-        event.currPomodoro?.relax,
+        event.currPomodoro?.study / 60000,
+        event.currPomodoro?.relax / 60000,
         event.currPomodoro?.cycles
       );
 
@@ -83,7 +93,7 @@ export default function EventDetails({
       title: event.title,
       location: event.location || "",
       start: new Date(event.date),
-      end: addDurationToDate(new Date(event.date), event.duration),
+      end: addDurationToDate(new Date(event.date), event.hours, event.minutes),
       ...(event.isRecurring && {
         recurrence: {
           frequency: upperCase || "",
@@ -95,9 +105,16 @@ export default function EventDetails({
       }),
     };
 
-    function addDurationToDate(date: Date, duration: number): Date {
+    function addDurationToDate(
+      date: Date,
+      hours: number,
+      minutes: number
+    ): Date {
       const endDate = new Date(date);
-      endDate.setHours(endDate.getHours() + duration);
+      endDate.setHours(
+        endDate.getHours() + hours,
+        endDate.getMinutes() + minutes
+      );
       return endDate;
     }
 
@@ -131,7 +148,7 @@ export default function EventDetails({
                   Study Time:{" "}
                   <span className="base-semibold">
                     {event.currPomodoro?.study
-                      ? event.currPomodoro.study
+                      ? event.currPomodoro.study / 60000
                       : "30"}{" "}
                     minutes
                   </span>
@@ -139,7 +156,9 @@ export default function EventDetails({
                 <div>
                   Relax Time:{" "}
                   <span className="base-semibold">
-                    {event.currPomodoro?.relax ? event.currPomodoro.relax : "5"}{" "}
+                    {event.currPomodoro?.relax
+                      ? event.currPomodoro.relax / 60000
+                      : "5"}{" "}
                     minutes
                   </span>
                 </div>
@@ -154,7 +173,9 @@ export default function EventDetails({
               <>
                 <div>
                   Duration:{" "}
-                  <span className="base-semibold">{event.duration} hours</span>
+                  <span className="base-semibold">
+                    {event.hours} h {event.minutes} m
+                  </span>
                 </div>
 
                 {event.location && (
@@ -201,17 +222,19 @@ export default function EventDetails({
                       </Button>
                     </div>
                   )}
-                  {event.groupList.length>0 && (
-                    <div>
-                      Shared with:{" "}
-                      <span className="base-semibold">{event.groupList.map((group, index) => (
-                          <span key={index}>
-                            {group}
-                            {index < event.groupList.length - 1 && ", "}
-                          </span>
-                      ))}</span>
-                    </div>
-                  )}
+                {event.groupList.length > 0 && (
+                  <div>
+                    Shared with:{" "}
+                    <span className="base-semibold">
+                      {event.groupList.map((group, index) => (
+                        <span key={index}>
+                          {group}
+                          {index < event.groupList.length - 1 && ", "}
+                        </span>
+                      ))}
+                    </span>
+                  </div>
+                )}
               </>
             )}
           </div>

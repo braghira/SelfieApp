@@ -31,7 +31,6 @@ type SessionType = z.infer<typeof SessionSchema>;
 
 export default function SessionForm({
   dispatch,
-  InitialTimer,
   setInitialTimer,
 }: SessionProps) {
   const form = useForm<SessionType>({
@@ -42,7 +41,7 @@ export default function SessionForm({
     },
   });
 
-  const [session, setSession] = useState<PomodoroType[]>([InitialTimer]);
+  const [session, setSession] = useState<PomodoroType[]>([]);
 
   function addToArray(newItem: PomodoroType) {
     setSession((prevArray) => {
@@ -215,7 +214,6 @@ export default function SessionForm({
               <Button
                 key={key}
                 type="button"
-                autoFocus
                 onClick={() => setPomodoro(timer)}
               >
                 {timer.study.initialValue / (1000 * 60)}/
