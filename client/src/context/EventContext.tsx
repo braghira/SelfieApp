@@ -1,12 +1,12 @@
 import { ReactElement, createContext, useContext, useReducer } from "react";
-import { EventType, client_log } from "@/lib/utils";
+import { EventType } from "@/lib/utils";
 
 // types for the reducer
-type ActionType = 
+type ActionType =
   | { type: "SET_EVENTS"; payload: EventType[] }
   | { type: "CREATE_EVENT"; payload: EventType[] }
   | { type: "DELETE_EVENT"; payload: EventType[] }
-  | { type: "UPDATE_EVENT"; payload: EventType }
+  | { type: "UPDATE_EVENT"; payload: EventType };
 
 export type EventContextType =
   | {
@@ -17,8 +17,6 @@ export type EventContextType =
 
 // definiamo qui le azioni possibili sul contesto
 function eventsReducer(state: EventType[], action: ActionType): EventType[] {
-  client_log("state: ", state);
-  client_log("payload: ", action.payload);
   switch (action.type) {
     case "SET_EVENTS":
       // potrebbero non esserci documenti nel database, in quel caso il backend restituisce un array vuoto

@@ -30,9 +30,6 @@ import { format } from "date-fns";
 import { useActivities } from "@/context/ActivityContext";
 import { useEvents } from "@/context/EventContext";
 import { useNoteContext } from "@/context/NoteContext";
-import useActivitiesApi from "@/hooks/useActivitiesApi";
-import useEventsApi from "@/hooks/useEventsApi";
-import useNotes from "@/hooks/useNote";
 import { useEffect, useState } from "react";
 import { DataTable } from "@/components/ui/data-table";
 import { ColumnDef, FilterFn, Row } from "@tanstack/react-table";
@@ -61,15 +58,15 @@ import { Label } from "@/components/ui/label";
 import { RadialPomodoroChart } from "@/components/dashboard/RadialPomodoroChart";
 import NoteCard from "@/components/editor/notecard";
 import SendMessage from "@/components/dashboard/SendMessage";
+import moment from "moment";
+import { useTimeMachineContext } from "@/context/TimeMachine";
 
 export default function Home() {
   const { events } = useEvents();
   const { notes } = useNoteContext();
   const { activities } = useActivities();
-  const { getEvents, getLastPomodoro } = useEventsApi();
+  const { currentDate } = useTimeMachineContext();
   const [pomodoroEvent, setPomodoroEvent] = useState<EventType | null>(null);
-  const { fetchNotes } = useNotes();
-  const { getActivities } = useActivitiesApi();
   const [pomodoroSwitch, setPomodoroSwitch] = useState(false);
   const [pomodoroProgress, setPomodoroProgress] = useState(0);
   const navigate = useNavigate();
@@ -322,41 +319,33 @@ export default function Home() {
   ];
 
   useEffect(() => {
-    async function getAll() {
-      // GET events, last note, activities and last pomodoro session
-      getEvents();
-      getActivities();
-      fetchNotes();
+    // Find pomodoro of the day with same session
+    const pomodoro = events.find(
+      (e) => moment(e.date).isBefore(currentDate, "day") && e.expiredPomodoro
+    );
 
-      const pomodoro = await getLastPomodoro();
-      if (pomodoro) {
-        setPomodoroEvent(pomodoro);
+    if (pomodoro) {
+      setPomodoroEvent(pomodoro);
 
-        const currTimerCycles = pomodoro.currPomodoro?.cycles;
-        const expectedTimerCycles = pomodoro.expectedPomodoro?.cycles;
+      const currTimerCycles = pomodoro.currPomodoro?.cycles;
+      const expectedTimerCycles = pomodoro.expectedPomodoro?.cycles;
 
-        console.log(
-          `curr cycles: ${currTimerCycles}, expected cycles: ${expectedTimerCycles}`
-        );
+      console.log(
+        `curr cycles: ${currTimerCycles}, expected cycles: ${expectedTimerCycles}`
+      );
 
-        let percentage = 0;
+      let percentage = 0;
 
-        if (
-          currTimerCycles !== undefined &&
-          expectedTimerCycles !== undefined
-        ) {
-          percentage =
-            (expectedTimerCycles - currTimerCycles) / expectedTimerCycles;
+      if (currTimerCycles !== undefined && expectedTimerCycles !== undefined) {
+        percentage =
+          (expectedTimerCycles - currTimerCycles) / expectedTimerCycles;
 
-          console.log(`cycles percentage: ${percentage}`);
+        console.log(`cycles percentage: ${percentage}`);
 
-          setPomodoroProgress(percentage);
-        }
+        setPomodoroProgress(percentage);
       }
     }
-
-    getAll();
-  }, []);
+  }, [events]);
 
   return (
     <>
@@ -395,7 +384,7 @@ export default function Home() {
                   <div className="flex flex-col justify-center items-center gap-2">
                     <div className="bg-primary h-[200px] w-[200px] md:h-[150px] md:w-[150px] rounded-full flex-center font-bold text-red-50">
                       {pomodoroEvent?.expectedPomodoro?.study &&
-                        pomodoroEvent?.expectedPomodoro?.study}
+                        pomodoroEvent?.expectedPomodoro?.study / 60000}
                       m
                     </div>
                     <Badge>Study</Badge>
@@ -403,7 +392,7 @@ export default function Home() {
                   <div className="flex flex-col justify-center items-center gap-2">
                     <div className="bg-yellow-600 h-[200px] w-[200px] md:h-[150px] md:w-[150px] rounded-full flex-center font-bold text-yellow-50">
                       {pomodoroEvent?.expectedPomodoro?.relax &&
-                        pomodoroEvent?.expectedPomodoro?.relax}
+                        pomodoroEvent?.expectedPomodoro?.relax / 60000}
                       m
                     </div>
                     <Badge className="bg-yellow-600">Relax</Badge>
@@ -433,9 +422,10 @@ export default function Home() {
                         {pomodoroEvent?.expectedPomodoro?.study &&
                           pomodoroEvent?.expectedPomodoro?.relax &&
                           pomodoroEvent?.expectedPomodoro?.cycles &&
-                          (pomodoroEvent?.expectedPomodoro?.study +
+                          ((pomodoroEvent?.expectedPomodoro?.study +
                             pomodoroEvent?.expectedPomodoro?.relax) *
-                            pomodoroEvent?.expectedPomodoro?.cycles}{" "}
+                            pomodoroEvent?.expectedPomodoro?.cycles) /
+                            60000}{" "}
                         m
                       </TableCell>
                     </TableRow>
@@ -449,9 +439,10 @@ export default function Home() {
                         {pomodoroEvent?.expectedPomodoro?.study &&
                           pomodoroEvent?.expectedPomodoro?.relax &&
                           pomodoroEvent?.expectedPomodoro?.cycles &&
-                          (pomodoroEvent?.expectedPomodoro?.study +
+                          ((pomodoroEvent?.expectedPomodoro?.study +
                             pomodoroEvent?.expectedPomodoro?.relax) *
-                            pomodoroEvent?.expectedPomodoro?.cycles}{" "}
+                            pomodoroEvent?.expectedPomodoro?.cycles) /
+                            60000}{" "}
                         m
                       </TableCell>
                     </TableRow>

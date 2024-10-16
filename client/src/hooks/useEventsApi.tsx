@@ -6,10 +6,6 @@ import { useEvents } from "@/context/EventContext";
 import { useTimeMachineContext } from "@/context/TimeMachine";
 import moment from "moment";
 
-interface PomodoroEvent extends EventType {
-  summed?: boolean;
-}
-
 export default function useEventsApi() {
   const { user } = useAuth();
   const private_api = useAxiosPrivate();
@@ -28,6 +24,11 @@ export default function useEventsApi() {
 
         if (parsed.success) {
           dispatch({ type: "SET_EVENTS", payload: parsed.data });
+          client_log("Time Machine Date: ", currentDate);
+
+          // Every time we get the new events, check if there are any expired pomodoro sessions
+          // Updates context and DB automatically, so it must be called after the dispatch of the events
+          await updatePomodoro(parsed.data);
         } else {
           console.error("Error parsing events:", parsed.error);
         }
@@ -50,18 +51,22 @@ export default function useEventsApi() {
   async function postEvent(event: EventType) {
     try {
       const response = await private_api.post("/api/events", event);
-      const parsed = EventSchema.safeParse(response.data);
 
-      console.log("EVENTO pom: ", event);
+      const parsed = EventSchema.safeParse(response.data);
 
       if (parsed.success) {
         dispatch({ type: "CREATE_EVENT", payload: [response.data] });
         client_log("new event added", response.data);
+
+        return parsed.data;
       } else {
         client_log("error while validating created event schema");
+        return undefined;
       }
     } catch (error) {
-      if (isAxiosError(error)) client_log("an error occurred: ", error.message);
+      if (isAxiosError(error))
+        client_log("an error occurred while posting event: ", error.message);
+      return undefined;
     }
   }
 
@@ -93,159 +98,108 @@ export default function useEventsApi() {
     }
   }
 
-  async function getPomodoroClosedEarly() {
-    const closedEarly = localStorage.getItem("closedEarly");
-    if (closedEarly) {
-      try {
-        const parsed = JSON.parse(closedEarly);
-        const { study, relax, cycles, isStudyCycle, totalTime } = parsed;
-        return {
-          studyInitialValue: study.initialValue,
-          studyValue: study.value,
-          relaxInitialValue: relax.initialValue,
-          relaxValue: relax.value,
-          cycles,
-          isStudyCycle,
-          totalTime,
-        };
-      } catch (error) {
-        console.error("Error parsing closedEarly from localStorage:", error);
+  /** TODO: Add a universal patch route and  */
+
+  /**
+   * Check every expired pomodoro event for incompleted cycles, if there are, add them to today's first pomodoro
+   * if there's one, if not create one with default session timers
+   * @param events just retrieved from server
+   */
+  async function updatePomodoro(events: EventType[]) {
+    let cycles_sum = 0;
+
+    events.forEach(async (e) => {
+      // late pomodoro event
+      if (
+        e.itsPomodoro &&
+        !e.expiredPomodoro &&
+        moment(e.date).isBefore(currentDate, "day") &&
+        e.currPomodoro?.cycles
+      ) {
+        // check for its unfinished cycles
+        cycles_sum += e.currPomodoro.cycles;
+        e.expiredPomodoro = true;
+        // Update event
+        await updateEvent(e);
+
+        client_log("update in foreach", cycles_sum);
       }
-    }
-    return null;
-  }
+    });
 
-  async function getLastPomodoro() {
-    try {
-      const response = await private_api.get("/api/events", {
-        headers: { Authorization: `Bearer ${user?.accessToken}` },
-      });
+    // Do something only if there are late incompleted cycles
+    if (cycles_sum > 0) {
+      // Now add the sum to the first pomodoro of the day, if there's none, create a new pomodoro event
+      let pomodoroExists = false;
 
-      if (response.status === 200) {
-        const json: EventType[] = response.data; // Assicurati che json sia un array di eventi
-        const parsed = EventSchema.array().safeParse(json);
+      for (const e of events) {
+        if (moment(e.date).isSame(currentDate, "day")) {
+          // Add the incompleted cycles to today's event
+          if (
+            e.expectedPomodoro?.cycles &&
+            e.currPomodoro?.cycles &&
+            !e.expiredPomodoro
+          ) {
+            e.expectedPomodoro.cycles += cycles_sum;
+            e.currPomodoro.cycles = e.expectedPomodoro.cycles;
 
-        if (parsed.success) {
-          if (parsed.data && parsed.data.length > 0) {
-            const today = moment(currentDate);
+            // Update event
+            await updateEvent(e);
 
-            // Trova l'ultimo evento pomodoro prima di oggi
-            const lastPomodoro: PomodoroEvent | undefined = parsed.data.find(
-              (event) =>
-                moment(event.date).isBefore(today, "day") && event.itsPomodoro
-            );
-
-            if (lastPomodoro?.currPomodoro?.cycles) {
-              if (lastPomodoro.currPomodoro.cycles > 0) {
-                // Trova l'evento di oggi
-                const todayEvent: PomodoroEvent | undefined = parsed.data.find(
-                  (event) =>
-                    moment(event.date).isSame(today, "day") && event.itsPomodoro
-                );
-
-                if (todayEvent) {
-                  // Somma i cicli solo se non è già stato sommato
-                  if (
-                    !todayEvent.summed &&
-                    todayEvent?.expectedPomodoro?.cycles
-                  ) {
-                    todayEvent.expectedPomodoro.cycles +=
-                      lastPomodoro.currPomodoro.cycles;
-                    todayEvent.summed = true; // Aggiungi un flag per prevenire la somma multipla
-                    updatePomodoro(todayEvent);
-                  }
-                } else {
-                  // Se non c'è un evento per oggi, creane uno nuovo
-                  const newEvent = {
-                    ...lastPomodoro,
-                    date: today.toISOString(),
-                    currPomodoro: {
-                      ...lastPomodoro.currPomodoro,
-                      cycles: lastPomodoro.currPomodoro.cycles,
-                    },
-                    itsPomodoro: true,
-                    summed: true, // Flag per indicare che i cicli sono stati sommati
-                  };
-                  postEvent(newEvent);
-                }
-              }
-              return lastPomodoro;
-            } else {
-              console.log("No previous pomodoro event found.");
-              return null;
-            }
+            pomodoroExists = true;
+            break; // Exit the loop early if we find a match
           }
-        } else {
-          console.error("Error parsing events:", parsed.error);
         }
-      } else {
-        console.error("Failed to fetch events:", response.statusText);
       }
-    } catch (error) {
-      if (isAxiosError(error)) {
-        console.error(
-          "An error occurred while fetching events:",
-          error.message
-        );
-      } else {
-        console.error("Uncaught error:", error);
+
+      client_log("pomodoro Exists: ", pomodoroExists);
+
+      if (!pomodoroExists) {
+        // create a new default session
+        const timer = {
+          study: 1800000,
+          relax: 300000,
+          cycles: cycles_sum,
+        };
+
+        const minutes = ((timer.study + timer.relax) * timer.cycles) / 60000;
+
+        const pomodoro: EventType = {
+          title: "Incompleted Pomodoro",
+          date: currentDate.toISOString(),
+          hours: 0,
+          minutes,
+          location: "",
+          isRecurring: false,
+          itsPomodoro: true,
+          expiredPomodoro: false,
+          expectedPomodoro: timer,
+          currPomodoro: timer,
+          groupList: [],
+        };
+
+        // POST this event to backend
+        await postEvent(pomodoro);
       }
     }
-    return null;
   }
 
-  async function updatePomodoro(event: EventType) {
+  async function updateEvent(event: EventType) {
     try {
-      const response = await private_api.patch(`/api/events/`, {
-        event,
+      const response = await private_api.patch(`/api/events/${event._id}`, {
+        ...event,
+        groupList: event.groupList.filter(
+          (username) => username !== user?.username
+        ),
       });
 
-      // should respond with updated pomodoro event
       const json = response.data;
       const parsed = EventSchema.safeParse(json);
 
       if (parsed.success) {
         // aggiorno lo stato globale con il nuovo evento modificato
         dispatch({ type: "UPDATE_EVENT", payload: parsed.data });
-        client_log("Pomodoro event updated");
 
-        await getEvents(); // forzo il refresh per la view calendario
-      } else {
-        client_log("Error while validating updated item schema");
-      }
-    } catch (error) {
-      if (isAxiosError(error)) {
-        client_log(
-          `Error during completion of item ${event._id}: ` + error.message,
-          error.response?.data
-        );
-      }
-    }
-  }
-
-  async function updateUserList(event: EventType) {
-    try {
-      const response = await private_api.patch(
-        `/api/events/${event._id}`,
-        {
-          groupList: event.groupList.filter(
-            (username) => username !== user?.username
-          ),
-        },
-        {
-          headers: { Authorization: `Bearer ${user?.accessToken}` },
-        }
-      );
-
-      const json = response.data;
-      const parsed = EventSchema.safeParse(json);
-
-      if (parsed.success) {
-        //aggiorno lo stato globale con il nuovo evento modificato
-        dispatch({ type: "UPDATE_EVENT", payload: parsed.data });
-        client_log("User successfully removed from groupList");
-
-        await getEvents(); // forzo il refresh per la view calendario
+        client_log("Event updated successfully");
       } else {
         client_log("Error while validating updated item schema");
       }
@@ -263,9 +217,7 @@ export default function useEventsApi() {
     getEvents,
     postEvent,
     deleteEvent,
-    getPomodoroClosedEarly,
-    getLastPomodoro,
-    updateUserList,
+    updateEvent,
     updatePomodoro,
   };
 }

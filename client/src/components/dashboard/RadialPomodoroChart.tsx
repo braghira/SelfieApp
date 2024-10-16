@@ -93,7 +93,6 @@ export function RadialPomodoroChart({ progress }: RadialPomodoroChartProps) {
         )}
         {progress < 1 && (
           <div className="font-medium">
-            You didn't complete last Pomodoro session. <br />
             <span className="text-destructive">
               All uncompleted cycles will be added to your next pomodoro
               session.
