@@ -57,6 +57,7 @@ export default function EventDetails({
       }
     }
   }
+}
   async function handleUpdate() {
     if (user) {
       await updateEvent(event);

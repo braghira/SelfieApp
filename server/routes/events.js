@@ -5,6 +5,7 @@ const {
   createEvent,
   deleteEvent,
   updateEvent,
+  updatePomodoro,
 } = require("../controllers/eventController");
 
 const router = express.Router();
@@ -22,5 +23,8 @@ router.delete("/:id", deleteEvent);
 
 // UPDATE an event
 router.patch("/:id", updateEvent);
+
+// UPDATE a pomodoro event
+router.patch("/", updatePomodoro);
 
 module.exports = router;

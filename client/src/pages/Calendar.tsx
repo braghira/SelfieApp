@@ -65,6 +65,7 @@ export default function CalendarPage() {
   const [selectedEvent, setSelectedEvent] = useState<EventType | null>(null);
   const [isEventDetailsOpen, setIsEventDetailsOpen] = useState(false);
   const { currentDate } = useTimeMachineContext();
+  
   //  console.log(isEventDetailsOpen);
 
   useEffect(() => {

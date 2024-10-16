@@ -124,10 +124,45 @@ const updateEvent = async (req, res) => {
     }
 }
 
+// update an event grouplist
+const updatePomodoro = async (req, res) => {
+    const { event: newEvent } = req.body;
+
+    console.log("body of update Pomodoro", req.body);
+
+    if (!mongoose.Types.ObjectId.isValid(newEvent._id)) {
+        return res.status(404).json({ error: 'No such event' })
+    }
+
+    try {
+        const event = await Event.findById(newEvent._id)
+
+        if (!event) {
+            return res.status(404).json({ error: 'No such event' })
+        }
+
+        const updatedEvent = await Event.findByIdAndUpdate(
+            newEvent._id,
+            newEvent,
+            { new: true } // Restituisce il documento aggiornato
+        );
+
+        if (!updatedEvent) {
+            return res.status(404).json({ error: 'No such event' });
+        }
+
+        res.status(200).json(updatedEvent)
+    } catch (error) {
+        console.error("Error updating event:", error);
+        res.status(500).json({ error: 'Server error' });
+    }
+}
+
 module.exports = {
     getEvents,
     getEvent,
     createEvent,
     deleteEvent,
     updateEvent,
+    updatePomodoro
 }
