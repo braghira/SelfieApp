@@ -10,6 +10,7 @@ const recurrencePatternSchema = z.object({
 });
 export type RecurrenceType = z.infer<typeof recurrencePatternSchema>;
 
+/** study and relax timer are in milliseconds */
 const PomodoroSchema = z.object({
   study: z.number().optional(),
   relax: z.number().optional(),
@@ -19,17 +20,22 @@ const PomodoroSchema = z.object({
 export const EventSchema = z.object({
   title: z.string().min(2, "Title must be at least 2 characters").max(20),
   date: z.string(),
-  duration: z.number().nonnegative(),
-  location: z.string().optional(),
   isRecurring: z.boolean(),
-  itsPomodoro: z.boolean(),
-  groupList: z.string().array().optional().default([]),
+  location: z.string().optional(),
   author: z.string().optional(),
   recurrencePattern: recurrencePatternSchema.optional(),
-  _id: z.string().optional(),
-  createdAt: z.string().optional(),
+  // hours and minutes will be calculated based on total pomodoro session time
+  hours: z.number().nonnegative(),
+  minutes: z.number().nonnegative(),
+  // this field is exclusive to normal events
+  groupList: z.string().array().optional().default([]),
+  // If it's a pomodoro event, add these 3 fields
+  itsPomodoro: z.boolean(),
   currPomodoro: PomodoroSchema.optional(),
   expectedPomodoro: PomodoroSchema.optional(),
+  expiredPomodoro: z.boolean(),
+  createdAt: z.string().optional(),
+  _id: z.string().optional(),
 });
 export type EventType = z.infer<typeof EventSchema>;
 

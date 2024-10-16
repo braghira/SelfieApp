@@ -31,16 +31,19 @@ import useEventsApi from "@/hooks/useEventsApi";
 import { useEvents } from "@/context/EventContext";
 import { useTimeMachineContext } from "@/context/TimeMachine";
 import moment from "moment";
-import { EventType } from "@/lib/utils";
+import { client_log, EventType } from "@/lib/utils";
 
 export default function Pomodoro() {
   const { RequestPushSub, sendNotification } = usePushNotification();
   const { user } = useAuth();
-  const [open, setOpen] = useState(false);
   const { events } = useEvents();
-  const { getEvents, postEvent, updatePomodoro } = useEventsApi();
+  const { postEvent, updateEvent } = useEventsApi();
   const { timer, dispatch, InitialTimer, setInitialTimer } = useTimer();
   const { currentDate } = useTimeMachineContext();
+  const [open, setOpen] = useState(false);
+  const [session, setPomodoroSession] = useState<EventType | undefined>(
+    undefined
+  );
 
   // Block navigating elsewhere when data has been entered into the input
   const shouldBlock = useCallback<BlockerFunction>(
@@ -58,7 +61,7 @@ export default function Pomodoro() {
   );
   const timeDiff = useRef(timer.study.value);
 
-  function start() {
+  async function start() {
     // Set the initial timer correctly in case we didn't set the pomodoro session with the forms
     setInitialTimer(timer);
 
@@ -67,43 +70,65 @@ export default function Pomodoro() {
       payload: null,
     });
 
-    let todayEvent = null;
-    // create new pomodoro event if today there were none
-    if (events && events.length > 0) {
-      const today = moment(currentDate);
-      todayEvent = events.find(
-        (event) => moment(event.date).isSame(today, "day") && event.itsPomodoro
-      );
-    }
+    // Find pomodoro of the day with same session
+    let todaysPomodoro = events.find(
+      (e) =>
+        moment(e.date).isSame(currentDate, "day") &&
+        e.currPomodoro?.study === timer.study.initialValue &&
+        e.currPomodoro?.relax === timer.relax.initialValue &&
+        !e.expiredPomodoro
+    );
 
     const pomodoro = {
-      study: timer.study.initialValue / (1000 * 60),
-      relax: timer.relax.initialValue / (1000 * 60),
+      study: timer.study.initialValue,
+      relax: timer.relax.initialValue,
       cycles: timer.cycles,
     };
+    // Minutes for pomodoro event
+    const mins = Math.floor(timer.totalTime / 60000);
 
-    if (!todayEvent) {
+    if (!todaysPomodoro) {
       const newPomodoroEvent: EventType = {
         itsPomodoro: true,
-        date: currentDate.toDateString(),
-        duration: 1,
+        date: currentDate.toISOString(),
+        hours: 0,
+        minutes: mins,
         isRecurring: false,
         title: "Pomodoro",
         currPomodoro: pomodoro,
         expectedPomodoro: pomodoro,
         groupList: [],
+        expiredPomodoro: false,
       };
       // crea il nuovo evento pomodoro di oggi
-      postEvent(newPomodoroEvent);
+      todaysPomodoro = await postEvent(newPomodoroEvent);
     }
+
+    // Todays Pomodoro exists but number of cycles of selected session is greater
+    if (
+      todaysPomodoro?.expectedPomodoro?.cycles &&
+      todaysPomodoro?.currPomodoro?.cycles &&
+      timer.cycles > todaysPomodoro.expectedPomodoro?.cycles
+    ) {
+      // Add leftover cycles to todays pomodoro
+      todaysPomodoro.currPomodoro.cycles +=
+        timer.cycles - todaysPomodoro.expectedPomodoro.cycles;
+      todaysPomodoro.expectedPomodoro.cycles = timer.cycles;
+
+      await updateEvent(todaysPomodoro);
+    }
+
+    setPomodoroSession(todaysPomodoro);
+
+    client_log("Pomodoro: ", todaysPomodoro);
   }
 
   function reset() {
-    console.log("reset");
     dispatch({
       type: "SET",
       payload: InitialTimer,
     });
+    setPomodoroSession(undefined);
   }
 
   function restartStudy() {
@@ -184,12 +209,6 @@ export default function Pomodoro() {
   }
 
   useEffect(() => {
-    if (user) {
-      getEvents();
-    }
-  }, [dispatch, user]);
-
-  useEffect(() => {
     if (blocker.state === "blocked") {
       setOpen(true);
     }
@@ -209,8 +228,16 @@ export default function Pomodoro() {
       RequestPushSub(() => sendNotification(userID, payload));
   }, [timer.isStudyCycle]);
 
-  // send a notification when session is finished
+  // Session FINISHED
   useEffect(() => {
+    // UPDATE todays pomodoro cycles
+    if (session?._id && session?.currPomodoro?.cycles) {
+      session.currPomodoro.cycles = timer.cycles;
+      updateEvent(session);
+
+      console.log("cycles: ", timer.cycles);
+    }
+
     const payload: NotificationPayload = {
       title: "Pomodoro Timer",
       body: "Pomodoro session finished! Wheew",
@@ -219,29 +246,10 @@ export default function Pomodoro() {
 
     const userID = user?._id;
 
-    if (userID && timer.totalTime === 0 && timer.relax.started) {
-      // Update today's pomodoro event
-      let todayEvent = null;
-
-      console.log("EHI");
-
-      // create new pomodoro event if today there were none
-      if (events && events.length > 0) {
-        const today = moment(currentDate);
-        todayEvent = events.find(
-          (event) =>
-            moment(event.date).isSame(today, "day") && event.itsPomodoro
-        );
-      }
-
-      if (todayEvent?.currPomodoro) {
-        todayEvent.currPomodoro.cycles = 0;
-        updatePomodoro(todayEvent);
-      }
-
+    if (userID && timer.cycles === 0 && timer.relax.started) {
       RequestPushSub(() => sendNotification(userID, payload));
     }
-  }, [timer.totalTime]);
+  }, [timer.cycles]);
 
   return (
     <div className="view-container flex justify-center flex-col gap-5 md:flex-row sm:items-center mb-10">
@@ -376,6 +384,7 @@ export default function Pomodoro() {
         </div>
       </div>
 
+      {/* Forms */}
       {!timer.study.started && (
         <PomodoroForm
           timer={timer}
@@ -385,6 +394,7 @@ export default function Pomodoro() {
         />
       )}
 
+      {/* Dialog Window */}
       <AlertDialog open={open} onOpenChange={setOpen}>
         <AlertDialogTrigger></AlertDialogTrigger>
         <AlertDialogContent>
@@ -406,24 +416,6 @@ export default function Pomodoro() {
             <AlertDialogAction
               onClick={() => {
                 if (blocker.state === "blocked") {
-                  // Update today's pomodoro event
-                  let todayEvent = null;
-
-                  // create new pomodoro event if today there were none
-                  if (events && events.length > 0) {
-                    const today = moment(currentDate);
-                    todayEvent = events.find(
-                      (event) =>
-                        moment(event.date).isSame(today, "day") &&
-                        event.itsPomodoro
-                    );
-                  }
-
-                  if (todayEvent?.currPomodoro) {
-                    todayEvent.currPomodoro.cycles = timer.cycles;
-                    updatePomodoro(todayEvent);
-                  }
-
                   localStorage.removeItem("pomodoro_timer");
                   blocker.proceed();
                 }

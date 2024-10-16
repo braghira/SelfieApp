@@ -6,6 +6,9 @@ export type TimerType = {
   started: boolean;
 };
 
+/**
+ * study and relax timer are in milliseconds
+ */
 export type PomodoroType = {
   study: TimerType;
   relax: TimerType;

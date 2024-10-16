@@ -1,10 +1,9 @@
 import { useAuth } from "@/context/AuthContext";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import useAxiosPrivate from "./useAxiosPrivate";
 import { client_log, getPushSub } from "@/lib/utils";
 import { usePushContext } from "@/context/NotificationContext";
-import { PomodoroType, useTimer } from "./useTimer";
-import { useNavigate } from "react-router-dom";
+import { PomodoroType } from "./useTimer";
 
 export type NotificationPayload = {
   title: string; // notification title
@@ -17,11 +16,9 @@ export default function usePushNotification() {
   const [sendLoading, setSendLoading] = useState(false);
   const [subLoading, setSubLoading] = useState(false);
   const [unsubLoading, setUnsubLoading] = useState(false);
-  const { dispatch: timerDispatch } = useTimer();
   const private_api = useAxiosPrivate();
   const { user } = useAuth();
   const { dispatch } = usePushContext();
-  const navigate = useNavigate();
 
   const notificationsSupported = () =>
     "Notification" in window &&
@@ -34,35 +31,6 @@ export default function usePushNotification() {
   async function registerServiceWorker() {
     return navigator.serviceWorker.register("/service-worker.js");
   }
-
-  // receive the clicked message and redirect the user based on the url provided
-  useEffect(() => {
-    if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.addEventListener("message", (event) => {
-        const { url, pomodoro } = event.data;
-        client_log(
-          `Message from service worker: ${url}, ${JSON.stringify(pomodoro)}`
-        );
-
-        // Gestione del payload pomodoro
-        if (pomodoro) {
-          try {
-            // Verifica se pomodoro è una stringa, se no lo converte
-            const parsedPomodoro =
-              typeof pomodoro === "string" ? JSON.parse(pomodoro) : pomodoro;
-
-            // sets the localstorage with the shared pomodoro
-            const new_timer: PomodoroType = parsedPomodoro;
-            timerDispatch({ type: "SET", payload: new_timer });
-          } catch (error) {
-            console.error("Failed to parse pomodoro:", error);
-          }
-        }
-
-        navigate(url);
-      });
-    }
-  }, []);
 
   /**
    * Deletes all service workers
