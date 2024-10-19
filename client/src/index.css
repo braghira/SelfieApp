@@ -84,7 +84,7 @@
     @apply bg-background text-foreground font-sans overflow-x-hidden;
   }
   nav {
-    @apply w-screen sm:h-[--navbar-h];
+    @apply w-screen md:h-[--navbar-h];
   }
   p {
     @apply small-regular sm:base-regular;
@@ -196,7 +196,11 @@
   }
 
   .view-container {
-    @apply container mb-14 pb-5 w-screen overflow-x-hidden md:pt-5 md:mt-0;
+    @apply container mb-16 pb-5 w-screen overflow-x-hidden pt-5 md:mt-0;
+  }
+
+  .settings-container {
+    @apply container mb-14 w-screen max-w-screen-2xl overflow-x-hidden pt-5 md:mt-0;
   }
 
   .logo-wrapper {
@@ -397,7 +401,7 @@
   @apply font-semibold uppercase;
 }
 
-.rbc-date-cell.rbc-now.rbc-current{
+.rbc-date-cell.rbc-now.rbc-current {
   @apply text-black;
 }
 @keyframes rotate {
@@ -414,7 +418,7 @@
 }
 
 .rbc-month-row {
-  min-height: 100px; 
+  min-height: 100px;
 }
 
 @media (max-width: 640px) {

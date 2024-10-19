@@ -1,9 +1,14 @@
 const express = require("express");
+const multer = require("multer");
 const {
   getMediaById,
   deleteMediaById,
   addNewMedia,
 } = require("../controllers/mediaController");
+
+// Multer setup to save file into RAM
+const storage = multer.memoryStorage();
+const upload = multer({ storage });
 
 const router = express.Router();
 
@@ -11,7 +16,7 @@ const router = express.Router();
 router.get("/:id", getMediaById);
 
 // POST single media
-router.post("/", addNewMedia);
+router.post("/", upload.single("data"), addNewMedia);
 
 // DELETE single media by id
 router.delete("/:id", deleteMediaById);

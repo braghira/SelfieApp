@@ -34,16 +34,16 @@ const userSchema = new mongoose.Schema({
 
 const User = mongoose.model("User", userSchema);
 
-// signup validation
-async function validateSignup(
-  username,
-  password,
-  email,
-  name,
-  surname,
-  birthday
-) {
-  // validation
+/**
+ * Thorws an error when one of the parameters is either undefined or not valid
+ * @param {String} username 
+ * @param {String} password 
+ * @param {String} name 
+ * @param {String} surname 
+ * @param {String} email 
+ * @param {String} birthday 
+ */
+function validation(username, password, name, surname, email, birthday) {
   if (!username || !password) {
     throw Error("Username and Password required");
   }
@@ -66,6 +66,19 @@ async function validateSignup(
     console.log(birthday);
     throw Error("Date not valid");
   }
+}
+
+// signup validation
+async function validateSignup(
+  username,
+  password,
+  email,
+  name,
+  surname,
+  birthday
+) {
+
+  validation(username, password, name, surname, email, birthday);
 
   // check if username already exists
   const exists = await User.findOne({ username });
@@ -113,4 +126,41 @@ async function validateLogin(username, password) {
   return user;
 }
 
-module.exports = { User, validateLogin, validateSignup };
+// updates a single User
+async function updateProfile(
+  username,
+  email,
+  name,
+  surname,
+  birthday,
+  profilePic,
+  _id
+) {
+  const profilePicID = profilePic.split("media/")[1];
+
+  if (!mongoose.isValidObjectId(_id)) {
+    throw Error("Object ID not valid");
+  }
+
+  console.log({ username, email, name, surname, birthday, ProfilePicID: profilePicID });
+
+  // Find the user, then update single fields one by one
+  const user = await User.findById(_id);
+
+  const newData = {
+    username: username ? username : user.username,
+    email: validator.isEmail(email) ? email : user.email,
+    name: validator.isAlpha(name) ? name : user.name,
+    surname: validator.isAlpha(name) ? surname : user.surname,
+    birthday: validator.isDate(new Date(birthday).toISOString().split("T")[0]) ? birthday : user.birthday,
+    profilePic: mongoose.isValidObjectId(profilePicID) ? profilePicID : user.profilePic,
+  }
+
+  const updatedUser = await User.findByIdAndUpdate(_id, { ...newData }, { new: true });
+
+  console.log(updatedUser);
+
+  return updatedUser;
+}
+
+module.exports = { User, validateLogin, validateSignup, updateProfile };

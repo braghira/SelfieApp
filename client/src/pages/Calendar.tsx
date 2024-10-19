@@ -65,7 +65,7 @@ export default function CalendarPage() {
   const [selectedEvent, setSelectedEvent] = useState<EventType | null>(null);
   const [isEventDetailsOpen, setIsEventDetailsOpen] = useState(false);
   const { currentDate } = useTimeMachineContext();
-  
+
   //  console.log(isEventDetailsOpen);
 
   useEffect(() => {
@@ -345,7 +345,7 @@ export default function CalendarPage() {
   }, [currentDate]);
 
   return (
-    <div className="container mb-12 mt-6">
+    <div className="view-container">
       <div id="event-details-container">
         {selectedEvent && (
           <EventDetails

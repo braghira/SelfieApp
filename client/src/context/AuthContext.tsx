@@ -35,6 +35,8 @@ export type AuthContextType =
 function authReducer(state: AuthType, action: AuthActionType): AuthType {
   switch (action.type) {
     case "LOGIN":
+      if (action.payload?.birthday)
+        action.payload.birthday = new Date(action.payload?.birthday);
       return action.payload;
     case "LOGOUT":
       return undefined;

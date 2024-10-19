@@ -6,7 +6,7 @@ import {
   CommandList,
   CommandSeparator,
 } from "@/components/ui/command";
-import { SendIcon } from "lucide-react";
+import { SendIcon, XIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import { UserType } from "@/lib/utils";
@@ -37,13 +37,6 @@ const FormSchema = z.object({
   }),
 });
 
-/**
- * Invia facilmente al backend sia richieste che notifiche
- * - [x] Form per cercare utenti da aggiungere alla lista degli amici
- * - [x] Ad ogni digitazione nell'input di ricerca viene fatta una fetch degli utenti che contengono il valore del campo nello username
- * - [ ] Vengono consigliati utenti sotto alla barra in base al contenuto del campo, e sono cliccabili per un autocompletamento
- * - [x] Gli utenti selezionati vengono mostrati sotto alla barra di ricerca
- */
 export default function SendMessage() {
   const [open, setOpen] = useState(false);
   const [fetchedUsers, setFetchedUsers] = useState<UserType[]>([]);
@@ -134,6 +127,11 @@ export default function SendMessage() {
     }
   }, [open]);
 
+  function removeSelection(user: UserType) {
+    const newSelection = selectedUsers.filter((u) => u !== user);
+    setSelectedUsers(newSelection);
+  }
+
   return (
     <>
       <Button
@@ -173,7 +171,15 @@ export default function SendMessage() {
 
         <div className="grid grid-cols-4 gap-2 m-1">
           {selectedUsers.map((user) => (
-            <Badge className="flex-center">{user.username}</Badge>
+            <>
+              <Badge className="flex justify-between">
+                {user.username}
+                <XIcon
+                  className="h-4 hover:cursor-pointer"
+                  onClick={() => removeSelection(user)}
+                />
+              </Badge>
+            </>
           ))}
         </div>
 
