@@ -73,9 +73,7 @@ export default function useEventsApi() {
   // DELETE a single provided event
   async function deleteEvent(event: EventType) {
     try {
-      const response = await private_api.delete(`/api/events/${event._id}`, {
-        headers: { Authorization: `Bearer ${user?.accessToken}` },
-      });
+      const response = await private_api.delete(`/api/events/${event._id}`);
 
       const json = response.data;
 

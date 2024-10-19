@@ -1,8 +1,11 @@
 const path = require("path");
 const Media = require("../models/mediaModel");
 const fs = require("fs");
+const validator = require("validator");
 
-/** @returns the default profile picture id */
+/** 
+ * @returns the default profile picture id 
+ */
 async function getDefaultPic() {
   const defaultImagePath = path.resolve(
     __dirname,
@@ -21,18 +24,32 @@ async function getDefaultPic() {
   return defaultProfilePic._id;
 }
 
-async function addNewMedia(req, res) {
-  const { data, mimetype, name } = req.body;
+const addNewMedia = async (req, res) => {
+  const file = req.file; // Il file caricato sarà disponibile qui
 
-  const media = await Media.create({
-    data,
-    mimetype,
-    name,
-  });
+  console.log("File received: ", file);
 
-  res.set("Content-Type", media.mimeType);
-  res.send(media.data);
-}
+  try {
+    if (!file || !file.originalname || !validator.isMimeType(file.mimetype)) {
+      throw Error("File is not valid");
+    }
+
+    // Crea il media salvando il buffer nel database
+    const media = await Media.create({
+      data: file.buffer, // Il file caricato è in formato buffer
+      mimetype: file.mimetype,
+      name: file.originalname,
+    });
+
+    console.log("Media ID: ", media._id);
+
+    // Restituisci l'ID del media salvato
+    res.status(200).json(media._id);
+  } catch (error) {
+    console.log(error);
+    res.status(400).json({ error });
+  }
+};
 
 async function deleteMediaById(req, res) {
   await Media.findByIdAndDelete(req.params.id);

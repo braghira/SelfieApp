@@ -11,18 +11,13 @@ import { ModeToggle } from "./dashboard/ModeToggle";
 import { Button } from "./ui/button";
 import useLogout from "@/hooks/useLogout";
 import { useAuth } from "@/context/AuthContext";
-import Loader from "./Loader";
-import { Bell } from "lucide-react";
 import usePushNotification from "@/hooks/usePushNotification";
-import { usePushContext } from "@/context/NotificationContext";
 import { useNavigate } from "react-router-dom";
 
 export default function SideSheet() {
   const { logout } = useLogout();
-  const { RequestPushSub, subscribe, unsubscribe, subLoading, unsubLoading } =
-    usePushNotification();
+  usePushNotification();
   const { user } = useAuth();
-  const { subscription } = usePushContext();
   const navigate = useNavigate();
 
   return (
@@ -33,63 +28,47 @@ export default function SideSheet() {
 
       <SheetContent className="w-60 sm:w-[20rem]" side={"right"}>
         <SheetHeader className="mb-5">
-          <SheetTitle>{`${user?.name} ${user?.surname}`}</SheetTitle>
-          <SheetDescription>
-            <Button
-              variant="link"
-              onClick={() => navigate("/editprofile")}
-            >
-              Change account settings
-            </Button>
-          </SheetDescription>
+          <SheetTitle className="flex flex-column items-center gap-1">
+            {`${user?.name} ${user?.surname}`}
+          </SheetTitle>
+
+          <SheetDescription>{user?.username}</SheetDescription>
         </SheetHeader>
 
         <div className="h-full flex flex-col items-start justify-between">
-          <div className="flex flex-col items-start gap-2">
-            <ModeToggle isIcon={false} />
+          <div className="w-full flex flex-col items-start gap-2">
+            <Button
+              variant="link"
+              className="w-full justify-start border-b-2 border-primary rounded-none"
+              onClick={() => navigate("/settings/profile")}
+            >
+              Profile
+            </Button>
 
-            {subscription ? (
-              <Button
-                disabled={unsubLoading}
-                className="bg-blue-900 hover:bg-blue-800"
-                onClick={() => {
-                  if (user?._id) unsubscribe(user?._id);
-                }}
-              >
-                {unsubLoading ? (
-                  <Loader />
-                ) : (
-                  <div className="flex gap-1">
-                    <Bell /> Unsubscribe
-                  </div>
-                )}
-              </Button>
-            ) : (
-              <Button
-                disabled={subLoading}
-                className="bg-blue-900 hover:bg-blue-800"
-                onClick={async () => {
-                  if (user?._id) RequestPushSub(() => subscribe(user._id));
-                }}
-              >
-                {subLoading ? (
-                  <Loader />
-                ) : (
-                  <div className="flex gap-1">
-                    <Bell /> Subscribe
-                  </div>
-                )}
-              </Button>
-            )}
+            <Button
+              variant="link"
+              className="w-full justify-start border-b-2 border-primary rounded-none"
+              onClick={() => navigate("/settings/account")}
+            >
+              Account
+            </Button>
+
+            <Button
+              variant="link"
+              className="w-full justify-start border-b-2 border-primary rounded-none"
+              onClick={() => navigate("/settings/takeaselfie")}
+            >
+              Take a Selfie!
+            </Button>
           </div>
 
-          <Button
-            className="mb-20"
-            variant="destructive"
-            onClick={() => logout()}
-          >
-            Logout
-          </Button>
+          <div className="flex w-full items-center justify-between mb-20">
+            <Button className="" variant="destructive" onClick={() => logout()}>
+              Logout
+            </Button>
+
+            <ModeToggle isIcon={true} />
+          </div>
         </div>
       </SheetContent>
     </Sheet>

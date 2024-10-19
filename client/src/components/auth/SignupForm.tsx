@@ -12,7 +12,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+import { Input, PasswordInput } from "@/components/ui/input";
 import { UserType, UserSchema } from "@/lib/utils";
 // images
 import Loader from "@/components/Loader";
@@ -119,7 +119,7 @@ export default function SignupForm() {
               <FormItem>
                 <FormLabel>Password</FormLabel>
                 <FormControl>
-                  <Input type="password" {...field} />
+                  <PasswordInput {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -150,9 +150,18 @@ export default function SignupForm() {
               </FormItem>
             )}
           />
+
+          {/* Server errors */}
+          {form.formState.errors.root && (
+            <div className="text-sm font-medium text-destructive space-y-2">
+              {form.formState.errors.root.serverError.message}
+            </div>
+          )}
+
           <Button type="submit" className="mt-4">
             {form.formState.isSubmitting ? <Loader /> : "Sign Up"}
           </Button>
+
           <p className="text-center mt-4">
             Already have an account?
             <NavLink to="/login" className="text-primary ml-2 hover:underline">

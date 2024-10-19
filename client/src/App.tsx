@@ -19,8 +19,10 @@ import AuthLayout from "./layouts/AuthLayout";
 import Pomodoro from "./pages/Pomodoro";
 import Notes from "./pages/Notes";
 import Editor from "./pages/Editor";
-import Editprofile from "./pages/Editprofile";
-
+import Profile from "./pages/Profile";
+import SettingsLayout from "./layouts/SettingsLayout";
+import Account from "./pages/Account";
+import TakeASelfie from "./pages/TakeASelfie";
 
 // Per come è impostata la nostra app tutte le route devono stare dentro ad una route che fa da
 // padre a tutte le altre senza aggiungere layout o path
@@ -30,12 +32,19 @@ const router = createBrowserRouter(
       <Route path="/" element={<WelcomePage />} />
       <Route element={<ProtectedRoutes />}>
         <Route element={<DashboardLayout />}>
+          {/* App Views */}
           <Route path="/home" element={<Home />} />
           <Route path="/pomodoro" element={<Pomodoro />} />
           <Route path="/calendar" element={<Calendar />} />
           <Route path="/notes" element={<Notes />} />
           <Route path="/editor/:id?" element={<Editor />} />
-          <Route path="/editprofile" element={<Editprofile />} />
+
+          {/* Settings Pages */}
+          <Route path="/settings" element={<SettingsLayout />}>
+            <Route path="/settings/profile" element={<Profile />} />
+            <Route path="/settings/account" element={<Account />} />
+            <Route path="/settings/takeaselfie" element={<TakeASelfie />} />
+          </Route>
         </Route>
       </Route>
       <Route element={<AuthLayout />}>

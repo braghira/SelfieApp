@@ -1,4 +1,3 @@
-import useEventsApi from "@/hooks/useEventsApi";
 import React, {
   PropsWithChildren,
   createContext,

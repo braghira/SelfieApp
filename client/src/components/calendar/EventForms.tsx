@@ -211,9 +211,7 @@ export default function EventForm() {
       }
     }
 
-    postEvent(event, (err) => {
-      form.setError("root.serverError", { message: err });
-    });
+    postEvent(event);
 
     setSelectedTimer(null);
     setSession([]);

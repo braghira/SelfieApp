@@ -88,7 +88,7 @@ function HomeNote() {
   };
 
   return (
-    <div className="home-note p-4">
+    <div className="view-container p-4">
       <div className="flex justify-start items-center space-x-2 mb-4">
         <Button
           onClick={handleCreateNewNote}
@@ -148,7 +148,9 @@ function HomeNote() {
         <Button
           onClick={toggleShowOwnNotes}
           aria-label={
-            showOnlyOwnNotes ? "Mostra tutte le note" : "Mostra solo le tue note"
+            showOnlyOwnNotes
+              ? "Mostra tutte le note"
+              : "Mostra solo le tue note"
           }
           className="p-2 sm:p-4"
         >

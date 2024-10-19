@@ -66,7 +66,6 @@ const loginUser = async (req, res) => {
  * Responds with the username and the access token
  */
 const signupUser = async (req, res) => {
-  // this will change when we'll modify the user schema
   const { username, password, email, name, surname, birthday } = req.body;
 
   try {
