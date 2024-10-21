@@ -58,7 +58,7 @@ export default function SideSheet() {
               className="w-full justify-start border-b-2 border-primary rounded-none"
               onClick={() => navigate("/settings/takeaselfie")}
             >
-              Take a Selfie!
+              Take a Selfie
             </Button>
           </div>
 

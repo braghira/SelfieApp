@@ -169,7 +169,11 @@ export default function Profile() {
             </div>
           )}
 
-          <Button type="submit" className="mt-4 w-32" aria-label="Save Changes">
+          <Button
+            type="submit"
+            className="mt-4 sm:w-fit"
+            aria-label="Save Changes"
+          >
             {form.formState.isSubmitting ? <Loader /> : "Save Changes"}
           </Button>
         </form>

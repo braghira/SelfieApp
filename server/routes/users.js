@@ -1,6 +1,6 @@
 const express = require("express");
 const { requireAuth } = require("../middleware/authentication");
-const { getMatchingUsers, getUser, patchProfile, patchPic } = require("../controllers/userController");
+const { getMatchingUsers, getUser, patchProfile, patchAccount } = require("../controllers/userController");
 
 const router = express.Router();
 
@@ -17,5 +17,6 @@ router.get("/single/:string", getUser);
 router.patch("/profile", patchProfile);
 
 // PATCH account
+router.patch("/account", patchAccount);
 
 module.exports = router;

@@ -74,9 +74,7 @@ export default function TakeASelfie() {
       await updateProfile(updatedValues, (err) => {
         form.setError("root.serverError", { message: err });
       });
-    }
-
-    form.setError("root.serverError", { message: "No file Selected" });
+    } else form.setError("root.serverError", { message: "No file Selected" });
   }
 
   return (
@@ -110,14 +108,14 @@ export default function TakeASelfie() {
         >
           <FormItem>
             <FormLabel className="text-gray-800 dark:text-gray-100">
-              Profile Picture
+              Select a Profile Pic
             </FormLabel>
             <FormControl>
               <Input
                 type="file"
                 onChange={(e) => setProfileImage(e.target.files?.[0] || null)}
                 aria-label="Profile Picture"
-                className="text-sm md:text-base"
+                className="text-sm md:text-base file:text-foreground"
               />
             </FormControl>
           </FormItem>
@@ -131,7 +129,7 @@ export default function TakeASelfie() {
 
           <Button
             type="submit"
-            className="mt-4 w-full md:w-auto"
+            className="mt-4 sm:w-fit"
             aria-label="Save Changes"
           >
             {form.formState.isSubmitting ? <Loader /> : "Save Changes"}

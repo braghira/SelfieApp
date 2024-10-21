@@ -79,11 +79,7 @@ const TimeMachinePopup = () => {
         </Button>
       </DialogTrigger>
 
-      <DialogContent
-        className="bg-white dark:bg-black text-black dark:text-white p-6 rounded-xl border-lime-500 border-2 shadow-lg max-w-md"
-        aria-labelledby="time-machine-dialog-title"
-        aria-describedby="time-machine-dialog-description"
-      >
+      <DialogContent className="bg-white dark:bg-black text-black dark:text-white p-6 rounded-xl border-lime-500 border-2 shadow-lg max-w-md">
         <DialogHeader>
           <DialogTitle
             id="time-machine-dialog-title"

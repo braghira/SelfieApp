@@ -224,7 +224,12 @@ export default function Pomodoro() {
 
     const userID = user?._id;
 
-    if (userID && timer.study.started && timer.relax.started)
+    if (
+      userID &&
+      timer.study.started &&
+      timer.relax.started &&
+      timer.cycles > 0
+    )
       RequestPushSub(() => sendNotification(userID, payload));
   }, [timer.isStudyCycle]);
 
@@ -373,6 +378,58 @@ export default function Pomodoro() {
                   <Button
                     onClick={() => {
                       dispatch({ type: "SKIPCYCLE", payload: null });
+                      remainder.current = (timer.study.initialValue / 1000) % 5;
+                      repetitions.current =
+                        (timer.study.initialValue / 1000 - remainder.current) /
+                        10;
+                      timeDiff.current = timer.study.initialValue;
+
+                      const pulse1 = document.getElementById("pulse1");
+                      if (pulse1) {
+                        pulse1.style.animation = "none";
+                        pulse1.offsetHeight; // read-only property to trigger a reflow
+                        pulse1.style.animation = "";
+                        pulse1.style.animationIterationCount = `${repetitions.current}`;
+                        pulse1.style.animationPlayState = timer.study.started
+                          ? "running"
+                          : "paused";
+                      }
+
+                      const pulse2 = document.getElementById("pulse2");
+                      if (pulse2) {
+                        pulse2.style.animation = "none";
+                        pulse2.offsetHeight; // read-only property to trigger a reflow
+                        pulse2.style.animation = "";
+                        pulse2.style.animationIterationCount = `${repetitions.current}`;
+                        pulse2.style.animationPlayState = timer.study.started
+                          ? "running"
+                          : "paused";
+                      }
+
+                      const progressbar = document.getElementById("progbar");
+                      if (progressbar) {
+                        progressbar.style.animation = "none";
+                        progressbar.offsetHeight; // read-only property to trigger a reflow
+                        progressbar.style.animation = "";
+                        progressbar.style.animationDuration = `${timeDiff.current}ms`;
+                        progressbar.style.animationIterationCount = "1";
+                        progressbar.style.animationPlayState = timer.study
+                          .started
+                          ? "running"
+                          : "paused";
+                      }
+
+                      const orbit = document.getElementById("orbit");
+                      if (orbit) {
+                        orbit.style.animation = "none";
+                        orbit.offsetHeight; // read-only property to trigger a reflow
+                        orbit.style.animation = "";
+                        orbit.style.animationDuration = `${timeDiff.current}ms`;
+                        orbit.style.animationIterationCount = "1";
+                        orbit.style.animationPlayState = timer.study.started
+                          ? "running"
+                          : "paused";
+                      }
                     }}
                   >
                     <ChevronLast />

@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Controller, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -9,110 +9,93 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { UserType, UserSchema } from "@/lib/utils";
+import { Input, PasswordInput } from "@/components/ui/input";
 import Loader from "@/components/Loader";
-import { useNavigate } from "react-router-dom";
-import { parseISO } from "date-fns";
-import { useState, useEffect } from "react";
-import useAxiosPrivate from "@/hooks/useAxiosPrivate";
 import { useAuth } from "@/context/AuthContext";
-import { isAxiosError } from "axios";
 import { Separator } from "@/components/ui/separator";
+import { Switch } from "@/components/ui/switch";
+import { usePushContext } from "@/context/NotificationContext";
+import usePushNotification from "@/hooks/usePushNotification";
+import { useEffect, useState } from "react";
+import useUpdateAccount from "@/hooks/useUpdateAccount";
+import { AccountSchema, AccountType } from "@/lib/utils";
 
 export default function Account() {
-  const navigate = useNavigate();
-  const [profileImage, setProfileImage] = useState<File | null>(null);
-  const private_api = useAxiosPrivate();
   const { user } = useAuth();
+  const { RequestPushSub, subscribe, unsubscribe } = usePushNotification();
+  const { subscription } = usePushContext();
+  const { updateAccount } = useUpdateAccount();
+  const [isSubscribed, setIsSub] = useState(false);
 
-  const form = useForm<UserType>({
-    resolver: zodResolver(UserSchema),
-    defaultValues: {
-      name: "",
-      surname: "",
-      email: "",
-      username: "",
-      birthday: new Date(),
-      profilePic: "", // Immagine profilo dell'utente
-    },
+  const form = useForm<AccountType>({
+    resolver: zodResolver(AccountSchema),
+    defaultValues: { currPassword: "", newPassword: "", confirmPassword: "" },
   });
 
+  async function onSubmit(values: AccountType) {
+    await updateAccount(values, (err) => {
+      form.setError("root.serverError", { message: err });
+    });
+  }
+
   useEffect(() => {
-    form.reset(user); // Precompila i campi con i dati utente
-    console.log(user);
-  }, [form]);
-
-  async function uploadProfileImage(file: File) {
-    const formData = new FormData();
-
-    // Converti il file in un formato compatibile
-    formData.append("data", file); // Il file sarà automaticamente convertito in un buffer dal backend
-    formData.append("name", file.name); // Nome del file
-    formData.append("mimetype", file.type); // Tipo MIME del file
-
-    try {
-      const response = await private_api.post("/api/media/", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data", // Importante per inviare il FormData
-        },
-      });
-
-      if (response.status === 200) {
-        console.log("New media ID: ", response.data);
-        return response.data; // Restituisce l'ID del media salvato
-      }
-    } catch (error) {
-      if (isAxiosError(error))
-        console.error("Errore nel caricamento dell'immagine: ", error.message);
-    }
-  }
-
-  async function onSubmit(values: UserType) {
-    try {
-      const updatedValues = { ...values };
-
-      if (profileImage) {
-        const profilePicId = await uploadProfileImage(profileImage);
-        updatedValues.profilePic = profilePicId;
-      }
-
-      await private_api.patch("/auth/signup", updatedValues);
-
-      navigate("/home");
-    } catch (error) {
-      form.setError("root.serverError", { message: (error as Error).message });
-    }
-  }
+    if (subscription) setIsSub(true);
+    else setIsSub(false);
+  }, [subscription]);
 
   return (
     <>
       <h3 className="text-lg font-medium">Account</h3>
       <p className="text-sm text-muted-foreground">
-        Manage your account settings and set Push Notifications preferences.
+        Change your Password and set Push Notifications preferences.
       </p>
 
       <Separator className="my-4" />
 
+      <div className="flex flex-row items-center justify-between rounded-lg border p-4 mb-5">
+        <div className="space-y-0.5">
+          <div className="font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-base">
+            Push Notifications
+          </div>
+          <p className="text-sm text-muted-foreground">
+            Enable to subscribe to Push notifications. If disabled, many
+            features of this app will not work properly.
+          </p>
+        </div>
+        <Switch
+          checked={isSubscribed}
+          onCheckedChange={() => {
+            if (subscription && user?._id) {
+              unsubscribe(user?._id);
+              setIsSub(false);
+            } else if (user?._id) {
+              RequestPushSub(() => subscribe(user._id));
+              setIsSub(true);
+            }
+          }}
+        />
+      </div>
+
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
-          className="flex flex-col gap-4 w-full"
+          className="flex flex-col space-y-4 w-full"
         >
-          <div className="flex flex-col md:flex-row gap-4">
+          <h3 className="mb-4 text-lg font-medium">Change Password</h3>
+
+          <div className="space-y-4">
             <FormField
               control={form.control}
-              name="name"
+              name="currPassword"
               render={({ field }) => (
                 <FormItem className="w-full md:w-1/2">
                   <FormLabel className="text-gray-800 dark:text-gray-100">
-                    Name
+                    Current Password
                   </FormLabel>
                   <FormControl>
-                    <Input
-                      type="text"
+                    <PasswordInput
                       {...field}
-                      aria-label="Name"
+                      aria-label="Current Password"
                       className="text-sm md:text-base"
                     />
                   </FormControl>
@@ -120,19 +103,40 @@ export default function Account() {
                 </FormItem>
               )}
             />
+
             <FormField
               control={form.control}
-              name="surname"
+              name="newPassword"
               render={({ field }) => (
                 <FormItem className="w-full md:w-1/2">
                   <FormLabel className="text-gray-800 dark:text-gray-100">
-                    Surname
+                    New Password
+                  </FormLabel>
+                  <FormControl>
+                    <PasswordInput
+                      {...field}
+                      aria-label="New Password"
+                      className="text-sm md:text-base"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="confirmPassword"
+              render={({ field }) => (
+                <FormItem className="w-full md:w-1/2">
+                  <FormLabel className="text-gray-800 dark:text-gray-100">
+                    Confirm New Password
                   </FormLabel>
                   <FormControl>
                     <Input
-                      type="text"
+                      type="password"
                       {...field}
-                      aria-label="Surname"
+                      aria-label="Current Password"
                       className="text-sm md:text-base"
                     />
                   </FormControl>
@@ -142,111 +146,19 @@ export default function Account() {
             />
           </div>
 
-          <FormField
-            control={form.control}
-            name="email"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-gray-800 dark:text-gray-100">
-                  Email
-                </FormLabel>
-                <FormControl>
-                  <Input
-                    type="email"
-                    {...field}
-                    aria-label="Email"
-                    className="text-sm md:text-base"
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="birthday"
-            render={() => (
-              <FormItem>
-                <FormLabel className="text-gray-800 dark:text-gray-100">
-                  Date of Birth
-                </FormLabel>
-                <FormControl>
-                  <Controller
-                    name="birthday"
-                    control={form.control}
-                    render={({ field }) => (
-                      <Input
-                        type="date"
-                        value={field.value?.toISOString().split("T")[0] || ""}
-                        onChange={(e) =>
-                          field.onChange(parseISO(e.target.value))
-                        }
-                        aria-label="Date of Birth"
-                        className="text-sm md:text-base"
-                      />
-                    )}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormItem>
-            <FormLabel className="text-gray-800 dark:text-gray-100">
-              Profile Picture
-            </FormLabel>
-            <FormControl>
-              <Input
-                type="file"
-                onChange={(e) => setProfileImage(e.target.files?.[0] || null)}
-                aria-label="Profile Picture"
-                className="text-sm md:text-base"
-              />
-            </FormControl>
-          </FormItem>
-
-          {/* {subscription ? (
-              <Button
-                disabled={unsubLoading}
-                className="bg-blue-900 hover:bg-blue-800"
-                onClick={() => {
-                  if (user?._id) unsubscribe(user?._id);
-                }}
-              >
-                {unsubLoading ? (
-                  <Loader />
-                ) : (
-                  <div className="flex gap-1">
-                    <Bell /> Unsubscribe
-                  </div>
-                )}
-              </Button>
-            ) : (
-              <Button
-                disabled={subLoading}
-                className="bg-blue-900 hover:bg-blue-800"
-                onClick={async () => {
-                  if (user?._id) RequestPushSub(() => subscribe(user._id));
-                }}
-              >
-                {subLoading ? (
-                  <Loader />
-                ) : (
-                  <div className="flex gap-1">
-                    <Bell /> Subscribe
-                  </div>
-                )}
-              </Button>
-            )} */}
+          {/* Server errors */}
+          {form.formState.errors.root && (
+            <div className="text-sm font-medium text-destructive space-y-2">
+              {form.formState.errors.root.serverError.message}
+            </div>
+          )}
 
           <Button
             type="submit"
-            className="mt-4 w-full md:w-auto"
+            className="mt-4 sm:w-fit"
             aria-label="Save Changes"
           >
-            {form.formState.isSubmitting ? <Loader /> : "Save Changes"}
+            {form.formState.isSubmitting ? <Loader /> : "Change Password"}
           </Button>
         </form>
       </Form>
