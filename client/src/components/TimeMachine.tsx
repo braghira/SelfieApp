@@ -12,10 +12,14 @@ import { Label } from "./ui/label";
 import { useTimeMachineContext } from "@/context/TimeMachine";
 import { format } from "date-fns";
 import useEventsApi from "@/hooks/useEventsApi";
+import useNotes from "@/hooks/useNote";
+import useActivitiesApi from "@/hooks/useActivitiesApi";
 
 const TimeMachinePopup = () => {
   const { currentDate, dispatch } = useTimeMachineContext();
   const { getEvents } = useEventsApi();
+  const { fetchNotes } = useNotes();
+  const { getActivities } = useActivitiesApi();
   const [days, setDays] = useState(0);
   const [hours, setHours] = useState(0);
   const [months, setMonths] = useState(0);
@@ -45,7 +49,11 @@ const TimeMachinePopup = () => {
 
   useEffect(() => {
     if (shouldFetch) {
+      // Update all contexts
       getEvents();
+      getActivities();
+      fetchNotes();
+
       setShouldFetch(false);
     }
   }, [currentDate]);

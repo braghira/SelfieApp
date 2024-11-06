@@ -4,7 +4,7 @@ import moment from "moment";
 import EventForm from "@/components/calendar/EventForms";
 import EventDetails from "@/components/calendar/EventDetails";
 import ActivityForm from "@/components/calendar/ActivityForms";
-import ActivityList from "@/components/calendar/ActivityList";
+import ActivityTable from "@/components/ActivityList";
 import { useEvents } from "@/context/EventContext";
 import { useActivities } from "@/context/ActivityContext";
 import { useAuth } from "@/context/AuthContext";
@@ -366,7 +366,7 @@ export default function CalendarPage() {
           onSelectEvent={handleSelected}
           getNow={() => moment(currentDate).toDate()}
         />
-        <div className="hidden lg:block">{activities && <ActivityList />}</div>
+        <div className="hidden lg:block">{activities && <ActivityTable />}</div>
       </div>
       <div className="hidden md:flex flex-col items-center gap-4 mt-8 md:flex-row md:justify-around">
         <EventForm />
@@ -395,7 +395,7 @@ export default function CalendarPage() {
       <div className="lg:hidden">
         {activeView === "eventForm" && <EventForm />}
         {activeView === "activityForm" && <ActivityForm />}
-        {activeView === "activityList" && activities && <ActivityList />}
+        {activeView === "activityList" && activities && <ActivityTable />}
       </div>
     </div>
   );
