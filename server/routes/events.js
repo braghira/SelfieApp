@@ -9,6 +9,7 @@ const {
 } = require("../controllers/eventController");
 
 const router = express.Router();
+
 // protect these routes with our middleware
 router.use(requireAuth);
 

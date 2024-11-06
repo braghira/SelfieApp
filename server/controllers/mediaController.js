@@ -16,7 +16,7 @@ async function getDefaultPic() {
   const imageData = fs.readFileSync(defaultImagePath);
 
   const defaultProfilePic = await Media.create({
-    name: "default-profile-pic.jpg",
+    name: "default_profile_pic.jpg",
     mimeType: "image/png",
     data: imageData,
   });

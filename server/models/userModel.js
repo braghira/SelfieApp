@@ -15,21 +15,15 @@ const userSchema = new mongoose.Schema({
   },
   name: String,
   surname: String,
-  pushSubscriptions: [
-    {
-      endpoint: { type: String, required: true },
-      keys: {
-        p256dh: { type: String, required: true },
-        auth: { type: String, required: true }
-      }
-    }
-  ],
   email: {
     type: String,
     unique: true, // le email devono essere uniche
   },
-  profilePic: { type: mongoose.Schema.Types.ObjectId, ref: "Media", required: true },
   birthday: Date,
+  profilePic: { type: mongoose.Schema.Types.ObjectId, ref: "Media", required: true },
+  pushSubscriptions: [
+    { type: mongoose.Schema.Types.ObjectId, ref: "PushSub", default: [] }
+  ],
 });
 
 const User = mongoose.model("User", userSchema);
@@ -99,6 +93,7 @@ async function validateSignup(
     surname,
     profilePic: await getDefaultPic(),
     birthday,
+    pushSubscriptions: [],
   });
 
   return user;

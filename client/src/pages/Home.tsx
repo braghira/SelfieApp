@@ -354,7 +354,7 @@ export default function Home() {
         <SendMessage />
       </div>
 
-      <div className="view-container grid grid-cols-1 md:grid-rows-3 md:grid-cols-2 gap-5">
+      <div className="view-container grid grid-cols-1 md:grid-rows-2 md:grid-cols-2 gap-5">
         <div className="row-span-1">
           <Card className="bg-background h-full">
             <CardHeader>
@@ -492,7 +492,7 @@ export default function Home() {
           </Card>
         </div>
 
-        <div className="row-span-2">
+        <div className="row-span-1">
           <Card className="bg-background">
             <CardHeader>
               <CardTitle>Events</CardTitle>
@@ -510,7 +510,7 @@ export default function Home() {
           </Card>
         </div>
 
-        <div className="row-span-2">
+        <div className="row-span-1">
           <Card className="bg-background">
             <CardHeader>
               <CardTitle>Activities</CardTitle>

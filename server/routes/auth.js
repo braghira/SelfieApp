@@ -5,9 +5,6 @@ const {
   signupUser,
   refreshToken,
   logoutUser,
-  subscribe,
-  unsubscribe,
-  sendNotification
 } = require("../controllers/authController");
 const { loginLimiter } = require("../middleware/authentication");
 
@@ -22,14 +19,5 @@ router.get("/refresh", refreshToken);
 
 // logout user
 router.post("/logout", logoutUser);
-
-// subscribe a new device
-router.post("/subscribe", subscribe);
-
-// unsubscribe a device
-router.post("/unsubscribe", unsubscribe);
-
-// send notification to all of user's devices
-router.post("/sendNotification", sendNotification);
 
 module.exports = router;

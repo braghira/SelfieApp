@@ -22,7 +22,8 @@ import { AccountSchema, AccountType } from "@/lib/utils";
 
 export default function Account() {
   const { user } = useAuth();
-  const { RequestPushSub, subscribe, unsubscribe } = usePushNotification();
+  const { RequestPushSub, subscribe, unsubscribe, subLoading, unsubLoading } =
+    usePushNotification();
   const { subscription } = usePushContext();
   const { updateAccount } = useUpdateAccount();
   const [isSubscribed, setIsSub] = useState(false);
@@ -39,6 +40,7 @@ export default function Account() {
   }
 
   useEffect(() => {
+    console.log(subscription);
     if (subscription) setIsSub(true);
     else setIsSub(false);
   }, [subscription]);
@@ -64,13 +66,12 @@ export default function Account() {
         </div>
         <Switch
           checked={isSubscribed}
+          disabled={subLoading || unsubLoading}
           onCheckedChange={() => {
             if (subscription && user?._id) {
               unsubscribe(user?._id);
-              setIsSub(false);
             } else if (user?._id) {
               RequestPushSub(() => subscribe(user._id));
-              setIsSub(true);
             }
           }}
         />
