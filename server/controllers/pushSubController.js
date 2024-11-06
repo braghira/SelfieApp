@@ -137,24 +137,18 @@ const sendNotification = async (req, res) => {
         // cicle through all of this user's subscriptions
         const promises = user.pushSubscriptions.map(async (subscription) => {
             try {
-                const result = await webpush.sendNotification(subscription, payload);
-
-                console.log("sendNotification status code: ", result.statusCode);
+                await webpush.sendNotification(subscription, payload);
+            } catch (err) {
+                console.log("sendNotification status code: ", err.statusCode);
                 console.log("Subscription: ", subscription)
 
-                if (result.statusCode === 410 || result.statusCode === 404 || !subscription) {
-                    console.log("Subscription has expired or is no longer valid: ", result.statusCode);
+                if (err.statusCode === 410 || err.statusCode === 404 || !subscription) {
+                    console.log("Subscription has expired or is no longer valid: ", err.statusCode);
 
                     // Rimuovi la sottoscrizione scaduta o non valida
                     user.pushSubscriptions = user.pushSubscriptions.filter(sub => sub._id !== subscription._id);
                     await PushSub.findByIdAndDelete(subscription._id); // Rimuovi anche dal DB
                 }
-            } catch (err) {
-                console.error("Push notification error: ", err);
-
-                // Rimuovi la sottoscrizione scaduta o non valida
-                user.pushSubscriptions = user.pushSubscriptions.filter(sub => sub._id !== subscription._id);
-                await PushSub.findByIdAndDelete(subscription._id); // Rimuovi anche dal DB in caso di errore
             }
         });
 
