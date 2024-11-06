@@ -12,25 +12,33 @@ async function subscribe(req, res) {
         // Valida il formato della sottoscrizione
         validate(subscription);
 
-        // Trova l'utente
-        const user = await User.findById(_id);
+        // Trova l'utente e popola le sottoscrizioni
+        const user = await User.findById(_id).populate("pushSubscriptions");
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
 
-        console.log("Sub: ", subscription);
+        // Check if the subscription already exists based on endpoint
+        const subExists = user.pushSubscriptions.some(
+            sub => sub.endpoint === subscription.endpoint
+        );
 
-        // Create new subscription
-        const newSub = await PushSub.create(subscription);
-        user.pushSubscriptions.push(newSub._id);
-        await user.save();
+        if (subExists) {
+            res.status(202).json({ message: "Already subscribed" });
+        } else {
+            // Crea una nuova sottoscrizione e aggiungila all'utente
+            const newSub = await PushSub.create(subscription);
+            user.pushSubscriptions.push(newSub._id);
+            await user.save();
 
-        res.status(201).json({ message: 'Subscribed successfully' });
+            res.status(201).json({ message: 'Subscribed successfully' });
+        }
     } catch (error) {
         console.error('Subscription error:', error);
         res.status(500).json({ message: error.message });
     }
 }
+
 
 /**
 * @param req body needs user ID and unique device endpoint
@@ -66,40 +74,40 @@ async function unsubscribe(req, res) {
     }
 }
 
-/**
- * Sends a notification to all of user's subs checking its validity. If sub isn't valid anymore, remove it from DB
- * 
- * @param {import('mongoose').Document & {username: string, password: string, name?: string, surname?: string, email?: string, birthday?: Date, profilePic: import('mongoose').Types.ObjectId, pushSubscriptions: import('mongoose').Types.ObjectId[]}} user - Documento utente.
- * @param {{title: string, body: string, url: string, pomodoro}} payload
- * @returns {Promise<void>[]}
- */
-async function handleSubscriptions(user, payload) {
-    const promises = user.pushSubscriptions.map(async (subscription) => {
-        try {
-            const result = await webpush.sendNotification(subscription, payload);
 
-            console.log("send push status code: ", result.statusCode);
+async function cleanInvalidSubscriptions(userId) {
+    try {
+        // Trova l'utente e popola le sottoscrizioni
+        const user = await User.findById(userId).populate("pushSubscriptions").exec();
 
-            if (result.statusCode === 410 || result.statusCode === 404) {
-                console.log("Subscription has expired or is no longer valid: ", result.statusCode);
+        console.log("User after population, while removing invalid subs: ", user);
 
-                // Rimuovi la sottoscrizione scaduta o non valida
-                user.pushSubscriptions = user.pushSubscriptions.filter(sub => sub.endpoint !== subscription.endpoint);
-                User.findByIdAndDelete(user._id, { ...user });
-
-                await PushSub.findByIdAndDelete(subscription._id); // Rimuovi anche dal DB
-            }
-        } catch (err) {
-            console.error("Push notification error: ", err);
-
-            user.pushSubscriptions = user.pushSubscriptions.filter(sub => sub.endpoint !== subscription.endpoint);
-            User.findByIdAndDelete(user._id, { ...user });
-
-            await PushSub.findByIdAndDelete(subscription._id); // Rimuovi anche dal DB in caso di errore
+        if (!user) {
+            throw Error("User not found while removing invalid subscriptions");
         }
-    })
 
-    return promises;
+        // Filtra le sottoscrizioni non popolati correttamente (null)
+        const validSubscriptions = user.pushSubscriptions.filter(sub => sub !== null);
+
+        // Trova gli ID delle sottoscrizioni non valide (null)
+        const invalidSubIds = user.pushSubscriptions
+            .filter(sub => sub === null)
+            .map(sub => sub._id);
+
+        // Se ci sono sottoscrizioni invalide, aggiorna l'array e rimuovi dalla collezione PushSub
+        if (invalidSubIds.length > 0) {
+            user.pushSubscriptions = validSubscriptions;
+            await user.save();
+
+            // Elimina le sottoscrizioni non valide dalla collezione PushSub
+            await PushSub.deleteMany({ _id: { $in: invalidSubIds } });
+            console.log('Removed invalid subscriptions from user and PushSub collection');
+        } else {
+            console.log('All subscriptions are valid');
+        }
+    } catch (error) {
+        console.error('Error while cleaning invalid subscriptions:', error);
+    }
 }
 
 /**
@@ -111,10 +119,6 @@ const sendNotification = async (req, res) => {
     try {
         // Take the subscriptions of _id User
         const user = await User.findById(_id).populate("pushSubscriptions");
-
-        const subscriptions = user.pushSubscriptions;
-
-        user.depopulate();
 
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
@@ -128,16 +132,17 @@ const sendNotification = async (req, res) => {
         });
 
         console.log("Payload: ", payload);
-        console.log("subscriptions: ", subscriptions);
+        console.log("subscriptions: ", user.pushSubscriptions);
 
         // cicle through all of this user's subscriptions
-        const promises = subscriptions.map(async (subscription) => {
+        const promises = user.pushSubscriptions.map(async (subscription) => {
             try {
                 const result = await webpush.sendNotification(subscription, payload);
 
                 console.log("sendNotification status code: ", result.statusCode);
+                console.log("Subscription: ", subscription)
 
-                if (result.statusCode === 410 || result.statusCode === 404) {
+                if (result.statusCode === 410 || result.statusCode === 404 || !subscription) {
                     console.log("Subscription has expired or is no longer valid: ", result.statusCode);
 
                     // Rimuovi la sottoscrizione scaduta o non valida
@@ -155,6 +160,8 @@ const sendNotification = async (req, res) => {
 
         // wait for all promises to resolve
         await Promise.all(promises);
+
+        await user.save();
 
         if (promises.length === 0) {
             res.status(202).json({ message: "No subscriptions for this user" });
