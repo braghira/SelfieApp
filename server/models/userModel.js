@@ -15,10 +15,6 @@ const userSchema = new mongoose.Schema({
   },
   name: String,
   surname: String,
-  email: {
-    type: String,
-    unique: true, // le email devono essere uniche
-  },
   birthday: Date,
   profilePic: { type: mongoose.Schema.Types.ObjectId, ref: "Media", required: true },
   pushSubscriptions: [
@@ -34,10 +30,9 @@ const User = mongoose.model("User", userSchema);
  * @param {String} password 
  * @param {String} name 
  * @param {String} surname 
- * @param {String} email 
  * @param {String} birthday 
  */
-function validation(username, password, name, surname, email, birthday) {
+function validation(username, password, name, surname, birthday) {
   if (!username || !password) {
     throw Error("Username and Password required");
   }
@@ -47,18 +42,12 @@ function validation(username, password, name, surname, email, birthday) {
   if (surname && !validator.isAlpha(surname)) {
     throw Error("Real surname not valid");
   }
-  if (!validator.isStrongPassword(password)) {
-    throw Error("Password not strong enough");
-  }
-  if (email && !validator.isEmail(email)) {
-    throw Error("Email not valid");
-  }
   if (
     birthday &&
     !validator.isDate(new Date(birthday).toISOString().split("T")[0])
   ) {
     console.log(birthday);
-    throw Error("Date not valid");
+    throw Error("Date of Birth not valid");
   }
 }
 
@@ -66,13 +55,12 @@ function validation(username, password, name, surname, email, birthday) {
 async function validateSignup(
   username,
   password,
-  email,
   name,
   surname,
   birthday
 ) {
 
-  validation(username, password, name, surname, email, birthday);
+  validation(username, password, name, surname, birthday);
 
   // check if username already exists
   const exists = await User.findOne({ username });
@@ -88,7 +76,6 @@ async function validateSignup(
   const user = await User.create({
     username,
     password: hash,
-    email,
     name,
     surname,
     profilePic: await getDefaultPic(),
@@ -124,7 +111,6 @@ async function validateLogin(username, password) {
 // updates a single User
 async function updateProfile(
   username,
-  email,
   name,
   surname,
   birthday,
@@ -138,9 +124,6 @@ async function updateProfile(
   }
   if (surname && !validator.isAlpha(surname)) {
     throw Error("Real surname not valid");
-  }
-  if (email && !validator.isEmail(email)) {
-    throw Error("Email not valid");
   }
   if (
     birthday &&
@@ -156,14 +139,13 @@ async function updateProfile(
     throw Error("Object ID not valid");
   }
 
-  console.log({ username, email, name, surname, birthday, profilePicID });
+  console.log({ username, name, surname, birthday, profilePicID });
 
   // Find the user, then update single fields one by one
   const user = await User.findById(_id);
 
   const newData = {
     username: username,
-    email: email,
     name: name,
     surname: surname,
     birthday: birthday,

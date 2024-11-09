@@ -58,7 +58,6 @@ export const UserSchema = z.object({
   password: z
     .string()
     .min(8, { message: "Password must be at least 8 characters." }),
-  email: z.string().email().optional(),
   name: z.string().trim().optional(),
   surname: z.string().trim().optional(),
   birthday: z.date().optional(),

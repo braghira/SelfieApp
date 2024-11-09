@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const Note = require('../models/noteModels');
+const { Note } = require('../models/noteModels');
 
 // Recupera tutte le note, filtrando in base all'accesso
 const getNotes = async (req, res) => {

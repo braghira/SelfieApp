@@ -1,38 +1,39 @@
-const Activity = require('../models/activityModel')
+const { Activity } = require('../models/activityModel')
 const mongoose = require('mongoose')
 
 // get all activities
-const getActivities = async(req, res) => {
+const getActivities = async (req, res) => {
     const { user } = req;
     try {
         const activities = await Activity.find({
             $or: [
                 { author: user.username },
                 { groupList: { $in: [user.username] } }
-              ]}).sort({createdAt: -1})
+            ]
+        }).sort({ createdAt: -1 })
 
         res.status(200).json(activities)
     } catch (error) {
         res.status(500).json({ error: error.message });
-  }
+    }
 }
 
 // get a single activity
-const getActivity = async(req, res) => {
-    const {id} = req.params;
+const getActivity = async (req, res) => {
+    const { id } = req.params;
     const { user } = req;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-        return res.status(404).json({error: 'No such activity'})
+        return res.status(404).json({ error: 'No such activity' })
     }
 
     try {
         const activity = await Activity.findById(id)
 
         if (!activity) {
-            return res.status(404).json({error: 'No such activity'});
+            return res.status(404).json({ error: 'No such activity' });
         }
-            // Controlla i permessi di accesso
+        // Controlla i permessi di accesso
         if (
             (activity.author !== user.username) && (!activity.groupList.includes(user.username))
         ) {
@@ -42,7 +43,7 @@ const getActivity = async(req, res) => {
         res.status(200).json(activity)
     } catch (error) {
         res.status(500).json({ error: error.message });
-  }
+    }
 }
 
 // create a new activity
@@ -66,14 +67,14 @@ const deleteActivity = async (req, res) => {
     const { user } = req;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-        return res.status(404).json({error: 'No such activity'})
+        return res.status(404).json({ error: 'No such activity' })
     }
 
     try {
-        const activity = await Activity.findOneAndDelete({_id: id, author: user.username })
-        
+        const activity = await Activity.findOneAndDelete({ _id: id, author: user.username })
+
         if (!activity) {
-            return res.status(404).json({error: 'No such activity or unauthorized'})
+            return res.status(404).json({ error: 'No such activity or unauthorized' })
         }
 
         res.status(200).json(activity)
@@ -95,7 +96,7 @@ const updateActivity = async (req, res) => {
     try {
         // Find and update the activity
         const updatedActivity = await Activity.findByIdAndUpdate(
-            { _id: id, author: user.username},
+            { _id: id, author: user.username },
             { completed },
             { new: true } // Return the updated document
         );

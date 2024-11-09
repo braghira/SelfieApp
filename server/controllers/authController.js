@@ -65,13 +65,12 @@ const loginUser = async (req, res) => {
  * Responds with the username and the access token
  */
 const signupUser = async (req, res) => {
-  const { username, password, email, name, surname, birthday } = req.body;
+  const { username, password, name, surname, birthday } = req.body;
 
   try {
     const user = await validateSignup(
       username,
       password,
-      email,
       name,
       surname,
       birthday

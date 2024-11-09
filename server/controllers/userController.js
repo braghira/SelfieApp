@@ -39,7 +39,7 @@ async function getUser(req, res) {
  * Responds with the updated user profile
  */
 const patchProfile = async (req, res) => {
-    const { username, email, name, surname, birthday, profilePic, _id } = req.body;
+    const { username, name, surname, birthday, profilePic, _id } = req.body;
     const { authorization } = req.headers;
 
     const accessToken = authorization.split(" ")[1];
@@ -47,7 +47,6 @@ const patchProfile = async (req, res) => {
     try {
         const user = await updateProfile(
             username,
-            email,
             name,
             surname,
             birthday,

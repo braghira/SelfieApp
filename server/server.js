@@ -5,17 +5,16 @@ const path = require("path");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const webpush = require("web-push");
-require("dotenv").config({ path: path.resolve(__dirname, ".env") }); // config method will attach .env variables to the "process" global variable
 
 // our modules
-const activityRoutes = require(path.resolve(__dirname, "routes", "activities"));
-const eventRoutes = require(path.resolve(__dirname, "routes", "events"));
 const authRoutes = require(path.resolve(__dirname, "routes", "auth"));
-const pushSubRoutes = require(path.resolve(__dirname, "routes", "subscriptions"));
 const userRoutes = require(path.resolve(__dirname, "routes", "users"));
-const mediaRoutes = require(path.resolve(__dirname, "routes", "media"));
-const corsOptions = require("./utils/corsOptions");
+const eventRoutes = require(path.resolve(__dirname, "routes", "events"));
+const activityRoutes = require(path.resolve(__dirname, "routes", "activities"));
 const noteRoutes = require(path.resolve(__dirname, "routes", "notes"));
+const mediaRoutes = require(path.resolve(__dirname, "routes", "media"));
+const pushSubRoutes = require(path.resolve(__dirname, "routes", "subscriptions"));
+const corsOptions = require("./utils/corsOptions");
 
 // utilities
 const { port, mongouri, node_env, vapid_public_key,
@@ -27,6 +26,7 @@ const { port, mongouri, node_env, vapid_public_key,
 
 const appPath = path.resolve(__dirname, "..", "client", "dist");
 
+// Vapid details for webpush notifications
 webpush.setVapidDetails(
   'mailto:Selfie23@studio.unibo.it',
   vapid_public_key,
@@ -58,7 +58,6 @@ app.use("/api/activities", activityRoutes);
 app.use("/api/events", eventRoutes);
 app.use("/api/media", mediaRoutes);
 app.use('/api/notes', noteRoutes);
-
 
 if (node_env === "production") {
   // route fallback: redirect every other request to React app

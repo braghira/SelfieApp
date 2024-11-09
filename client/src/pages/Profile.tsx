@@ -26,7 +26,6 @@ export default function Profile() {
     resolver: zodResolver(UserSchema),
     defaultValues: {
       username: "",
-      email: "",
       name: "",
       surname: "",
       birthday: new Date(),
@@ -108,25 +107,6 @@ export default function Profile() {
                     {...field}
                     aria-label="Surname"
                     className="sm:w-1/4 text-sm md:text-base"
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="email"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Email</FormLabel>
-                <FormControl>
-                  <Input
-                    type="email"
-                    {...field}
-                    aria-label="Email"
-                    className="sm:w-1/2 text-sm md:text-base"
                   />
                 </FormControl>
                 <FormMessage />

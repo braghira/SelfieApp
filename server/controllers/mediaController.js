@@ -1,12 +1,22 @@
 const path = require("path");
-const Media = require("../models/mediaModel");
+const { Media } = require("../models/mediaModel");
 const fs = require("fs");
 const validator = require("validator");
 
 /** 
+ * Creates a new Media with the default Pic if one doesn't exist already.
  * @returns the default profile picture id 
  */
 async function getDefaultPic() {
+  const defaultPic = await Media.findOne({ name: "default_profile_pic.jpg" });
+
+  if (!defaultPic)
+    return await createDefaultPic();
+  else
+    return defaultPic._id;
+}
+
+async function createDefaultPic() {
   const defaultImagePath = path.resolve(
     __dirname,
     "..",

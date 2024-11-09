@@ -10,7 +10,7 @@ const activitySchema = new Schema({
     endDate: {
         type: Date,
     },
-    groupList:{
+    groupList: {
         type: [String],
         required: false,
     },
@@ -24,4 +24,6 @@ const activitySchema = new Schema({
     },
 }, { timestamps: true });
 
-module.exports = mongoose.model('Activity', activitySchema);
+const Activity = mongoose.model('Activity', activitySchema);
+
+module.exports = { Activity };
