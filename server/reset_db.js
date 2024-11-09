@@ -11,11 +11,11 @@ const { getDefaultPic } = require("./controllers/mediaController");
 
 function readJsonData(fileName) {
     return (jsonData = JSON.parse(
-        fs.readFileSync(path.resolve("./db", fileName))
+        fs.readFileSync(path.resolve(__dirname, "db", fileName))
     ));
 }
 
-async function createDB() {
+async function reset() {
     console.log("Resetting and Repopulating Database...");
     const db = mongoose.connection;
 
@@ -53,7 +53,7 @@ async function createDB() {
     }
 };
 
-async function resetDB() {
+async function main() {
     console.log("Connecting to MongoDB..." + (node_env === "production" ? " (production)" : "(development)"));
     console.log("URI: " + mongouri);
 
@@ -62,7 +62,7 @@ async function resetDB() {
         .then(() => {
             console.log("Connected to MongoDB...");
             // Reset DB and populate again
-            createDB();
+            reset();
         })
         .catch((err) => {
             console.log("Could not connect to MongoDB...", err);
@@ -71,4 +71,4 @@ async function resetDB() {
 };
 
 
-resetDB();
+main();

@@ -14,7 +14,8 @@ const activityRoutes = require(path.resolve(__dirname, "routes", "activities"));
 const noteRoutes = require(path.resolve(__dirname, "routes", "notes"));
 const mediaRoutes = require(path.resolve(__dirname, "routes", "media"));
 const pushSubRoutes = require(path.resolve(__dirname, "routes", "subscriptions"));
-const corsOptions = require("./utils/corsOptions");
+const corsOptions = require(path.resolve(__dirname, "utils", "corsOptions"));
+const resetDB = require(path.resolve(__dirname, "utils", "database"));
 
 // utilities
 const { port, mongouri, node_env, vapid_public_key,
@@ -71,6 +72,10 @@ mongoose
   .connect(mongouri, { dbName: "SelfieDB" })
   .then(() => {
     console.log("DB connected");
+
+    // Resets DB only in production
+    resetDB();
+
     // listen for requests
     app.listen(port || 8000, () => {
       console.log(`listening on port ${port}`);
