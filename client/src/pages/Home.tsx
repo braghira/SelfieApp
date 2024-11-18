@@ -387,7 +387,7 @@ export default function Home() {
               <CardTitle>Activities</CardTitle>
             </CardHeader>
             <CardContent>
-              <ActivityTable />
+              <ActivityTable isInHome={true} />
             </CardContent>
           </Card>
         </div>

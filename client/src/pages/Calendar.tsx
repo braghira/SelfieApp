@@ -366,7 +366,9 @@ export default function CalendarPage() {
           onSelectEvent={handleSelected}
           getNow={() => moment(currentDate).toDate()}
         />
-        <div className="hidden lg:block">{activities && <ActivityTable />}</div>
+        <div className="hidden lg:block">
+          {activities && <ActivityTable isInHome={false} />}
+        </div>
       </div>
       <div className="hidden md:flex flex-col items-center gap-4 mt-8 md:flex-row md:justify-around">
         <EventForm />
@@ -395,7 +397,9 @@ export default function CalendarPage() {
       <div className="lg:hidden">
         {activeView === "eventForm" && <EventForm />}
         {activeView === "activityForm" && <ActivityForm />}
-        {activeView === "activityList" && activities && <ActivityTable />}
+        {activeView === "activityList" && activities && (
+          <ActivityTable isInHome={false} />
+        )}
       </div>
     </div>
   );

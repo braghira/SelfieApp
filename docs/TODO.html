@@ -73,14 +73,19 @@
             let total_mattia_tasks = 0;
 
             // Obligatory tasks (extension 18-27)
-            let obligatory_andrea_tasks = 0;
-            let obligatory_chiara_tasks = 0;
-            let obligatory_mattia_tasks = 0;
+            let total_obligatory_andrea_tasks = 0;
+            let total_obligatory_chiara_tasks = 0;
+            let total_obligatory_mattia_tasks = 0;
 
-            // count the number of ✅ for single owner
-            let andrea_tasks = 0;
-            let chiara_tasks = 0;
-            let mattia_tasks = 0;
+            // count the number of ✅ for single owner obligatory tasks
+            let andrea_tasks_completed = 0;
+            let chiara_tasks_completed = 0;
+            let mattia_tasks_completed = 0;
+
+            // Total completed tasks for single owner
+            let andrea_obligatory_completed = 0;
+            let chiara_obligatory_completed = 0;
+            let mattia_obligatory_completed = 0;
 
             function createProgressTable(table) {
                 const table_head = document.querySelector(`.${table} #tasks-table thead`);
@@ -104,20 +109,32 @@
                 let sumOf_chiara_tasks = 0;
                 let sumOf_mattia_tasks = 0;
 
+                let completed_andrea = 0;
+                let completed_chiara = 0;
+                let completed_mattia = 0;
+
                 if (table === "progress1") {
-                    sumOf_andrea_tasks = obligatory_andrea_tasks;
-                    sumOf_chiara_tasks = obligatory_chiara_tasks;
-                    sumOf_mattia_tasks = obligatory_mattia_tasks;
+                    sumOf_andrea_tasks = total_obligatory_andrea_tasks;
+                    sumOf_chiara_tasks = total_obligatory_chiara_tasks;
+                    sumOf_mattia_tasks = total_obligatory_mattia_tasks;
+
+                    completed_andrea = andrea_obligatory_completed;
+                    completed_chiara = chiara_obligatory_completed;
+                    completed_mattia = mattia_obligatory_completed;
                 }
                 else {
                     sumOf_andrea_tasks = total_andrea_tasks;
                     sumOf_chiara_tasks = total_chiara_tasks;
                     sumOf_mattia_tasks = total_mattia_tasks;
+
+                    completed_andrea = andrea_tasks_completed;
+                    completed_chiara = chiara_tasks_completed;
+                    completed_mattia = mattia_tasks_completed;
                 }
 
                 a_d_own.textContent = "ANDREA";
-                a_d_task.textContent = `${andrea_tasks}/${sumOf_andrea_tasks}`;
-                a_d_perc.textContent = `${Math.floor((andrea_tasks / sumOf_andrea_tasks) * 100)}%`;
+                a_d_task.textContent = `${completed_andrea}/${sumOf_andrea_tasks}`;
+                a_d_perc.textContent = `${Math.floor((completed_andrea / sumOf_andrea_tasks) * 100)}%`;
 
                 const c_row = document.createElement("tr");
                 const c_d_own = document.createElement("td");
@@ -125,8 +142,8 @@
                 const c_d_perc = document.createElement("td");
 
                 c_d_own.textContent = "CHIARA";
-                c_d_task.textContent = `${chiara_tasks}/${sumOf_chiara_tasks}`;
-                c_d_perc.textContent = `${Math.floor((chiara_tasks / sumOf_chiara_tasks) * 100)}%`;
+                c_d_task.textContent = `${completed_chiara}/${sumOf_chiara_tasks}`;
+                c_d_perc.textContent = `${Math.floor((completed_chiara / sumOf_chiara_tasks) * 100)}%`;
 
                 const m_row = document.createElement("tr");
                 const m_d_own = document.createElement("td");
@@ -134,8 +151,8 @@
                 const m_d_perc = document.createElement("td");
 
                 m_d_own.textContent = "MATTIA";
-                m_d_task.textContent = `${mattia_tasks}/${sumOf_mattia_tasks}`;
-                m_d_perc.textContent = `${Math.floor((mattia_tasks / sumOf_mattia_tasks) * 100)}%`;
+                m_d_task.textContent = `${completed_mattia}/${sumOf_mattia_tasks}`;
+                m_d_perc.textContent = `${Math.floor((completed_mattia / sumOf_mattia_tasks) * 100)}%`;
 
                 // table with number of tasks completed and progress %
                 table_head.appendChild(hrow);
@@ -159,6 +176,14 @@
                 table_body.appendChild(m_d_perc);
             }
 
+            function isObligatory(task) {
+                return task.querySelector("td>span").className !== "orange"
+            }
+
+            function isCompleted(task) {
+                return task.querySelector("td:nth-child(3)").textContent === "✅"
+            }
+
             tasks.forEach((task) => {
                 console.log(task)
                 let owner = task.querySelector("td:nth-child(2)");
@@ -167,31 +192,38 @@
                         case "ANDREA":
                             total_andrea_tasks++;
 
-                            if (task.querySelector("td>span").className !== "orange")
-                                obligatory_andrea_tasks++;
+                            if (isObligatory(task))
+                                total_obligatory_andrea_tasks++;
 
-                            if (task.querySelector("td:nth-child(3)").textContent === "✅")
-                                andrea_tasks++;
+                            if (isObligatory(task) && isCompleted(task)) andrea_obligatory_completed++;
+
+                            if (isCompleted(task))
+                                andrea_tasks_completed++;
+
 
                             break;
                         case "CHIARA":
                             total_chiara_tasks++;
 
-                            if (task.querySelector("td>span").className !== "orange")
-                                obligatory_chiara_tasks++;
+                            if (isObligatory(task))
+                                total_obligatory_chiara_tasks++;
 
-                            if (task.querySelector("td:nth-child(3)").textContent === "✅")
-                                chiara_tasks++;
+                            if (isObligatory(task) && isCompleted(task)) chiara_obligatory_completed++;
+
+                            if (isCompleted(task))
+                                chiara_tasks_completed++;
 
                             break;
                         case "MATTIA":
                             total_mattia_tasks++;
 
-                            if (task.querySelector("td>span").className !== "orange")
-                                obligatory_mattia_tasks++;
+                            if (isObligatory(task))
+                                total_obligatory_mattia_tasks++;
 
-                            if (task.querySelector("td:nth-child(3)").textContent === "✅")
-                                mattia_tasks++;
+                            if (isObligatory(task) && isCompleted(task)) mattia_obligatory_completed++;
+
+                            if (isCompleted(task))
+                                mattia_tasks_completed++;
 
                             break;
                         default:
@@ -870,6 +902,126 @@
             <td>✅</td>
         </tr>
     </table>
+
+    <h2>TODO di feature generali (Non servono ma aiutano)</h2>
+
+    <table>
+        <tr>
+            <td><span class="orange">Pagina Profile (username, email, name, surname e DoB).</span></td>
+            <td><span class="owner">ANDREA</span></td>
+            <td>✅</td>
+        </tr>
+        <tr>
+            <td><span class="orange">Pagina Account: Change Password + Toggle per iscriversi o disiscriversi al servizio
+                    di notifiche push.</span></td>
+            <td><span class="owner">ANDREA</span></td>
+            <td>✅</td>
+        </tr>
+        <tr>
+            <td><span class="orange">Pagina Take a Selfie per caricare una nuova foto profilo sfogliando i propri file
+                    OPPURE scattare un selfie direttamente dall'applicazione.</span></td>
+            <td><span class="owner">ANDREA</span></td>
+            <td>✅</td>
+        </tr>
+        <tr>
+            <td><span class="orange">Spostare il widget del tema nella navbar (su desktop) e di fianco al titolo del
+                    sidesheet (su mobile).</span></td>
+            <td><span class="owner">ANDREA</span></td>
+            <td>✅</td>
+        </tr>
+        <tr>
+            <td><span class="orange">Modificare la report view pomodoro della home per visualizzare una tabella dei
+                    pomodoro più recenti con data, informazioni sui timer e lunghezza totale della sessione.</span></td>
+            <td><span class="owner">ANDREA</span></td>
+            <td>❌</td>
+        </tr>
+        <tr>
+            <td><span class="orange">Aggiungere alla preview pomodoro base la data dello scorso pomodoro a cui si fa
+                    riferimento, la data, la durata dei timer e la durata totale prevista.</span></td>
+            <td><span class="owner">ANDREA</span></td>
+            <td>❌</td>
+        </tr>
+        <tr>
+            <td><span class="orange">Pomodoro: Migliorare la visualizzazione su mobile, specialmente in
+                    orizzontale.</span></td>
+            <td><span class="owner">ANDREA</span></td>
+            <td>❌</td>
+        </tr>
+        <tr>
+            <td><span class="orange">Pomodoro: Aggiungere un sonner(?) dove mettere le istruzioni d'utilizzo e la
+                    spiegazione
+                    dell'integrazione col calendario.</span></td>
+            <td><span class="owner">ANDREA</span></td>
+            <td>❌</td>
+        </tr>
+        <tr>
+            <td><span class="orange">Modificare la gestione dei permessi in RequestPushSub. Se uno è disiscritto ma ha
+                    dato l'ok ai permessi lascialo stare, non iscriverlo forzatamente.</span></td>
+            <td><span class="owner">ANDREA</span></td>
+            <td>✅</td>
+        </tr>
+        <tr>
+            <td><span class="orange">Creare una collezione di iscrizioni push. Così possiamo popolare l'utente con i
+                    dati delle sue iscrizioni all'occorrenza, tenendo solo un array di object ID di default.</span></td>
+            <td><span class="owner">ANDREA</span></td>
+            <td>✅</td>
+        </tr>
+        <tr>
+            <td><span class="orange">Durante il login dell'utente, prendere l'iscrizione dal database e iscriverlo nel
+                    client.</span></td>
+            <td><span class="owner">ANDREA</span></td>
+            <td>✅</td>
+        </tr>
+        <tr>
+            <td><span class="orange">Durante il logout dell'utente, rimuovere l'iscrizione solo nel client.</span></td>
+            <td><span class="owner">ANDREA</span></td>
+            <td>✅</td>
+        </tr>
+        <tr>
+            <td><span class="orange">Creare una funzione per popolare il DB ogni volta che viene attivato il
+                    server.</span></td>
+            <td><span class="owner">ANDREA</span></td>
+            <td>✅</td>
+        </tr>
+        <tr>
+            <td><span class="orange">Sistemare la tabella delle attività nella calendar view (Filtro expiration
+                    buggato).</span></td>
+            <td><span class="owner">ANDREA</span></td>
+            <td>✅</td>
+        </tr>
+        <tr>
+            <td><span class="orange">Sostituire gli input per la ricerca degli utenti nel calendar e nelle note con un
+                    componente che usa Command di shadcn.</span></td>
+            <td><span class="owner">ANDREA</span></td>
+            <td>❌</td>
+        </tr>
+        <tr>
+            <td><span class="orange">Fix per la Time Machine che fa salti nel tempo non molto precisi.</span></td>
+            <td><span class="owner">ANDREA</span></td>
+            <td>❌</td>
+        </tr>
+        <tr>
+            <td><span class="orange">Accessibilità Home.</span></td>
+            <td><span class="owner">ANDREA</span></td>
+            <td>❌</td>
+        </tr>
+        <tr>
+            <td><span class="orange">Accessibilità Calendario.</span></td>
+            <td><span class="owner">MATTIA</span></td>
+            <td>❌</td>
+        </tr>
+        <tr>
+            <td><span class="orange">Accessibilità Pomodoro.</span></td>
+            <td><span class="owner">ANDREA</span></td>
+            <td>❌</td>
+        </tr>
+        <tr>
+            <td><span class="orange">Accessibilità Note.</span></td>
+            <td><span class="owner">CHIARA</span></td>
+            <td>✅</td>
+        </tr>
+    </table>
+
 </body>
 
 </html>

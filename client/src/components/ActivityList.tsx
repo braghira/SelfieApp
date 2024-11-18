@@ -21,11 +21,30 @@ import { ActivityType, cn } from "@/lib/utils";
 import { useActivities } from "@/context/ActivityContext";
 import { useTimeMachineContext } from "@/context/TimeMachine";
 import { useMemo } from "react";
+import useActivitiesApi from "@/hooks/useActivitiesApi";
+import { useAuth } from "@/context/AuthContext";
 
-export default function ActivityTable() {
+type ActivityTableProps = {
+  isInHome: boolean;
+};
+
+export default function ActivityTable({ isInHome }: ActivityTableProps) {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const { activities } = useActivities();
+  const { completeActivity, deleteActivity } = useActivitiesApi();
   const { currentDate } = useTimeMachineContext();
+
+  async function handleComplete(activity: ActivityType) {
+    if (user) {
+      completeActivity(activity);
+    }
+  }
+  async function handleDelete(activity: ActivityType) {
+    if (user) {
+      deleteActivity(activity);
+    }
+  }
 
   const activityFilter: FilterFn<ActivityType> = (
     row: Row<ActivityType>,
@@ -142,14 +161,38 @@ export default function ActivityTable() {
               <DropdownMenuContent align="end">
                 <DropdownMenuLabel>Actions</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => navigate("/calendar")}>
-                  Open Calendar
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => navigator.clipboard.writeText(data.title)}
-                >
-                  Copy Activity Title
-                </DropdownMenuItem>
+                {isInHome ? (
+                  <>
+                    <DropdownMenuItem onClick={() => navigate("/calendar")}>
+                      Open Calendar
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => navigator.clipboard.writeText(data.title)}
+                    >
+                      Copy Activity Title
+                    </DropdownMenuItem>
+                  </>
+                ) : (
+                  <>
+                    {" "}
+                    <DropdownMenuItem
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDelete(data);
+                      }}
+                    >
+                      Delete
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleComplete(data);
+                      }}
+                    >
+                      Mark as Complete
+                    </DropdownMenuItem>
+                  </>
+                )}
               </DropdownMenuContent>
             </DropdownMenu>
           );

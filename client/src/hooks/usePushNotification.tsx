@@ -137,6 +137,12 @@ export default function usePushNotification() {
     try {
       setSendLoading(true);
 
+      if (!(await getPushSub())) {
+        window.alert(
+          "Go to Account Settings page and enable Push Notifications to use this feature properly."
+        );
+      }
+
       // Send notification to server
       const response = await private_api.post(
         "/api/notifications/sendNotification",

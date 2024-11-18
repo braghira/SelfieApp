@@ -24,7 +24,7 @@ async function reset() {
         await db.dropCollection("users");
         // await db.dropCollection("events");
         // await db.dropCollection("activities");
-        // await db.dropCollection("notes");
+        await db.dropCollection("notes");
         await db.dropCollection("media");
         // await db.dropCollection("pushsubs");
 
@@ -32,7 +32,7 @@ async function reset() {
         const users = readJsonData("users.json");
         // const events = readJsonData("events.json");
         // const activities = readJsonData("activities.json");
-        // const notes = readJsonData("notes.json");
+        const notes = readJsonData("notes.json");
 
         // Add the default profile pic to DB and users data
         const pfID = await getDefaultPic();
@@ -42,7 +42,7 @@ async function reset() {
         await User.insertMany(updatedUsers);
         // await Event.insertMany(events);
         // await Activity.insertMany(activities);
-        // await Note.insertMany(notes);
+        await Note.insertMany(notes);
 
         console.log("Database has been populated successfully!");
     } catch (err) {
