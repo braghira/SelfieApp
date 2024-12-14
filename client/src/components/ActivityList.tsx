@@ -40,6 +40,7 @@ export default function ActivityTable({ isInHome }: ActivityTableProps) {
       completeActivity(activity);
     }
   }
+
   async function handleDelete(activity: ActivityType) {
     if (user) {
       deleteActivity(activity);

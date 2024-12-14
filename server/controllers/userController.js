@@ -82,6 +82,8 @@ const patchAccount = async (req, res) => {
             user._doc.profilePic = `/api/media/${user.profilePic}`;
         }
 
+        console.log("Password changed successfully");
+
         res.status(200).json({ ...user._doc, accessToken });
     } catch (error) {
         console.log(error.message);

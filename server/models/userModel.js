@@ -160,8 +160,6 @@ async function updateAccount(currPassword, newPassword, confirmPassword, _id) {
 
   const match = await bcrypt.compare(currPassword, user.password);
 
-  console.log("Account: ", { currPassword, newPassword, confirmPassword, user_password: user.password });
-
   if (!match)
     throw Error("Current Password not valid");
 

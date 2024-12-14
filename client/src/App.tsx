@@ -13,16 +13,16 @@ import ProtectedRoutes from "./components/ProtectedRoutes";
 import ErrorPage from "./pages/ErrorPage";
 import LoadingPage from "./pages/LoadingPage";
 import Calendar from "./pages/Calendar";
-// layouts
-import DashboardLayout from "./layouts/DashboardLayout";
-import AuthLayout from "./layouts/AuthLayout";
-import Pomodoro from "./pages/Pomodoro";
 import Notes from "./pages/Notes";
 import Editor from "./pages/Editor";
 import Profile from "./pages/Profile";
-import SettingsLayout from "./layouts/SettingsLayout";
+import Pomodoro from "./pages/Pomodoro";
 import Account from "./pages/Account";
 import TakeASelfie from "./pages/TakeASelfie";
+// layouts
+import DashboardLayout from "./layouts/DashboardLayout";
+import AuthLayout from "./layouts/AuthLayout";
+import SettingsLayout from "./layouts/SettingsLayout";
 
 // Per come è impostata la nostra app tutte le route devono stare dentro ad una route che fa da
 // padre a tutte le altre senza aggiungere layout o path

@@ -37,6 +37,10 @@ export default function Account() {
     await updateAccount(values, (err) => {
       form.setError("root.serverError", { message: err });
     });
+
+    if (!form.formState.errors.root) {
+      form.reset();
+    }
   }
 
   useEffect(() => {

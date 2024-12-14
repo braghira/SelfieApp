@@ -17,9 +17,11 @@ import {
   CardDescription,
   CardHeader,
 } from "@/components/ui/card";
+import CameraComponent from "@/components/Camera";
 
 export default function TakeASelfie() {
   const [profileImage, setProfileImage] = useState<File | null>(null);
+  const [cameraPhoto, setCameraPhoto] = useState<string | null>(null); // Stato per la foto scattata
   const private_api = useAxiosPrivate();
   const { user } = useAuth();
   const { updateProfile } = useUpdateProfile();
@@ -36,24 +38,53 @@ export default function TakeASelfie() {
     console.log(user);
   }, [form]);
 
+  useEffect(() => {
+    console.log("Foto: ", cameraPhoto);
+  }, [cameraPhoto]);
+
+  async function changeProfilePhoto(user: UserType) {
+    if (profileImage) {
+      const profilePicId = await uploadProfileImage(profileImage);
+      user.profilePic = `api/media/${profilePicId}`;
+    } else if (cameraPhoto) {
+      const blob = await fetch(cameraPhoto).then((res) => res.blob());
+      const file = new File([blob], "profile-photo.png", { type: "image/png" });
+      const profilePicId = await uploadProfileImage(file);
+      user.profilePic = `api/media/${profilePicId}`;
+    } else {
+      form.setError("root.serverError", { message: "No photo selected" });
+      return;
+    }
+
+    console.log("Profile: ", user);
+
+    await updateProfile(user, (err) => {
+      form.setError("root.serverError", { message: err });
+    });
+
+    if (!form.formState.errors.root) {
+      setProfileImage(null);
+      setCameraPhoto(null);
+      form.reset();
+    }
+  }
+
   async function uploadProfileImage(file: File) {
     const formData = new FormData();
-
-    // Converti il file in un formato compatibile
-    formData.append("data", file); // Il file sarà automaticamente convertito in un buffer dal backend
-    formData.append("name", file.name); // Nome del file
-    formData.append("mimetype", file.type); // Tipo MIME del file
+    formData.append("data", file);
+    formData.append("name", file.name);
+    formData.append("mimetype", file.type);
 
     try {
       const response = await private_api.post("/api/media/", formData, {
         headers: {
-          "Content-Type": "multipart/form-data", // Importante per inviare il FormData
+          "Content-Type": "multipart/form-data",
         },
       });
 
       if (response.status === 200) {
         console.log("New media ID: ", response.data);
-        return response.data; // Restituisce l'ID del media salvato
+        return response.data;
       }
     } catch (error) {
       if (isAxiosError(error))
@@ -63,18 +94,7 @@ export default function TakeASelfie() {
 
   async function onSubmit(values: UserType) {
     const updatedValues = { ...values };
-
-    if (profileImage) {
-      const profilePicId = await uploadProfileImage(profileImage);
-      // Add uri
-      updatedValues.profilePic = `api/media/${profilePicId}`;
-
-      console.log("Profile: ", updatedValues);
-
-      await updateProfile(updatedValues, (err) => {
-        form.setError("root.serverError", { message: err });
-      });
-    } else form.setError("root.serverError", { message: "No file Selected" });
+    changeProfilePhoto(updatedValues);
   }
 
   return (
@@ -101,26 +121,35 @@ export default function TakeASelfie() {
         </CardHeader>
       </Card>
 
+      {/* One way data flow ARIDAJE */}
+      <CameraComponent photo={cameraPhoto} setPhoto={setCameraPhoto} />
+
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
           className="flex flex-col gap-4 w-full"
         >
-          <FormItem>
-            <FormLabel className="text-gray-800 dark:text-gray-100">
-              Select a Profile Pic
-            </FormLabel>
-            <FormControl>
-              <Input
-                type="file"
-                onChange={(e) => setProfileImage(e.target.files?.[0] || null)}
-                aria-label="Profile Picture"
-                className="text-sm md:text-base file:text-foreground"
-              />
-            </FormControl>
-          </FormItem>
+          {!cameraPhoto && (
+            <>
+              <Separator />
+              <FormItem>
+                <FormLabel className="text-gray-800 dark:text-gray-100">
+                  Select a Profile Pic
+                </FormLabel>
+                <FormControl>
+                  <Input
+                    type="file"
+                    onChange={(e) =>
+                      setProfileImage(e.target.files?.[0] || null)
+                    }
+                    aria-label="Profile Picture"
+                    className="text-sm md:text-base file:text-foreground"
+                  />
+                </FormControl>
+              </FormItem>
+            </>
+          )}
 
-          {/* Server errors */}
           {form.formState.errors.root && (
             <div className="text-sm font-medium text-destructive space-y-2">
               {form.formState.errors.root.serverError.message}
