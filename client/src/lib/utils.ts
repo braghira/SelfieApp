@@ -8,24 +8,44 @@ const recurrencePatternSchema = z.object({
   occurrences: z.number().optional(),
   endDate: z.string().optional(),
 });
+export type RecurrenceType = z.infer<typeof recurrencePatternSchema>;
+
+/** study and relax timer are in milliseconds */
+const PomodoroSchema = z.object({
+  study: z.number().optional(),
+  relax: z.number().optional(),
+  cycles: z.number().optional(),
+});
 
 export const EventSchema = z.object({
-  title: z.string().min(2, "Title must be at least 2 characters"),
+  title: z.string().min(2, "Title must be at least 2 characters").max(20),
   date: z.string(),
-  duration: z.number().nonnegative(),
-  location: z.string().optional(),
   isRecurring: z.boolean(),
+  location: z.string().optional(),
+  author: z.string().optional(),
   recurrencePattern: recurrencePatternSchema.optional(),
-  _id: z.string().optional(),
+  // hours and minutes will be calculated based on total pomodoro session time
+  hours: z.number().nonnegative(),
+  minutes: z.number().nonnegative(),
+  // this field is exclusive to normal events
+  groupList: z.string().array().optional().default([]),
+  // If it's a pomodoro event, add these 3 fields
+  itsPomodoro: z.boolean(),
+  currPomodoro: PomodoroSchema.optional(),
+  expectedPomodoro: PomodoroSchema.optional(),
+  expiredPomodoro: z.boolean(),
   createdAt: z.string().optional(),
+  _id: z.string().optional(),
 });
 export type EventType = z.infer<typeof EventSchema>;
 
 export const ActivitySchema = z.object({
-  title: z.string().min(2, "Title must be at least 2 characters"),
+  title: z.string().min(2, "Title must be at least 2 characters").max(20),
   endDate: z.string().nullable().optional(),
+  groupList: z.string().array(),
   completed: z.boolean(),
   _id: z.string().optional(),
+  author: z.string().optional(),
 });
 export type ActivityType = z.infer<typeof ActivitySchema>;
 
@@ -38,7 +58,6 @@ export const UserSchema = z.object({
   password: z
     .string()
     .min(8, { message: "Password must be at least 8 characters." }),
-  email: z.string().email().optional(),
   name: z.string().trim().optional(),
   surname: z.string().trim().optional(),
   birthday: z.date().optional(),
@@ -59,15 +78,29 @@ export const NoteSchema = z.object({
   author: z.string().trim().min(1, { message: "Author is required." }),
   accessType: z.enum(["public", "restricted", "private"]).default("private"),
   specificAccess: z.array(z.string().trim()).optional().default([]),
-  createdAt: z
-    .date()
-    .optional(), 
-  updatedAt: z
-    .date()
-    .optional(),  
+  createdAt: z.date().optional(),
+  updatedAt: z.date().optional(),
   _id: z.string().optional(),
 });
 export type NoteType = z.infer<typeof NoteSchema>;
+
+export const AccountSchema = z
+  .object({
+    currPassword: z
+      .string()
+      .min(8, { message: "Password must be at least 8 characters." }),
+    newPassword: z
+      .string()
+      .min(8, { message: "Password must be at least 8 characters." }),
+    confirmPassword: z
+      .string()
+      .min(8, { message: "Password must be at least 8 characters." }),
+  })
+  .refine((data) => data.newPassword === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ["confirmPassword"],
+  });
+export type AccountType = z.infer<typeof AccountSchema>;
 
 export function client_log(message: unknown, ...options: unknown[]) {
   if (import.meta.env.DEV) console.log(message, ...options);

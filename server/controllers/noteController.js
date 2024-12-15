@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const Note = require('../models/noteModels');
+const { Note } = require('../models/noteModels');
 
 // Recupera tutte le note, filtrando in base all'accesso
 const getNotes = async (req, res) => {
@@ -126,7 +126,7 @@ const duplicateNote = async (req, res) => {
     // Verifica i permessi di accesso
     if (
       (note.accessType === "private" && note.author !== user.username) ||
-      (note.accessType === "restricted" && !note.specificAccess.includes(user.username))
+      (note.accessType === "restricted" && note.author !== user.username && !note.specificAccess.includes(user.username))
     ) {
       return res.status(403).json({ error: "Access denied" });
     }
@@ -168,10 +168,12 @@ const deleteNote = async (req, res) => {
   }
 };
 
-// Elimina tutte le note
+//elimina tutte le note che hai creato
 const deleteAllNotes = async (req, res) => {
+  const { user } = req;
+
   try {
-    await Note.deleteMany({});
+    await Note.deleteMany({ author: user.username });
     res.status(204).end(); // No Content
   } catch (error) {
     res.status(500).json({ error: error.message });

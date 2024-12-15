@@ -12,7 +12,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+import { Input, PasswordInput } from "@/components/ui/input";
 import { UserType, UserSchema } from "@/lib/utils";
 // images
 import Loader from "@/components/Loader";
@@ -58,9 +58,9 @@ export default function LoginForm() {
             name="username"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="shad-form_label">Username</FormLabel>
+                <FormLabel>Username</FormLabel>
                 <FormControl>
-                  <Input type="text" className="shad-input" {...field} />
+                  <Input type="text" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -71,20 +71,22 @@ export default function LoginForm() {
             name="password"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="shad-form_label">Password</FormLabel>
+                <FormLabel>Password</FormLabel>
                 <FormControl>
-                  <Input type="password" className="shad-input" {...field} />
+                  <PasswordInput {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
+
           {/* Server errors */}
           {form.formState.errors.root && (
             <div className="text-sm font-medium text-destructive space-y-2">
               {form.formState.errors.root.serverError.message}
             </div>
           )}
+
           <Button type="submit" className="shad-button_primary mt-4">
             {form.formState.isSubmitting ? <Loader /> : "Login"}
           </Button>

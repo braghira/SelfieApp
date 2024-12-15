@@ -12,7 +12,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+import { Input, PasswordInput } from "@/components/ui/input";
 import { UserType, UserSchema } from "@/lib/utils";
 // images
 import Loader from "@/components/Loader";
@@ -29,7 +29,6 @@ export default function SignupForm() {
     defaultValues: {
       name: "",
       surname: "",
-      email: "",
       username: "",
       password: "",
       birthday: new Date(),
@@ -49,9 +48,9 @@ export default function SignupForm() {
   return (
     <Form {...form}>
       <div className="flex flex-col items-center w-full max-w-sm md:max-w-md">
-        <Logo className="mb-5" size="lg" />
+        <Logo className="mb-5" size="md" />
 
-        <h1 className="my-2 text-center">Sign Up</h1>
+        <h2 className="mb-2 text-center">Sign Up</h2>
         <p className="mb-5">To use Selfie, Please enter your details</p>
 
         <form
@@ -88,23 +87,10 @@ export default function SignupForm() {
           </div>
           <FormField
             control={form.control}
-            name="email"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Email</FormLabel>
-                <FormControl>
-                  <Input type="text" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
             name="username"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Username</FormLabel>
+                <FormLabel>Username *</FormLabel>
                 <FormControl>
                   <Input type="text" {...field} />
                 </FormControl>
@@ -117,9 +103,9 @@ export default function SignupForm() {
             name="password"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Password</FormLabel>
+                <FormLabel>Password *</FormLabel>
                 <FormControl>
-                  <Input type="password" {...field} />
+                  <PasswordInput {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -130,7 +116,7 @@ export default function SignupForm() {
             name="birthday"
             render={() => (
               <FormItem>
-                <FormLabel>Date of birth</FormLabel>
+                <FormLabel>Date of Birth *</FormLabel>
                 <FormControl>
                   {/* Adding Controller api to make sure the input is passed to the hook form correctly*/}
                   <Controller
@@ -150,9 +136,18 @@ export default function SignupForm() {
               </FormItem>
             )}
           />
+
+          {/* Server errors */}
+          {form.formState.errors.root && (
+            <div className="text-sm font-medium text-destructive space-y-2">
+              {form.formState.errors.root.serverError.message}
+            </div>
+          )}
+
           <Button type="submit" className="mt-4">
             {form.formState.isSubmitting ? <Loader /> : "Sign Up"}
           </Button>
+
           <p className="text-center mt-4">
             Already have an account?
             <NavLink to="/login" className="text-primary ml-2 hover:underline">

@@ -6,6 +6,9 @@ export type TimerType = {
   started: boolean;
 };
 
+/**
+ * study and relax timer are in milliseconds
+ */
 export type PomodoroType = {
   study: TimerType;
   relax: TimerType;
@@ -181,6 +184,41 @@ function timerReducer(
   }
 }
 
+/**
+ *
+ * @param study study timer in minutes
+ * @param relax relax timer in minutes
+ * @param cycles # of cycles in the session
+ */
+function createTimer(study: number, relax: number, cycles: number) {
+  const studyTimer = {
+    initialValue: 1000 * 60 * study,
+    value: 1000 * 60 * study,
+    started: false,
+  };
+
+  const relaxTimer = {
+    initialValue: 1000 * 60 * relax,
+    value: 1000 * 60 * relax,
+    started: false,
+  };
+
+  const totalTime =
+    (studyTimer.initialValue + relaxTimer.initialValue) * cycles;
+
+  const isStudyCycle = true;
+
+  const newTimer: PomodoroType = {
+    cycles,
+    isStudyCycle,
+    relax: relaxTimer,
+    study: studyTimer,
+    totalTime,
+  };
+
+  return newTimer;
+}
+
 export function useTimer() {
   let parsed_timer: PomodoroType | null = null;
 
@@ -221,5 +259,5 @@ export function useTimer() {
 
   const [timer, dispatch] = useReducer(timerReducer, final_timer);
 
-  return { timer, dispatch, InitialTimer, setInitialTimer };
+  return { timer, dispatch, InitialTimer, setInitialTimer, createTimer };
 }

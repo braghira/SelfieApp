@@ -7,7 +7,6 @@ const {
   node_env,
 } = require("../utils/globalVariables");
 const jwt = require("jsonwebtoken");
-const webpush = require("web-push");
 
 /**
  * Creates a Json Web Token given the user id
@@ -66,14 +65,12 @@ const loginUser = async (req, res) => {
  * Responds with the username and the access token
  */
 const signupUser = async (req, res) => {
-  // this will change when we'll modify the user schema
-  const { username, password, email, name, surname, birthday } = req.body;
+  const { username, password, name, surname, birthday } = req.body;
 
   try {
     const user = await validateSignup(
       username,
       password,
-      email,
       name,
       surname,
       birthday
@@ -170,119 +167,4 @@ const refreshToken = async (req, res) => {
   }
 };
 
-/**
- * @param req body needs user ID and subscription value from frontend
- */
-async function subscribe(req, res) {
-  const { _id, subscription } = req.body;
-
-  console.log("sub body: ", req.body);
-
-  try {
-    const user = await User.findById(_id);
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
-
-    // update DB
-    user.pushSubscriptions.push(subscription);
-    await user.save();
-
-    console.log("body: ", { _id, subscription });
-    console.log("user: ", user);
-
-    res.status(201).json({ message: 'Subscribed successfully' });
-  } catch (error) {
-    console.error('Subscription error:', error);
-    res.status(500).json({ message: 'Internal server error' });
-  }
-}
-
-/**
-* @param req body needs user ID and unique device endpoint
-*/
-async function unsubscribe(req, res) {
-  const { _id, subscription } = req.body;
-
-  try {
-    const user = await User.findById(_id);
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
-
-    console.log("unsub body: ", subscription);
-    console.log("user subscriptions: ", user.pushSubscriptions);
-
-    // remove the old subscription and update DB
-    user.pushSubscriptions = user.pushSubscriptions.filter(sub => sub.endpoint !== subscription.endpoint);
-    await user.save();
-
-    res.status(200).json({ message: 'Unsubscribed successfully' });
-  } catch (error) {
-    console.error('Unsubscription error:', error);
-    res.status(500).json({ message: 'Internal server error' });
-  }
-}
-
-/**
- * @param req body needs destination user ID, title and body of the notification
- */
-const sendNotification = async (req, res) => {
-  const { title, body, url, pomodoro, _id } = req.body;
-
-  try {
-    const user = await User.findById(_id);
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
-
-    const payload = JSON.stringify({
-      title,
-      body,
-      url,
-      pomodoro
-    });
-
-    console.log("payload: ", payload);
-
-    // cicle through all the user's devices to send them all a notification
-    const promises = user.pushSubscriptions.map(subscription =>
-      webpush.sendNotification(subscription, payload)
-        .then((res) => {
-
-          console.log("send push status code: ", res.statusCode);
-
-          // Sub has expired, throw error and handle it by deleting the subscription from DB
-          if (res.statusCode === 410 || res.statusCode === 404) {
-            console.log(
-              "Subscription has expired or is no longer valid: ",
-              res.statusCode
-            );
-            // subscription no longer valid
-            throw new Error("Subscription no longer valid");
-          } else if (res.statusCode === 201) {
-            console.log("Notifications sent to all devices");
-          }
-        })
-        .catch(async (error) => {
-          // remove the old subscription and update DB
-          user.pushSubscriptions = user.pushSubscriptions.filter(sub => sub.endpoint !== subscription.endpoint);
-          await user.save();
-        }))
-
-    // await all the promises of sending a notification
-    await Promise.all(promises);
-
-    if (promises.length === 0)
-      res.status(202).json({ message: "No subscriptions for this user" });
-    else
-      res.status(200).json({ message: 'Notification sent successfully' });
-
-  } catch (error) {
-    console.error('Promises error:', error);
-    res.status(500).json({ message: 'Internal server error' });
-  }
-};
-
-
-module.exports = { loginUser, signupUser, logoutUser, refreshToken, subscribe, unsubscribe, sendNotification };
+module.exports = { loginUser, signupUser, logoutUser, refreshToken };

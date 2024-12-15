@@ -27,12 +27,23 @@ import usePushNotification, {
 } from "@/hooks/usePushNotification";
 import { useAuth } from "@/context/AuthContext";
 import { BlockerFunction, useBlocker } from "react-router-dom";
+import useEventsApi from "@/hooks/useEventsApi";
+import { useEvents } from "@/context/EventContext";
+import { useTimeMachineContext } from "@/context/TimeMachine";
+import moment from "moment";
+import { client_log, EventType } from "@/lib/utils";
 
 export default function Pomodoro() {
-  const { timer, dispatch, InitialTimer, setInitialTimer } = useTimer();
   const { RequestPushSub, sendNotification } = usePushNotification();
   const { user } = useAuth();
+  const { events } = useEvents();
+  const { postEvent, updateEvent } = useEventsApi();
+  const { timer, dispatch, InitialTimer, setInitialTimer } = useTimer();
+  const { currentDate } = useTimeMachineContext();
   const [open, setOpen] = useState(false);
+  const [session, setPomodoroSession] = useState<EventType | undefined>(
+    undefined
+  );
 
   // Block navigating elsewhere when data has been entered into the input
   const shouldBlock = useCallback<BlockerFunction>(
@@ -44,32 +55,80 @@ export default function Pomodoro() {
   );
   const blocker = useBlocker(shouldBlock);
 
-  useEffect(() => {
-    if (blocker.state === "blocked") {
-      setOpen(true);
-    }
-    console.log("breakpoint");
-  }, [blocker.state]);
-
   const remainder = useRef((timer.study.initialValue / 1000) % 5);
   const repetitions = useRef(
     (timer.study.initialValue / 1000 - remainder.current) / 10
   );
   const timeDiff = useRef(timer.study.value);
 
-  function start() {
+  async function start() {
+    // Set the initial timer correctly in case we didn't set the pomodoro session with the forms
+    setInitialTimer(timer);
+
     dispatch({
       type: "START",
       payload: null,
     });
+
+    // Find pomodoro of the day with same session
+    let todaysPomodoro = events.find(
+      (e) =>
+        moment(e.date).isSame(currentDate, "day") &&
+        e.currPomodoro?.study === timer.study.initialValue &&
+        e.currPomodoro?.relax === timer.relax.initialValue &&
+        !e.expiredPomodoro
+    );
+
+    const pomodoro = {
+      study: timer.study.initialValue,
+      relax: timer.relax.initialValue,
+      cycles: timer.cycles,
+    };
+    // Minutes for pomodoro event
+    const mins = Math.floor(timer.totalTime / 60000);
+
+    if (!todaysPomodoro) {
+      const newPomodoroEvent: EventType = {
+        itsPomodoro: true,
+        date: currentDate.toISOString(),
+        hours: 0,
+        minutes: mins,
+        isRecurring: false,
+        title: "Pomodoro",
+        currPomodoro: pomodoro,
+        expectedPomodoro: pomodoro,
+        groupList: [],
+        expiredPomodoro: false,
+      };
+      // crea il nuovo evento pomodoro di oggi
+      todaysPomodoro = await postEvent(newPomodoroEvent);
+    }
+
+    // Todays Pomodoro exists but number of cycles of selected session is greater
+    if (
+      todaysPomodoro?.expectedPomodoro?.cycles &&
+      todaysPomodoro?.currPomodoro?.cycles &&
+      timer.cycles > todaysPomodoro.expectedPomodoro?.cycles
+    ) {
+      // Add leftover cycles to todays pomodoro
+      todaysPomodoro.currPomodoro.cycles +=
+        timer.cycles - todaysPomodoro.expectedPomodoro.cycles;
+      todaysPomodoro.expectedPomodoro.cycles = timer.cycles;
+
+      await updateEvent(todaysPomodoro);
+    }
+
+    setPomodoroSession(todaysPomodoro);
+
+    client_log("Pomodoro: ", todaysPomodoro);
   }
 
   function reset() {
-    console.log("reset");
     dispatch({
       type: "SET",
       payload: InitialTimer,
     });
+    setPomodoroSession(undefined);
   }
 
   function restartStudy() {
@@ -149,6 +208,12 @@ export default function Pomodoro() {
     }
   }
 
+  useEffect(() => {
+    if (blocker.state === "blocked") {
+      setOpen(true);
+    }
+  }, [blocker.state]);
+
   // send a notification every time we start next phase
   useEffect(() => {
     const payload: NotificationPayload = {
@@ -159,12 +224,25 @@ export default function Pomodoro() {
 
     const userID = user?._id;
 
-    if (userID && timer.study.started && timer.relax.started)
+    if (
+      userID &&
+      timer.study.started &&
+      timer.relax.started &&
+      timer.cycles > 0
+    )
       RequestPushSub(() => sendNotification(userID, payload));
   }, [timer.isStudyCycle]);
 
-  // send a notification when session is finished
+  // Session FINISHED
   useEffect(() => {
+    // UPDATE todays pomodoro cycles
+    if (session?._id && session?.currPomodoro?.cycles) {
+      session.currPomodoro.cycles = timer.cycles;
+      updateEvent(session);
+
+      console.log("cycles: ", timer.cycles);
+    }
+
     const payload: NotificationPayload = {
       title: "Pomodoro Timer",
       body: "Pomodoro session finished! Wheew",
@@ -173,10 +251,10 @@ export default function Pomodoro() {
 
     const userID = user?._id;
 
-    if (userID && timer.totalTime === 0 && timer.relax.started) {
+    if (userID && timer.cycles === 0 && timer.relax.started) {
       RequestPushSub(() => sendNotification(userID, payload));
     }
-  }, [timer.totalTime]);
+  }, [timer.cycles]);
 
   return (
     <div className="view-container flex justify-center flex-col gap-5 md:flex-row sm:items-center mb-10">
@@ -300,6 +378,58 @@ export default function Pomodoro() {
                   <Button
                     onClick={() => {
                       dispatch({ type: "SKIPCYCLE", payload: null });
+                      remainder.current = (timer.study.initialValue / 1000) % 5;
+                      repetitions.current =
+                        (timer.study.initialValue / 1000 - remainder.current) /
+                        10;
+                      timeDiff.current = timer.study.initialValue;
+
+                      const pulse1 = document.getElementById("pulse1");
+                      if (pulse1) {
+                        pulse1.style.animation = "none";
+                        pulse1.offsetHeight; // read-only property to trigger a reflow
+                        pulse1.style.animation = "";
+                        pulse1.style.animationIterationCount = `${repetitions.current}`;
+                        pulse1.style.animationPlayState = timer.study.started
+                          ? "running"
+                          : "paused";
+                      }
+
+                      const pulse2 = document.getElementById("pulse2");
+                      if (pulse2) {
+                        pulse2.style.animation = "none";
+                        pulse2.offsetHeight; // read-only property to trigger a reflow
+                        pulse2.style.animation = "";
+                        pulse2.style.animationIterationCount = `${repetitions.current}`;
+                        pulse2.style.animationPlayState = timer.study.started
+                          ? "running"
+                          : "paused";
+                      }
+
+                      const progressbar = document.getElementById("progbar");
+                      if (progressbar) {
+                        progressbar.style.animation = "none";
+                        progressbar.offsetHeight; // read-only property to trigger a reflow
+                        progressbar.style.animation = "";
+                        progressbar.style.animationDuration = `${timeDiff.current}ms`;
+                        progressbar.style.animationIterationCount = "1";
+                        progressbar.style.animationPlayState = timer.study
+                          .started
+                          ? "running"
+                          : "paused";
+                      }
+
+                      const orbit = document.getElementById("orbit");
+                      if (orbit) {
+                        orbit.style.animation = "none";
+                        orbit.offsetHeight; // read-only property to trigger a reflow
+                        orbit.style.animation = "";
+                        orbit.style.animationDuration = `${timeDiff.current}ms`;
+                        orbit.style.animationIterationCount = "1";
+                        orbit.style.animationPlayState = timer.study.started
+                          ? "running"
+                          : "paused";
+                      }
                     }}
                   >
                     <ChevronLast />
@@ -311,6 +441,7 @@ export default function Pomodoro() {
         </div>
       </div>
 
+      {/* Forms */}
       {!timer.study.started && (
         <PomodoroForm
           timer={timer}
@@ -320,15 +451,15 @@ export default function Pomodoro() {
         />
       )}
 
+      {/* Dialog Window */}
       <AlertDialog open={open} onOpenChange={setOpen}>
         <AlertDialogTrigger></AlertDialogTrigger>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will delete all of your
-              Pomodoro Session progress. All non-completed cycles will be
-              automatically added to your next pomodoro session(s).
+              All non-completed cycles will be automatically added to your next
+              pomodoro session.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -342,8 +473,8 @@ export default function Pomodoro() {
             <AlertDialogAction
               onClick={() => {
                 if (blocker.state === "blocked") {
-                  blocker.proceed();
                   localStorage.removeItem("pomodoro_timer");
+                  blocker.proceed();
                 }
               }}
             >

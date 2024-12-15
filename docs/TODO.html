@@ -24,6 +24,13 @@
             border-collapse: collapse;
         }
 
+        .tables {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            gap: 5rem;
+        }
+
         td,
         th {
             border: 1px solid #dddddd;
@@ -36,7 +43,11 @@
             background-color: rgb(21, 21, 21);
             color: rgb(159, 159, 248);
             border-radius: 10px;
-            padding: 0.5rem;
+            padding: 1rem;
+        }
+
+        .cit-vitali {
+            margin-top: 0;
         }
 
         a {
@@ -50,18 +61,128 @@
         }
     </style>
     <script>
-        window.onload = function () {
+        window.onload = () => {
+
+            // Emojis: ✅ ❌ ⚠️
 
             const tasks = document.querySelectorAll("table  tr");
 
+            // Total tasks (including the ones from 18-33 extension)
             let total_andrea_tasks = 0;
             let total_chiara_tasks = 0;
             let total_mattia_tasks = 0;
 
-            // tasks: count the number of ✅ for single owner
-            let andrea_tasks = 0;
-            let chiara_tasks = 0;
-            let mattia_tasks = 0;
+            // Obligatory tasks (extension 18-27)
+            let total_obligatory_andrea_tasks = 0;
+            let total_obligatory_chiara_tasks = 0;
+            let total_obligatory_mattia_tasks = 0;
+
+            // count the number of ✅ for single owner obligatory tasks
+            let andrea_tasks_completed = 0;
+            let chiara_tasks_completed = 0;
+            let mattia_tasks_completed = 0;
+
+            // Total completed tasks for single owner
+            let andrea_obligatory_completed = 0;
+            let chiara_obligatory_completed = 0;
+            let mattia_obligatory_completed = 0;
+
+            function createProgressTable(table) {
+                const table_head = document.querySelector(`.${table} #tasks-table thead`);
+                const table_body = document.querySelector(`.${table} #tasks-table tbody`);
+
+                const hrow = document.createElement("tr");
+                const header_owner = document.createElement("th");
+                const header_tasks = document.createElement("th");
+                const header_percentage = document.createElement("th");
+
+                header_owner.textContent = "Owner";
+                header_tasks.textContent = "Tasks";
+                header_percentage.textContent = "Percentage"
+
+                const a_row = document.createElement("tr");
+                const a_d_own = document.createElement("td");
+                const a_d_task = document.createElement("td");
+                const a_d_perc = document.createElement("td");
+
+                let sumOf_andrea_tasks = 0;
+                let sumOf_chiara_tasks = 0;
+                let sumOf_mattia_tasks = 0;
+
+                let completed_andrea = 0;
+                let completed_chiara = 0;
+                let completed_mattia = 0;
+
+                if (table === "progress1") {
+                    sumOf_andrea_tasks = total_obligatory_andrea_tasks;
+                    sumOf_chiara_tasks = total_obligatory_chiara_tasks;
+                    sumOf_mattia_tasks = total_obligatory_mattia_tasks;
+
+                    completed_andrea = andrea_obligatory_completed;
+                    completed_chiara = chiara_obligatory_completed;
+                    completed_mattia = mattia_obligatory_completed;
+                }
+                else {
+                    sumOf_andrea_tasks = total_andrea_tasks;
+                    sumOf_chiara_tasks = total_chiara_tasks;
+                    sumOf_mattia_tasks = total_mattia_tasks;
+
+                    completed_andrea = andrea_tasks_completed;
+                    completed_chiara = chiara_tasks_completed;
+                    completed_mattia = mattia_tasks_completed;
+                }
+
+                a_d_own.textContent = "ANDREA";
+                a_d_task.textContent = `${completed_andrea}/${sumOf_andrea_tasks}`;
+                a_d_perc.textContent = `${Math.floor((completed_andrea / sumOf_andrea_tasks) * 100)}%`;
+
+                const c_row = document.createElement("tr");
+                const c_d_own = document.createElement("td");
+                const c_d_task = document.createElement("td");
+                const c_d_perc = document.createElement("td");
+
+                c_d_own.textContent = "CHIARA";
+                c_d_task.textContent = `${completed_chiara}/${sumOf_chiara_tasks}`;
+                c_d_perc.textContent = `${Math.floor((completed_chiara / sumOf_chiara_tasks) * 100)}%`;
+
+                const m_row = document.createElement("tr");
+                const m_d_own = document.createElement("td");
+                const m_d_task = document.createElement("td");
+                const m_d_perc = document.createElement("td");
+
+                m_d_own.textContent = "MATTIA";
+                m_d_task.textContent = `${completed_mattia}/${sumOf_mattia_tasks}`;
+                m_d_perc.textContent = `${Math.floor((completed_mattia / sumOf_mattia_tasks) * 100)}%`;
+
+                // table with number of tasks completed and progress %
+                table_head.appendChild(hrow);
+                table_head.appendChild(header_owner);
+                table_head.appendChild(header_tasks);
+                table_head.appendChild(header_percentage);
+
+                table_body.appendChild(a_row)
+                table_body.appendChild(a_d_own);
+                table_body.appendChild(a_d_task);
+                table_body.appendChild(a_d_perc);
+
+                table_body.appendChild(c_row)
+                table_body.appendChild(c_d_own);
+                table_body.appendChild(c_d_task);
+                table_body.appendChild(c_d_perc);
+
+                table_body.appendChild(m_row)
+                table_body.appendChild(m_d_own);
+                table_body.appendChild(m_d_task);
+                table_body.appendChild(m_d_perc);
+            }
+
+            function isObligatory(task) {
+                return task.querySelector("td>span").className !== "orange"
+            }
+
+            function isCompleted(task) {
+                return task.querySelector("td:nth-child(3)").textContent === "✅"
+            }
 
             tasks.forEach((task) => {
                 console.log(task)
@@ -70,88 +191,49 @@
                     switch (owner.textContent) {
                         case "ANDREA":
                             total_andrea_tasks++;
-                            if (task.querySelector("td:nth-child(3)").textContent === "✅") {
-                                andrea_tasks++;
-                            }
+
+                            if (isObligatory(task))
+                                total_obligatory_andrea_tasks++;
+
+                            if (isObligatory(task) && isCompleted(task)) andrea_obligatory_completed++;
+
+                            if (isCompleted(task))
+                                andrea_tasks_completed++;
+
+
                             break;
                         case "CHIARA":
                             total_chiara_tasks++;
-                            if (task.querySelector("td:nth-child(3)").textContent === "✅") {
-                                chiara_tasks++;
-                            }
+
+                            if (isObligatory(task))
+                                total_obligatory_chiara_tasks++;
+
+                            if (isObligatory(task) && isCompleted(task)) chiara_obligatory_completed++;
+
+                            if (isCompleted(task))
+                                chiara_tasks_completed++;
+
                             break;
                         case "MATTIA":
                             total_mattia_tasks++;
-                            if (task.querySelector("td:nth-child(3)").textContent === "✅") {
-                                mattia_tasks++;
-                            }
-                            break;
 
+                            if (isObligatory(task))
+                                total_obligatory_mattia_tasks++;
+
+                            if (isObligatory(task) && isCompleted(task)) mattia_obligatory_completed++;
+
+                            if (isCompleted(task))
+                                mattia_tasks_completed++;
+
+                            break;
                         default:
                             break;
                     }
                 }
             });
 
-            const table_head = document.querySelector("#tasks-table thead");
-            const table_body = document.querySelector("#tasks-table tbody");
-
-            const hrow = document.createElement("tr");
-            const header_owner = document.createElement("th");
-            const header_tasks = document.createElement("th");
-            const header_percentage = document.createElement("th");
-
-            header_owner.textContent = "Owner";
-            header_tasks.textContent = "Tasks";
-            header_percentage.textContent = "Percentage"
-
-            const a_row = document.createElement("tr");
-            const a_d_own = document.createElement("td");
-            const a_d_task = document.createElement("td");
-            const a_d_perc = document.createElement("td");
-
-            a_d_own.textContent = "ANDREA";
-            a_d_task.textContent = `${andrea_tasks}/${total_andrea_tasks}`;
-            a_d_perc.textContent = `${Math.floor((andrea_tasks / total_andrea_tasks) * 100)}%`;
-
-            const c_row = document.createElement("tr");
-            const c_d_own = document.createElement("td");
-            const c_d_task = document.createElement("td");
-            const c_d_perc = document.createElement("td");
-
-            c_d_own.textContent = "CHIARA";
-            c_d_task.textContent = `${chiara_tasks}/${total_chiara_tasks}`;
-            c_d_perc.textContent = `${Math.floor((chiara_tasks / total_chiara_tasks) * 100)}%`;
-
-            const m_row = document.createElement("tr");
-            const m_d_own = document.createElement("td");
-            const m_d_task = document.createElement("td");
-            const m_d_perc = document.createElement("td");
-
-            m_d_own.textContent = "MATTIA";
-            m_d_task.textContent = `${mattia_tasks}/${total_mattia_tasks}`;
-            m_d_perc.textContent = `${Math.floor((mattia_tasks / total_mattia_tasks) * 100)}%`;
-
-            // table with number of tasks completed and progress %
-            table_head.appendChild(hrow);
-            table_head.appendChild(header_owner);
-            table_head.appendChild(header_tasks);
-            table_head.appendChild(header_percentage);
-
-            table_body.appendChild(a_row)
-            table_body.appendChild(a_d_own);
-            table_body.appendChild(a_d_task);
-            table_body.appendChild(a_d_perc);
-
-            table_body.appendChild(c_row)
-            table_body.appendChild(c_d_own);
-            table_body.appendChild(c_d_task);
-            table_body.appendChild(c_d_perc);
-
-            table_body.appendChild(m_row)
-            table_body.appendChild(m_d_own);
-            table_body.appendChild(m_d_task);
-            table_body.appendChild(m_d_perc);
+            createProgressTable("progress1");
+            createProgressTable("progress2");
         }
     </script>
     <title>TODO</title>
@@ -167,20 +249,32 @@
         </li>
     </ul>
 
-    <div class="progress">
-        <h3>Tasks Table</h3>
-        <table id="tasks-table">
-            <thead>
-            </thead>
-            <tbody>
-            </tbody>
-        </table>
+    <div class="tables">
+        <div class="progress1">
+            <h3>Specifiche Obbligatorie</h3>
+            <table id="tasks-table">
+                <thead>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="progress2">
+            <h3 class="orange">Specifiche Totali</h3>
+            <table id="tasks-table">
+                <thead>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
     </div>
 
     <h2>Requisiti di progetto</h2>
 
     <blockquote>
-        <p>
+        <p class="cit-vitali">
             "I progetti 18-27 e 18-33 sono presentati di persona su appuntamento.
             Gruppi di 2-3 persone, mai più di 3, mai meno di 2"
         </p>
@@ -321,19 +415,19 @@
             <td>
                 Nell'Home vengono mostrate preview dei contenuti delle singole view:
                 ad esempio gli eventi della settimana/giorno corrente, l'ultima nota
-                creata, le attività imminente, report sull'ultimo pomodoro svolto,
-                <span class="orange">scadenze imminenti dei progetti</span>.
+                creata, le attività imminente, report sull'ultimo pomodoro svolto.
             </td>
             <td><span class="owner">ANDREA</span></td>
-            <td>❌</td>
+            <td>✅</td>
         </tr>
+
         <tr>
             <td>
                 Gli utenti hanno la possibilità di personalizzare il tipo di preview
                 per ogni view.
             </td>
             <td><span class="owner">ANDREA</span></td>
-            <td>❌</td>
+            <td>✅</td>
         </tr>
 
         <tr>
@@ -342,8 +436,17 @@
                 non una chat a tutti gli effetti)
             </td>
             <td><span class="owner">ANDREA</span></td>
+            <td>✅</td>
+        </tr>
+
+        <tr>
+            <td>
+                <span class="orange">Vengono visualizzate le scadenze imminenti dei progetti.</span>
+            </td>
+            <td><span class="owner">ANDREA</span></td>
             <td>❌</td>
         </tr>
+
         <tr>
             <td>
                 <span class="orange">Gli utenti hanno un mini hub dove poter chattare con gli altri
@@ -407,7 +510,7 @@
                 sistema operativo e/o un alert, con una mail, whatsapp, ecc.)
             </td>
             <td><span class="owner">MATTIA</span></td>
-            <td>❌</td>
+            <td>✅</td>
         </tr>
         <tr>
             <td>
@@ -415,7 +518,7 @@
                 un'ora, due ore, un giorno, due giorni prima, ecc.)
             </td>
             <td><span class="owner">MATTIA</span></td>
-            <td>❌</td>
+            <td>✅</td>
         </tr>
         <tr>
             <td>
@@ -423,7 +526,7 @@
                 ripeti ogni ora, ripeti fino a che non rispondo, ecc.).
             </td>
             <td><span class="owner">MATTIA</span></td>
-            <td>❌</td>
+            <td>✅</td>
         </tr>
         <tr>
             <td>
@@ -432,7 +535,7 @@
                 dell'evento.
             </td>
             <td><span class="owner">MATTIA</span></td>
-            <td>❌</td>
+            <td>✅</td>
         </tr>
         <tr>
             <td>
@@ -440,7 +543,7 @@
                 come non disponibili per eventi di gruppo.
             </td>
             <td><span class="owner">MATTIA</span></td>
-            <td>❌</td>
+            <td>✅</td>
         </tr>
         <tr>
             <td>
@@ -449,7 +552,7 @@
                 Calendar, ecc. anche via mail.)
             </td>
             <td><span class="owner">MATTIA</span></td>
-            <td>❌</td>
+            <td>⚠️</td>
         </tr>
         <tr>
             <td>
@@ -541,7 +644,7 @@
                 ci si allontana dalla data di scadenza.
             </td>
             <td><span class="owner">MATTIA</span></td>
-            <td>❌</td>
+            <td>✅</td>
         </tr>
         <tr>
             <td>
@@ -549,7 +652,7 @@
                 gruppo.
             </td>
             <td><span class="owner">MATTIA</span></td>
-            <td>❌</td>
+            <td>✅</td>
         </tr>
         <tr>
             <td>
@@ -574,7 +677,7 @@
                 Le note devono essere gestite in una view separata dal calendario.
             </td>
             <td><span class="owner">CHIARA</span></td>
-            <td>❌</td>
+            <td>✅</td>
         </tr>
         <tr>
             <td>
@@ -582,12 +685,12 @@
                 note.
             </td>
             <td><span class="owner">CHIARA</span></td>
-            <td>❌</td>
+            <td>✅</td>
         </tr>
         <tr>
             <td>È possibile cancellare note.</td>
             <td><span class="owner">CHIARA</span></td>
-            <td>❌</td>
+            <td>✅</td>
         </tr>
         <tr>
             <td>
@@ -597,7 +700,7 @@
                 titolo), per data e per lunghezza del contenuto.
             </td>
             <td><span class="owner">CHIARA</span></td>
-            <td>❌</td>
+            <td>✅</td>
         </tr>
         <tr>
             <td>
@@ -605,7 +708,7 @@
                 <a href="https://www.npmjs.com/package/marked">https://www.npmjs.com/package/marked</a>.
             </td>
             <td><span class="owner">CHIARA</span></td>
-            <td>❌</td>
+            <td>✅</td>
         </tr>
         <tr>
             <td>
@@ -613,7 +716,7 @@
                 aperte ad alcune specifiche persone, private.
             </td>
             <td><span class="owner">CHIARA</span></td>
-            <td>❌</td>
+            <td>✅</td>
         </tr>
         <tr>
             <td>
@@ -699,7 +802,7 @@
                 pomodoro.
             </td>
             <td><span class="owner">ANDREA</span></td>
-            <td>❌</td>
+            <td>✅</td>
         </tr>
         <tr>
             <td>
@@ -708,7 +811,7 @@
                 giornata.
             </td>
             <td><span class="owner">ANDREA</span></td>
-            <td>❌</td>
+            <td>✅</td>
         </tr>
         <tr>
             <td>
@@ -716,7 +819,7 @@
                 possibile studiare con le stesse impostazioni.
             </td>
             <td><span class="owner">ANDREA</span></td>
-            <td>❌</td>
+            <td>⚠️</td>
         </tr>
         <tr>
             <td>
@@ -753,7 +856,7 @@
                 servizio chiamato Time Machine.
             </td>
             <td><span class="owner">CHIARA</span></td>
-            <td>❌</td>
+            <td>✅</td>
         </tr>
         <tr>
             <td>
@@ -762,7 +865,7 @@
                 momento.
             </td>
             <td><span class="owner">CHIARA</span></td>
-            <td>❌</td>
+            <td>✅</td>
         </tr>
         <tr>
             <td>
@@ -772,7 +875,7 @@
                 Time Machine.
             </td>
             <td><span class="owner">CHIARA</span></td>
-            <td>❌</td>
+            <td>✅</td>
         </tr>
         <tr>
             <td>
@@ -780,7 +883,7 @@
                 data.
             </td>
             <td><span class="owner">CHIARA</span></td>
-            <td>❌</td>
+            <td>✅</td>
         </tr>
         <tr>
             <td>
@@ -788,7 +891,7 @@
                 quelle dei giorni precedenti.
             </td>
             <td><span class="owner">CHIARA</span></td>
-            <td>❌</td>
+            <td>✅</td>
         </tr>
         <tr>
             <td>
@@ -796,9 +899,129 @@
                 sistema operativo.
             </td>
             <td><span class="owner">CHIARA</span></td>
-            <td>❌</td>
+            <td>✅</td>
         </tr>
     </table>
+
+    <h2>TODO di feature generali (Non servono ma aiutano)</h2>
+
+    <table>
+        <tr>
+            <td><span class="orange">Pagina Profile (username, email, name, surname e DoB).</span></td>
+            <td><span class="owner">ANDREA</span></td>
+            <td>✅</td>
+        </tr>
+        <tr>
+            <td><span class="orange">Pagina Account: Change Password + Toggle per iscriversi o disiscriversi al servizio
+                    di notifiche push.</span></td>
+            <td><span class="owner">ANDREA</span></td>
+            <td>✅</td>
+        </tr>
+        <tr>
+            <td><span class="orange">Pagina Take a Selfie per caricare una nuova foto profilo sfogliando i propri file
+                    OPPURE scattare un selfie direttamente dall'applicazione.</span></td>
+            <td><span class="owner">ANDREA</span></td>
+            <td>✅</td>
+        </tr>
+        <tr>
+            <td><span class="orange">Spostare il widget del tema nella navbar (su desktop) e di fianco al titolo del
+                    sidesheet (su mobile).</span></td>
+            <td><span class="owner">ANDREA</span></td>
+            <td>✅</td>
+        </tr>
+        <tr>
+            <td><span class="orange">Modificare la report view pomodoro della home per visualizzare una tabella dei
+                    pomodoro più recenti con data, informazioni sui timer e lunghezza totale della sessione.</span></td>
+            <td><span class="owner">ANDREA</span></td>
+            <td>❌</td>
+        </tr>
+        <tr>
+            <td><span class="orange">Aggiungere alla preview pomodoro base la data dello scorso pomodoro a cui si fa
+                    riferimento, la data, la durata dei timer e la durata totale prevista.</span></td>
+            <td><span class="owner">ANDREA</span></td>
+            <td>❌</td>
+        </tr>
+        <tr>
+            <td><span class="orange">Pomodoro: Migliorare la visualizzazione su mobile, specialmente in
+                    orizzontale.</span></td>
+            <td><span class="owner">ANDREA</span></td>
+            <td>❌</td>
+        </tr>
+        <tr>
+            <td><span class="orange">Pomodoro: Aggiungere un sonner(?) dove mettere le istruzioni d'utilizzo e la
+                    spiegazione
+                    dell'integrazione col calendario.</span></td>
+            <td><span class="owner">ANDREA</span></td>
+            <td>❌</td>
+        </tr>
+        <tr>
+            <td><span class="orange">Modificare la gestione dei permessi in RequestPushSub. Se uno è disiscritto ma ha
+                    dato l'ok ai permessi lascialo stare, non iscriverlo forzatamente.</span></td>
+            <td><span class="owner">ANDREA</span></td>
+            <td>✅</td>
+        </tr>
+        <tr>
+            <td><span class="orange">Creare una collezione di iscrizioni push. Così possiamo popolare l'utente con i
+                    dati delle sue iscrizioni all'occorrenza, tenendo solo un array di object ID di default.</span></td>
+            <td><span class="owner">ANDREA</span></td>
+            <td>✅</td>
+        </tr>
+        <tr>
+            <td><span class="orange">Durante il login dell'utente, prendere l'iscrizione dal database e iscriverlo nel
+                    client.</span></td>
+            <td><span class="owner">ANDREA</span></td>
+            <td>✅</td>
+        </tr>
+        <tr>
+            <td><span class="orange">Durante il logout dell'utente, rimuovere l'iscrizione solo nel client.</span></td>
+            <td><span class="owner">ANDREA</span></td>
+            <td>✅</td>
+        </tr>
+        <tr>
+            <td><span class="orange">Creare una funzione per popolare il DB ogni volta che viene attivato il
+                    server.</span></td>
+            <td><span class="owner">ANDREA</span></td>
+            <td>✅</td>
+        </tr>
+        <tr>
+            <td><span class="orange">Sistemare la tabella delle attività nella calendar view (Filtro expiration
+                    buggato).</span></td>
+            <td><span class="owner">ANDREA</span></td>
+            <td>✅</td>
+        </tr>
+        <tr>
+            <td><span class="orange">Sostituire gli input per la ricerca degli utenti nel calendar e nelle note con un
+                    componente che usa Command di shadcn.</span></td>
+            <td><span class="owner">ANDREA</span></td>
+            <td>❌</td>
+        </tr>
+        <tr>
+            <td><span class="orange">Fix per la Time Machine che fa salti nel tempo non molto precisi.</span></td>
+            <td><span class="owner">ANDREA</span></td>
+            <td>❌</td>
+        </tr>
+        <tr>
+            <td><span class="orange">Accessibilità Home.</span></td>
+            <td><span class="owner">ANDREA</span></td>
+            <td>❌</td>
+        </tr>
+        <tr>
+            <td><span class="orange">Accessibilità Calendario.</span></td>
+            <td><span class="owner">MATTIA</span></td>
+            <td>❌</td>
+        </tr>
+        <tr>
+            <td><span class="orange">Accessibilità Pomodoro.</span></td>
+            <td><span class="owner">ANDREA</span></td>
+            <td>❌</td>
+        </tr>
+        <tr>
+            <td><span class="orange">Accessibilità Note.</span></td>
+            <td><span class="owner">CHIARA</span></td>
+            <td>✅</td>
+        </tr>
+    </table>
+
 </body>
 
 </html>

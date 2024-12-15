@@ -13,7 +13,7 @@ const noteSchema = new Schema({
   },
   categories: {
     type: [String],
-    default: [] 
+    default: []
   },
   author: {
     type: String,
@@ -26,7 +26,7 @@ const noteSchema = new Schema({
   },
   specificAccess: {
     type: [String], // Usernames degli utenti che possono accedere (solo per 'restricted')
-    required: function() {
+    required: function () {
       return this.accessType === 'restricted';
     }
   },
@@ -40,4 +40,6 @@ const noteSchema = new Schema({
   }
 }, { timestamps: false });
 
-module.exports = mongoose.model('Note', noteSchema);
+const Note = mongoose.model('Note', noteSchema);
+
+module.exports = { Note };

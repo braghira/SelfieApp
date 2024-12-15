@@ -15,35 +15,24 @@ const userSchema = new mongoose.Schema({
   },
   name: String,
   surname: String,
-  pushSubscriptions: [
-    {
-      endpoint: { type: String, required: true },
-      keys: {
-        p256dh: { type: String, required: true },
-        auth: { type: String, required: true }
-      }
-    }
-  ],
-  email: {
-    type: String,
-    unique: true, // le email devono essere uniche
-  },
-  profilePic: { type: mongoose.Schema.Types.ObjectId, ref: "Media", required: true },
   birthday: Date,
+  profilePic: { type: mongoose.Schema.Types.ObjectId, ref: "Media", required: true },
+  pushSubscriptions: [
+    { type: mongoose.Schema.Types.ObjectId, ref: "PushSub", default: [] }
+  ],
 });
 
 const User = mongoose.model("User", userSchema);
 
-// signup validation
-async function validateSignup(
-  username,
-  password,
-  email,
-  name,
-  surname,
-  birthday
-) {
-  // validation
+/**
+ * Thorws an error when one of the parameters is either undefined or not valid
+ * @param {String} username 
+ * @param {String} password 
+ * @param {String} name 
+ * @param {String} surname 
+ * @param {String} birthday 
+ */
+function validation(username, password, name, surname, birthday) {
   if (!username || !password) {
     throw Error("Username and Password required");
   }
@@ -53,19 +42,25 @@ async function validateSignup(
   if (surname && !validator.isAlpha(surname)) {
     throw Error("Real surname not valid");
   }
-  if (!validator.isStrongPassword(password)) {
-    throw Error("Password not strong enough");
-  }
-  if (email && !validator.isEmail(email)) {
-    throw Error("Email not valid");
-  }
   if (
     birthday &&
     !validator.isDate(new Date(birthday).toISOString().split("T")[0])
   ) {
     console.log(birthday);
-    throw Error("Date not valid");
+    throw Error("Date of Birth not valid");
   }
+}
+
+// signup validation
+async function validateSignup(
+  username,
+  password,
+  name,
+  surname,
+  birthday
+) {
+
+  validation(username, password, name, surname, birthday);
 
   // check if username already exists
   const exists = await User.findOne({ username });
@@ -81,11 +76,11 @@ async function validateSignup(
   const user = await User.create({
     username,
     password: hash,
-    email,
     name,
     surname,
     profilePic: await getDefaultPic(),
     birthday,
+    pushSubscriptions: [],
   });
 
   return user;
@@ -113,4 +108,71 @@ async function validateLogin(username, password) {
   return user;
 }
 
-module.exports = { User, validateLogin, validateSignup };
+// updates a single User
+async function updateProfile(
+  username,
+  name,
+  surname,
+  birthday,
+  profilePic,
+  _id
+) {
+  const profilePicID = profilePic.split("media/")[1];
+
+  if (name && !validator.isAlpha(name)) {
+    throw Error("Real name not valid");
+  }
+  if (surname && !validator.isAlpha(surname)) {
+    throw Error("Real surname not valid");
+  }
+  if (
+    birthday &&
+    !validator.isDate(new Date(birthday).toISOString().split("T")[0])
+  ) {
+    console.log(birthday);
+    throw Error("Date not valid");
+  }
+  if (!mongoose.isValidObjectId(profilePicID)) {
+    throw Error("Couldn't load Profile Pic");
+  }
+  if (!mongoose.isValidObjectId(_id)) {
+    throw Error("Object ID not valid");
+  }
+
+  console.log({ username, name, surname, birthday, profilePicID });
+
+  // Find the user, then update single fields one by one
+  const user = await User.findById(_id);
+
+  const newData = {
+    username: username,
+    name: name,
+    surname: surname,
+    birthday: birthday,
+    profilePic: profilePicID,
+  }
+
+  return await User.findByIdAndUpdate(_id, { ...newData }, { new: true });
+}
+
+async function updateAccount(currPassword, newPassword, confirmPassword, _id) {
+  const user = await User.findById(_id);
+
+  const match = await bcrypt.compare(currPassword, user.password);
+
+  if (!match)
+    throw Error("Current Password not valid");
+
+  if (newPassword !== confirmPassword)
+    throw Error("New Passwords don't match");
+
+  // aggiungere sale qb(10 caratteri)
+  const salt = await bcrypt.genSalt(10);
+  const hash = await bcrypt.hash(newPassword, salt);
+
+  user.password = hash;
+
+  return await User.findByIdAndUpdate(_id, { ...user }, { new: true });
+}
+
+module.exports = { User, validateLogin, validateSignup, updateProfile, updateAccount };

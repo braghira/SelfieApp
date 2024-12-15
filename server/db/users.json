@@ -1,0 +1,56 @@
+[
+  {
+    "username": "fv1",
+    "password": "$2b$10$/lF2hTEwCPsGuxp2uyss7OdQHnRyodDjzPxAM1M1WGZZEoojDeCR.",
+    "name": "Fabio",
+    "surname": "Vitali",
+    "email": "fv1@gmail.com",
+    "birthday": "-131590800000",
+    "pushSubscriptions": []
+  },
+  {
+    "username": "fv2",
+    "password": "$2b$10$/lF2hTEwCPsGuxp2uyss7OdQHnRyodDjzPxAM1M1WGZZEoojDeCR.",
+    "name": "Fabio",
+    "surname": "Vitali",
+    "email": "fabio2@gmail.com",
+    "birthday": "-134010000000",
+    "pushSubscriptions": []
+  },
+  {
+    "username": "fv3",
+    "password": "$2b$10$/lF2hTEwCPsGuxp2uyss7OdQHnRyodDjzPxAM1M1WGZZEoojDeCR.",
+    "name": "Fabio",
+    "surname": "Vitali",
+    "email": "fabio3@gmail.com",
+    "birthday": "-134010000000",
+    "pushSubscriptions": []
+  },
+  {
+    "username": "mario",
+    "password": "$2b$10$K6m7k0WxPtbozV6a1kUqkePIHkkcHNkj6HBf9GOFTW5yoZzXKR4fq",
+    "name": "Mario",
+    "surname": "Bros",
+    "email": "mario@gmail.com",
+    "birthday": "1983-03-09T23:00:00Z",
+    "pushSubscriptions": []
+  },
+  {
+    "username": "luigi",
+    "password": "$2b$10$DCMF26xz2kqMjVaWZX2qXe8ezoTtbSTk3lCQgs9Q1b2RKp2e0EX/G",
+    "name": "Luigi",
+    "surname": "Bros",
+    "email": "luigi@gmail.com",
+    "birthday": "1983-03-09T23:00:00Z",
+    "pushSubscriptions": []
+  },
+  {
+    "username": "bowser",
+    "password": "$2b$10$RZcDwzcc/5vLEOMANTRk9uK65konFwdhF5K4nt/AH1NrWeafPqL.a",
+    "name": "Bowser",
+    "surname": "Goomba",
+    "email": "bowser@gmail.com",
+    "birthday": "1983-10-30T23:00:00Z",
+    "pushSubscriptions": []
+  }
+]

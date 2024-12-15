@@ -5,32 +5,19 @@ const {
   signupUser,
   refreshToken,
   logoutUser,
-  subscribe,
-  unsubscribe,
-  sendNotification
 } = require("../controllers/authController");
 const { loginLimiter } = require("../middleware/authentication");
 
-
-// login route
+// login user
 router.post("/login", loginLimiter, loginUser); // add a layer of security with rate limiter middleware
 
-// register route
+// register user
 router.post("/signup", signupUser);
 
-// refresh token route
+// refresh token
 router.get("/refresh", refreshToken);
 
-// logout route
+// logout user
 router.post("/logout", logoutUser);
-
-// subscribe a new device
-router.post("/subscribe", subscribe);
-
-// unsubscribe a device
-router.post("/unsubscribe", unsubscribe);
-
-// send notification to all of user's devices
-router.post("/sendNotification", sendNotification);
 
 module.exports = router;

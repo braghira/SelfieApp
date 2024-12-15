@@ -13,6 +13,7 @@ import {
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { useState } from "react";
+import SharePomodoro from "./SharePomodoro";
 
 interface SessionProps {
   timer: PomodoroType;
@@ -30,7 +31,6 @@ type SessionType = z.infer<typeof SessionSchema>;
 
 export default function SessionForm({
   dispatch,
-  InitialTimer,
   setInitialTimer,
 }: SessionProps) {
   const form = useForm<SessionType>({
@@ -41,7 +41,7 @@ export default function SessionForm({
     },
   });
 
-  const [session, setSession] = useState<PomodoroType[]>([InitialTimer]);
+  const [session, setSession] = useState<PomodoroType[]>([]);
 
   function addToArray(newItem: PomodoroType) {
     setSession((prevArray) => {
@@ -214,7 +214,6 @@ export default function SessionForm({
               <Button
                 key={key}
                 type="button"
-                autoFocus
                 onClick={() => setPomodoro(timer)}
               >
                 {timer.study.initialValue / (1000 * 60)}/
@@ -223,6 +222,8 @@ export default function SessionForm({
             ))}
           </div>
         )}
+
+        <SharePomodoro />
       </form>
     </Form>
   );

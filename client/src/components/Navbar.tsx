@@ -3,7 +3,7 @@ import { buttonVariants } from "./ui/button";
 import Logo from "./Logo";
 import { CalendarDays, HomeIcon, NotebookIcon, TimerIcon } from "lucide-react";
 import SideSheet from "./SideSheet";
-import TimeMachinePopup from "./TimeMachine"; 
+import TimeMachinePopup from "./TimeMachine";
 
 export default function Navbar() {
   return (
@@ -17,11 +17,9 @@ export default function Navbar() {
           <NavLink
             to="/home"
             className={({ isActive }) =>
-              [
-                isActive
-                  ? buttonVariants({ variant: "default" })
-                  : buttonVariants({ variant: "ghost" }),
-              ].join(" ")
+              isActive
+                ? buttonVariants({ variant: "default" })
+                : buttonVariants({ variant: "ghost" })
             }
           >
             Home
@@ -30,11 +28,9 @@ export default function Navbar() {
           <NavLink
             to="/pomodoro"
             className={({ isActive }) =>
-              [
-                isActive
-                  ? buttonVariants({ variant: "default" })
-                  : buttonVariants({ variant: "ghost" }),
-              ].join(" ")
+              isActive
+                ? buttonVariants({ variant: "default" })
+                : buttonVariants({ variant: "ghost" })
             }
           >
             Pomodoro
@@ -43,11 +39,9 @@ export default function Navbar() {
           <NavLink
             to="/calendar"
             className={({ isActive }) =>
-              [
-                isActive
-                  ? buttonVariants({ variant: "default" })
-                  : buttonVariants({ variant: "ghost" }),
-              ].join(" ")
+              isActive
+                ? buttonVariants({ variant: "default" })
+                : buttonVariants({ variant: "ghost" })
             }
           >
             Calendar
@@ -56,11 +50,9 @@ export default function Navbar() {
           <NavLink
             to="/notes"
             className={({ isActive }) =>
-              [
-                isActive
-                  ? buttonVariants({ variant: "default" })
-                  : buttonVariants({ variant: "ghost" }),
-              ].join(" ")
+              isActive
+                ? buttonVariants({ variant: "default" })
+                : buttonVariants({ variant: "ghost" })
             }
           >
             Notes

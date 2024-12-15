@@ -1,5 +1,5 @@
 import Logo from "@/components/Logo";
-import { ModeToggle } from "@/components/ModeToggle";
+import { ModeToggle } from "@/components/dashboard/ModeToggle";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
 import { NavLink } from "react-router-dom";

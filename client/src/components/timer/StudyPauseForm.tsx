@@ -14,6 +14,7 @@ import {
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import Loader from "../Loader";
+import SharePomodoro from "./SharePomodoro";
 
 interface StudyPauseFormProps {
   timer: PomodoroType;
@@ -75,61 +76,65 @@ export default function StudyPauseForm({
   }
 
   return (
-    <Form {...form}>
-      <form
-        onSubmit={form.handleSubmit(onSubmit)}
-        className="flex flex-col gap-5 mt-4"
-      >
-        <FormField
-          control={form.control}
-          name="studyTime"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Study Timer</FormLabel>
-              <FormControl>
-                <Input type="text" placeholder="HH:MM:SS" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="relaxTime"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Relax Timer</FormLabel>
-              <FormControl>
-                <Input type="text" placeholder="HH:MM:SS" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="cycles"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Cycles</FormLabel>
-              <FormControl>
-                <Input
-                  type="number"
-                  placeholder="5"
-                  {...field}
-                  onChange={(e) => {
-                    field.onChange(e.target.valueAsNumber); // vanilla react hook form is easier, but this will do
-                  }}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <Button type="submit">
-          {form.formState.isSubmitting ? <Loader /> : "Set Pomodoro"}
-        </Button>
-      </form>
-    </Form>
+    <>
+      <Form {...form}>
+        <form
+          onSubmit={form.handleSubmit(onSubmit)}
+          className="flex flex-col gap-5 mt-4"
+        >
+          <FormField
+            control={form.control}
+            name="studyTime"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Study Timer</FormLabel>
+                <FormControl>
+                  <Input type="text" placeholder="HH:MM:SS" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="relaxTime"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Relax Timer</FormLabel>
+                <FormControl>
+                  <Input type="text" placeholder="HH:MM:SS" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="cycles"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Cycles</FormLabel>
+                <FormControl>
+                  <Input
+                    type="number"
+                    placeholder="5"
+                    {...field}
+                    onChange={(e) => {
+                      field.onChange(e.target.valueAsNumber); // vanilla react hook form is easier, but this will do
+                    }}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <Button type="submit">
+            {form.formState.isSubmitting ? <Loader /> : "Set Pomodoro"}
+          </Button>
+
+          <SharePomodoro />
+        </form>
+      </Form>
+    </>
   );
 }

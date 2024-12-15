@@ -1,7 +1,8 @@
+import ical from "ical";
 import { useForm } from "react-hook-form";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { EventSchema, EventType, client_log } from "@/lib/utils";
+import { client_log, EventSchema, EventType } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -23,26 +24,31 @@ import {
 } from "@/components/ui/form";
 import Loader from "@/components/Loader";
 import { useAuth } from "@/context/AuthContext";
-import { useEvents } from "@/context/EventContext";
-import useAxiosPrivate from "@/hooks/useAxiosPrivate";
-import { isAxiosError } from "axios";
-import { UserType } from "@/lib/utils";
-import UsersSearchBar from "@/components/UsersSearchBar";
+import useEventsApi from "@/hooks/useEventsApi";
+import UserFinder from "@/components/UserFinder";
+import { PomodoroType, TimerType } from "@/hooks/useTimer";
+import { Badge } from "@/components/ui/badge";
 
 export default function EventForm() {
-  const { dispatch } = useEvents();
+  const { postEvent } = useEventsApi();
   const { user } = useAuth();
-  const private_api = useAxiosPrivate();
-  const [userList, setUsersList] = useState<UserType[]>([]);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [session, setSession] = useState<PomodoroType[]>([]);
+  const [selectedTimer, setSelectedTimer] = useState<PomodoroType | null>(null);
 
   const form = useForm<EventType>({
     resolver: zodResolver(EventSchema),
     defaultValues: {
       title: "",
       date: "",
-      duration: 1,
+      hours: 1,
+      minutes: 0,
       location: "",
       isRecurring: false,
+      itsPomodoro: false,
+      expiredPomodoro: false,
+      groupList: [],
+      author: user?.username || "",
       recurrencePattern: {
         frequency: undefined,
         endType: undefined,
@@ -51,6 +57,125 @@ export default function EventForm() {
       },
     },
   });
+
+  function addToArray(newItem: PomodoroType) {
+    setSession((prevArray) => {
+      return [...prevArray, newItem];
+    });
+  }
+
+  function createOptions() {
+    const session = {
+      hours: form.getValues("hours"),
+      minutes: form.getValues("minutes"),
+    };
+
+    const totalTimeMs =
+      session.hours * 60 * 60 * 1000 + session.minutes * 60 * 1000;
+
+    if (totalTimeMs < 1000 * 60 * 30) {
+      form.setError("root", {
+        message: "Session must be of at least 30 minutes",
+      });
+      return;
+    }
+    if (totalTimeMs > 1000 * 60 * 60 * 24) {
+      form.setError("root", {
+        message: "Session can be a maximum of 24 hours",
+      });
+      return;
+    }
+
+    setSession([]);
+    calculateOptions(totalTimeMs);
+  }
+
+  /**
+   * Updates the sessions state
+   * @param totalTime total session time in milliseconds
+   * @param option number
+   */
+  function calculateOptions(totalTime: number) {
+    const X = [];
+    const Ratio = [];
+
+    for (let x = 5 * 60 * 1000; x <= 15 * 60 * 1000; x = x + 5 * 60 * 1000) {
+      for (let ratio = 7; ratio > 2; ratio = ratio - 0.5) {
+        if (totalTime >= ratio * x + x) {
+          X.push(x);
+          Ratio.push(ratio);
+        }
+      }
+    }
+
+    createTimers(X, Ratio, totalTime);
+  }
+
+  /**
+   * @param x base time in milliseconds, following the formula -> totalTime = ratio * cycles * x + cycles * x
+   * @param ratio between study and pause time
+   * @param totalTime in milliseconds
+   * @returns a new timer based on study/pause ratio, base time and total session time
+   */
+  function createTimers(x: number[], ratio: number[], totalTime: number) {
+    for (let index = 0; index < x.length; index++) {
+      const relax: TimerType = {
+        initialValue: x[index],
+        value: x[index],
+        started: false,
+      };
+
+      const study: TimerType = {
+        initialValue: ratio[index] * x[index],
+        value: ratio[index] * x[index],
+        started: false,
+      };
+
+      const cycles = Math.floor(
+        totalTime / (relax.initialValue + study.initialValue)
+      );
+
+      const newTimer: PomodoroType = {
+        totalTime: (study.initialValue + relax.initialValue) * cycles,
+        cycles,
+        study,
+        relax,
+        isStudyCycle: true,
+      };
+
+      if (newTimer.totalTime / (60 * 60 * 1000) < 3) {
+        if (
+          totalTime % (study.initialValue + relax.initialValue) >= 0 &&
+          totalTime % (study.initialValue + relax.initialValue) <=
+            5 * 60 * 1000 &&
+          newTimer.cycles < 11 &&
+          Number.isInteger(study.initialValue / (60 * 1000))
+        )
+          addToArray(newTimer);
+      } else {
+        if (
+          totalTime % (study.initialValue + relax.initialValue) >= 0 &&
+          totalTime % (study.initialValue + relax.initialValue) <=
+            25 * 60 * 1000 &&
+          newTimer.cycles < 20 &&
+          Number.isInteger(study.initialValue / (60 * 1000))
+        )
+          addToArray(newTimer);
+      }
+    }
+  }
+
+  function configurePomodoro(newTimer: PomodoroType | null) {
+    setSelectedTimer(newTimer);
+
+    form.setValue("expectedPomodoro.study", newTimer?.study.initialValue);
+    form.setValue("expectedPomodoro.relax", newTimer?.relax.initialValue);
+    form.setValue("expectedPomodoro.cycles", newTimer?.cycles);
+
+    form.setValue("currPomodoro.study", newTimer?.study.initialValue);
+    form.setValue("currPomodoro.relax", newTimer?.relax.initialValue);
+    form.setValue("currPomodoro.cycles", newTimer?.cycles);
+  }
 
   async function onSubmit(event: EventType) {
     if (
@@ -69,29 +194,124 @@ export default function EventForm() {
       return;
     }
 
-    if (!user) {
-      form.setError("root.serverError", {
-        type: "manual",
-        message: "You must be logged in",
-      });
-      return;
-    }
-
-    try {
-      const response = await private_api.post("/api/events", event);
-      const parsed = EventSchema.safeParse(response.data);
-
-      if (parsed.success) {
-        dispatch({ type: "CREATE_EVENT", payload: [response.data] });
-        client_log("new event added", response.data);
-      } else {
-        client_log("error while validating created event schema");
+    // check if it's pomodoro event
+    if (event.itsPomodoro) {
+      if (
+        event.expectedPomodoro?.study &&
+        event.expectedPomodoro.relax &&
+        event.expectedPomodoro.cycles
+      ) {
+        // if the expected pomodoro has been created, update the currPomodoro field and duration
+        event.currPomodoro = event.expectedPomodoro;
+        event.hours = 0;
+        event.minutes =
+          ((event.expectedPomodoro.study + event.expectedPomodoro.relax) /
+            60000) *
+          event.expectedPomodoro.cycles;
       }
-    } catch (error) {
-      if (isAxiosError(error)) client_log("an error occurred:" + error.message);
     }
 
+    postEvent(event);
+
+    setSelectedTimer(null);
+    setSession([]);
     form.reset();
+  }
+
+  function loadFormFields(reader: FileReader) {
+    const data = reader.result as string;
+    const parsedData = ical.parseICS(data);
+
+    Object.values(parsedData).forEach((component) => {
+      if (component.type === "VEVENT") {
+        const startDate = component.start
+          ? new Date(component.start)
+          : new Date();
+        const endDate = component.end
+          ? new Date(component.end)
+          : new Date(startDate.getTime() + 60 * 60 * 1000); // Default to 1 hour if end is not defined
+
+        const hours =
+          (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60);
+        const minutes =
+          ((endDate.getTime() - startDate.getTime()) % (1000 * 60 * 60)) /
+          (1000 * 60);
+
+        let endT: "after" | "until" | undefined;
+        let untilDate;
+
+        let freq: "daily" | "weekly" | "monthly" | undefined;
+        if (component.rrule?.options.freq === 1) {
+          freq = "monthly";
+        } else if (component.rrule?.options.freq === 2) {
+          freq = "weekly";
+        } else if (component.rrule?.options.freq === 3) {
+          freq = "daily";
+        } else {
+          freq = undefined;
+        }
+
+        client_log(component);
+
+        let occurrences: number | undefined;
+        if (component.rrule && component.rrule.options.count) {
+          endT = "after";
+          occurrences = component.rrule.options.count;
+        } else {
+          endT = "until";
+          occurrences = undefined;
+        }
+        if (component.rrule && component.rrule.options.until instanceof Date) {
+          untilDate = new Date(component.rrule.options.until);
+        } else {
+          untilDate = new Date();
+        }
+
+        client_log(freq, occurrences, component.endDate);
+
+        // Setting all form values manually, depends on event schema
+        form.setValue("title", component.summary || "");
+        form.setValue("date", startDate.toISOString().substring(0, 16));
+        form.setValue("hours", hours);
+        form.setValue("minutes", minutes);
+        form.setValue("location", component.location || "");
+        form.setValue("isRecurring", !!component.rrule);
+        form.setValue("itsPomodoro", false);
+        form.setValue("groupList", []);
+        form.setValue("author", user?.username || "");
+        form.setValue("recurrencePattern.frequency", freq);
+        form.setValue("recurrencePattern.endType", endT);
+        form.setValue("recurrencePattern.occurrences", occurrences);
+        form.setValue(
+          "recurrencePattern.endDate",
+          untilDate.toISOString().substring(0, 16)
+        );
+        form.setValue("expectedPomodoro.study", 30);
+        form.setValue("expectedPomodoro.relax", 5);
+        form.setValue("expectedPomodoro.cycles", 5);
+        form.setValue("currPomodoro.study", 30);
+        form.setValue("currPomodoro.relax", 5);
+        form.setValue("currPomodoro.cycles", 5);
+      }
+    });
+  }
+
+  function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        loadFormFields(reader);
+      } catch (error) {
+        client_log("Error parsing ICS file:", error);
+      }
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    };
+    reader.readAsText(file);
   }
 
   return (
@@ -100,6 +320,17 @@ export default function EventForm() {
         onSubmit={form.handleSubmit(onSubmit)}
         className="flex flex-col gap-2 mt-4 w-full max-w-sm md:max-w-md"
       >
+        {/* Campi normali dell'evento */}
+        <div className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 mt-2">
+          Importa un evento:
+        </div>
+        <Input
+          type="file"
+          accept=".ics"
+          ref={fileInputRef}
+          onChange={handleFileChange}
+          className="shad-input"
+        />
         <FormField
           control={form.control}
           name="title"
@@ -124,7 +355,7 @@ export default function EventForm() {
           name="date"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="shad-form_label">Date</FormLabel>
+              <FormLabel>Date</FormLabel>
               <FormControl>
                 <Input
                   type="datetime-local"
@@ -142,18 +373,14 @@ export default function EventForm() {
 
         <FormField
           control={form.control}
-          name="duration"
+          name="itsPomodoro"
           render={({ field }) => (
-            <FormItem>
-              <FormLabel className="shad-form_label">Duration (h)</FormLabel>
+            <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+              <FormLabel>It's Pomodoro</FormLabel>
               <FormControl>
-                <Input
-                  type="number"
-                  className="shad-input"
-                  {...field}
-                  onChange={(e) => {
-                    field.onChange(e.target.valueAsNumber);
-                  }}
+                <Checkbox
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
                 />
               </FormControl>
               <FormMessage />
@@ -161,6 +388,83 @@ export default function EventForm() {
           )}
         />
 
+        {/* Altri campi normali del form */}
+        {/* Duration */}
+        <div className="flex gap-5 items-center">
+          <FormField
+            control={form.control}
+            name="hours"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Hours</FormLabel>
+                <FormControl>
+                  <Input
+                    type="number"
+                    {...field}
+                    onChange={(e) => {
+                      field.onChange(e.target.valueAsNumber); // vanilla react hook form is easier, but this will do
+                    }}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="minutes"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Minutes</FormLabel>
+                <FormControl>
+                  <Input
+                    type="number"
+                    step={15}
+                    {...field}
+                    onChange={(e) => {
+                      field.onChange(e.target.valueAsNumber); // vanilla react hook form is easier, but this will do
+                    }}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        {form.watch("itsPomodoro") && (
+          <>
+            {selectedTimer && (
+              <Badge className="justify-center">
+                Study {selectedTimer.study.initialValue / 60000}m + Relax{" "}
+                {selectedTimer.relax.initialValue / 60000}
+                {"m, "}
+                {selectedTimer.cycles} cycles
+              </Badge>
+            )}
+
+            <Button type="button" onClick={() => createOptions()}>
+              Show Options
+            </Button>
+
+            <div className="grid grid-cols-3 gap-2">
+              {session.map((timer, key) => (
+                <Button
+                  key={key}
+                  type="button"
+                  className="focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                  onClick={() => configurePomodoro(timer)}
+                >
+                  {timer.study.initialValue / (1000 * 60)}/
+                  {timer.relax.initialValue / (1000 * 60)} x {timer.cycles}
+                </Button>
+              ))}
+            </div>
+          </>
+        )}
+
+        {/* Location */}
         <FormField
           control={form.control}
           name="location"
@@ -180,6 +484,7 @@ export default function EventForm() {
           )}
         />
 
+        {/* Recurring */}
         <FormField
           control={form.control}
           name="isRecurring"
@@ -196,7 +501,6 @@ export default function EventForm() {
             </FormItem>
           )}
         />
-        <UsersSearchBar userList={userList} setUsersList={setUsersList} />
 
         {form.watch("isRecurring") && (
           <>
@@ -313,6 +617,32 @@ export default function EventForm() {
             )}
           </>
         )}
+        <div className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 mt-2">
+          Aggiungi utente:
+        </div>
+        <UserFinder
+          onUserSelect={(username: string) => {
+            // Aggiungi l'username selezionato a specificAccess se non è già presente
+            if (!form.getValues("groupList").includes(username)) {
+              form.setValue("groupList", [
+                ...form.getValues("groupList"),
+                username,
+              ]);
+            }
+          }}
+        />
+
+        {/* Visualizza gli utenti con accesso specifico */}
+        <div className="mt-4">
+          {form.getValues("groupList").map((username, index) => (
+            <span
+              key={index}
+              className="inline-block bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-100 px-3 py-1 rounded-lg mr-2 mb-2"
+            >
+              {username}
+            </span>
+          ))}
+        </div>
 
         {form.formState.errors.root && (
           <FormMessage>
@@ -327,7 +657,7 @@ export default function EventForm() {
           </FormMessage>
         )}
 
-        <Button type="submit" className="shad-button_primary">
+        <Button type="submit">
           {form.formState.isSubmitting ? <Loader /> : "Add Event"}
         </Button>
       </form>
