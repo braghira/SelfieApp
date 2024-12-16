@@ -465,6 +465,7 @@ export default function EventForm() {
         )}
 
         {/* Location */}
+        {!form.watch("itsPomodoro") && (
         <FormField
           control={form.control}
           name="location"
@@ -483,8 +484,10 @@ export default function EventForm() {
             </FormItem>
           )}
         />
+        )}
 
         {/* Recurring */}
+        {!form.watch("itsPomodoro") && (
         <FormField
           control={form.control}
           name="isRecurring"
@@ -501,6 +504,7 @@ export default function EventForm() {
             </FormItem>
           )}
         />
+        )}
 
         {form.watch("isRecurring") && (
           <>

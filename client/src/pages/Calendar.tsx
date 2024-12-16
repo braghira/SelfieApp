@@ -47,44 +47,20 @@ export default function CalendarPage() {
   const [notificationEventStatus, setNotificationEventStatus] =
     useState<NotificationEventStatus>(() => {
       const savedStatus = localStorage.getItem("notificationEventStatus");
-
-      // console.log("Loaded event status from localStorage", savedStatus);
-
       return savedStatus ? JSON.parse(savedStatus) : {};
     });
 
-  const [notificationActivitiesStatus, setNotificationActivitiesStatus] =
-    useState<NotificationActivityStatus>(() => {
-      const savedStatus = localStorage.getItem("notificationActivityStatus");
+  const [notificationActivitiesStatus, setNotificationActivitiesStatus] = useState<NotificationActivityStatus | null>(null);
 
-      // console.log("Loaded activity status from localStorage", savedStatus);
-
-      return savedStatus ? JSON.parse(savedStatus) : {};
-    });
+  useEffect(() => {
+      const savedStatus = localStorage.getItem("notificationActivitiesStatus");
+      console.log("status: "+ savedStatus);
+      setNotificationActivitiesStatus(savedStatus ? JSON.parse(savedStatus) : null);
+  },[])
 
   const [selectedEvent, setSelectedEvent] = useState<EventType | null>(null);
   const [isEventDetailsOpen, setIsEventDetailsOpen] = useState(false);
   const { currentDate } = useTimeMachineContext();
-
-  //  console.log(isEventDetailsOpen);
-
-  useEffect(() => {
-    if (notificationEventStatus) {
-      localStorage.setItem(
-        "notificationEventStatus",
-        JSON.stringify(notificationEventStatus)
-      );
-    }
-  }, [notificationEventStatus]);
-
-  useEffect(() => {
-    if (notificationActivitiesStatus) {
-      localStorage.setItem(
-        "notificationActivitiesStatus",
-        JSON.stringify(notificationActivitiesStatus)
-      );
-    }
-  }, [notificationActivitiesStatus]);
 
   const colors = {
     late: "#ff7514",
@@ -111,29 +87,22 @@ export default function CalendarPage() {
     userID: string,
     daysPassed: number,
     activityName: string,
-    activityId: string,
-    activityStatus: { [activityId: string]: { lastNotified?: string } }
   ) => {
-    const today = moment(currentDate).format("YYYY-MM-DD");
     let title = "You are late to complete an activity!";
-    if (!activityStatus[activityId]) {
-      activityStatus[activityId] = {};
-    }
+    let body = `The activity: ${activityName} is overdue ${daysPassed} day ago. Remember to complete it!`;
     if (daysPassed >= 2 && daysPassed < 5) {
       title = "This activity isn't complete yet, FINISH IT!";
+      body = `The activity: ${activityName} is overdue ${daysPassed} days ago. You have to complete it!`;
     } else if (daysPassed >= 5) {
       title = "YOU HAVE TO FINISH THIS ACTIVITY NOW!!!";
+      body = `You already had to complete the activity: ${activityName} for ${daysPassed} days ago. FINISH IT NOW!`;
     }
-    if (activityStatus[activityId].lastNotified != today) {
       const payload: NotificationPayload = {
         title: title,
-        body: `L'attività: ${activityName} è scaduta da ${++daysPassed} giorni. Ricordati di completarla!`,
+        body: body,
         url: `/calendar`,
       };
       RequestPushSub(() => sendNotification(userID, payload));
-      activityStatus[activityId].lastNotified = today;
-      setNotificationActivitiesStatus({ ...activityStatus });
-    }
   };
 
   const eventPropGetter = (event: CustomEvent) => {
@@ -292,57 +261,147 @@ export default function CalendarPage() {
   useEffect(() => {
     const userID = user?._id;
     const now = moment(currentDate);
+    
     if (userID && events) {
       const updatedEventStatus = { ...notificationEventStatus };
+  
       events.forEach((event) => {
         const eventId = event._id;
         if (eventId) {
           const eventStart = moment(event.date);
           const timeLeft = eventStart.diff(now, "hours");
+  
           if (!updatedEventStatus[eventId]) {
             updatedEventStatus[eventId] = {};
           }
+  
+          //single event
           if (timeLeft === 24 && !updatedEventStatus[eventId]["24h"]) {
-            const eventTitle = event.title;
-            sendEventNotification(userID, "24h", eventTitle);
+            sendEventNotification(userID, "24h", event.title);
             updatedEventStatus[eventId]["24h"] = true;
           }
+  
           if (timeLeft === 3 && !updatedEventStatus[eventId]["3h"]) {
-            const eventTitle = event.title;
-            sendEventNotification(userID, "3h", eventTitle);
+            sendEventNotification(userID, "3h", event.title);
             updatedEventStatus[eventId]["3h"] = true;
           }
+  
           if (timeLeft === 1 && !updatedEventStatus[eventId]["1h"]) {
-            const eventTitle = event.title;
-            sendEventNotification(userID, "1h", eventTitle);
+            sendEventNotification(userID, "1h", event.title);
             updatedEventStatus[eventId]["1h"] = true;
+          }
+  
+          if (event.isRecurring) {
+            const frequency = event.recurrencePattern?.frequency;
+            const occurrences = event.recurrencePattern?.occurrences;
+            const endDate = event.recurrencePattern?.endDate;
+            const frequencyMap = {
+              daily: 1,
+              weekly: 7,
+              monthly: 30,
+            };
+  
+            const intervalDays = frequency ? frequencyMap[frequency] : null;
+            if (intervalDays) {
+              if(occurrences){
+                for (let i = 1; i < occurrences; i++) {
+                  const nextOccurrence = eventStart.clone().add(i * intervalDays, "days");
+                  const nextEventId = `${eventId}_occurrence_${i}`;
+                  const timeLeftForOccurrence = nextOccurrence.diff(now, "hours");
+
+    
+                  if (!updatedEventStatus[nextEventId]) {
+                    updatedEventStatus[nextEventId] = {};
+                  }
+    
+                  if (timeLeftForOccurrence === 24 && !updatedEventStatus[nextEventId]["24h"]) {
+                    sendEventNotification(userID, "24h", event.title);
+                    updatedEventStatus[nextEventId]["24h"] = true;
+                  }
+    
+                  if (timeLeftForOccurrence === 3 && !updatedEventStatus[nextEventId]["3h"]) {
+                    sendEventNotification(userID, "3h", event.title);
+                    updatedEventStatus[nextEventId]["3h"] = true;
+                  }
+    
+                  if (timeLeftForOccurrence === 1 && !updatedEventStatus[nextEventId]["1h"]) {
+                    sendEventNotification(userID, "1h", event.title);
+                    updatedEventStatus[nextEventId]["1h"] = true;
+                  }
+                }
+              } else if (endDate) {
+                let nextOccurrence = eventStart.clone();
+                let i = 1;
+  
+                while (nextOccurrence.isBefore(moment(endDate))) {
+                  nextOccurrence = eventStart.clone().add(i * intervalDays, "days");
+                  const nextEventId = `${eventId}_occurrence_${i}`;
+                  const timeLeftForOccurrence = nextOccurrence.diff(now, "hours");
+  
+                  if (!updatedEventStatus[nextEventId]) {
+                    updatedEventStatus[nextEventId] = {};
+                  }
+  
+                  if (timeLeftForOccurrence === 24 && !updatedEventStatus[nextEventId]["24h"]) {
+                    sendEventNotification(userID, "24h", event.title);
+                    updatedEventStatus[nextEventId]["24h"] = true;
+                  }
+  
+                  if (timeLeftForOccurrence === 3 && !updatedEventStatus[nextEventId]["3h"]) {
+                    sendEventNotification(userID, "3h", event.title);
+                    updatedEventStatus[nextEventId]["3h"] = true;
+                  }
+  
+                  if (timeLeftForOccurrence === 1 && !updatedEventStatus[nextEventId]["1h"]) {
+                    sendEventNotification(userID, "1h", event.title);
+                    updatedEventStatus[nextEventId]["1h"] = true;
+                  }
+  
+                  i++;
+                }
+              }
+            }
           }
         }
       });
       setNotificationEventStatus(updatedEventStatus);
+      localStorage.setItem(
+        "notificationEventStatus",
+        JSON.stringify(updatedEventStatus)
+      );
     }
+  
+
 
     if (userID && activities) {
+     if(notificationActivitiesStatus){
       const updatedActivityStatus = { ...notificationActivitiesStatus };
       activities.forEach((activity) => {
         const activityId = activity._id;
         if (activityId && activity.endDate && !activity.completed) {
+          
           const endDate = moment(activity.endDate);
           const daysOverdue = now.diff(endDate, "days");
-          if (endDate.isBefore(now, "day")) {
-            const activityName = activity.title;
-            sendActivityNotification(
-              userID,
-              daysOverdue,
-              activityName,
-              activityId,
-              updatedActivityStatus
-            );
+  
+          if (!updatedActivityStatus[activityId]) {
+            updatedActivityStatus[activityId] = {};
+          }
+  
+          if (endDate.isBefore(now, "day") && updatedActivityStatus[activityId].lastNotified !== now.format("YYYY-MM-DD")) {
+            sendActivityNotification(userID, daysOverdue, activity.title);
+            updatedActivityStatus[activityId].lastNotified = now.format("YYYY-MM-DD");
           }
         }
       });
+      setNotificationActivitiesStatus(updatedActivityStatus);
+      localStorage.setItem(
+        "notificationActivitiesStatus",
+        JSON.stringify(updatedActivityStatus)
+      );
     }
+  }
   }, [currentDate]);
+  
 
   return (
     <div className="view-container">
