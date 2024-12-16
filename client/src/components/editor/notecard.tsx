@@ -145,11 +145,7 @@ export default function NoteCard({
           {!simplified && content.length > 200 && !isPopupOpen && (
             <span
               onClick={handleSeeMore}
-              className="font-bold italic cursor-pointer text-red-600 dark:text-red-400"
-              role="button"
-              aria-label="See full content"
-              tabIndex={0}
-              onKeyPress={(e) => e.key === 'Enter' && handleSeeMore()}
+              className="font-bold italic cursor-pointer ml-1 text-red-600 dark:text-red-400"
             >
               See more
             </span>
@@ -211,3 +207,4 @@ export default function NoteCard({
     </>
   );
 }
+
