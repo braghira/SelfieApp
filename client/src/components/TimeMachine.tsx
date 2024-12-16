@@ -24,12 +24,13 @@ const TimeMachinePopup = () => {
   const [hours, setHours] = useState(0);
   const [months, setMonths] = useState(0);
   const [years, setYears] = useState(0);
+  const [minutes, setMinutes] = useState(0);
   const [shouldFetch, setShouldFetch] = useState(false);
 
   const handleTravelForward = () => {
     dispatch({
       type: "TRAVEL_FORWARD",
-      payload: { days, hours, months, years },
+      payload: { days, hours, months, years, minutes },
     });
     setShouldFetch(true);
   };
@@ -37,7 +38,7 @@ const TimeMachinePopup = () => {
   const handleTravelBackward = () => {
     dispatch({
       type: "TRAVEL_BACKWARD",
-      payload: { days, hours, months, years },
+      payload: { days, hours, months, years, minutes },
     });
     setShouldFetch(true);
   };
@@ -49,14 +50,12 @@ const TimeMachinePopup = () => {
 
   useEffect(() => {
     if (shouldFetch) {
-      // Update all contexts
       getEvents();
       getActivities();
       fetchNotes();
-
       setShouldFetch(false);
     }
-  }, [currentDate]);
+  }, [shouldFetch, getEvents, getActivities, fetchNotes]);
 
   return (
     <Dialog
@@ -87,7 +86,7 @@ const TimeMachinePopup = () => {
         </Button>
       </DialogTrigger>
 
-      <DialogContent className="bg-white dark:bg-black text-black dark:text-white p-6 rounded-xl border-lime-500 border-2 shadow-lg max-w-md">
+      <DialogContent className="bg-white dark:bg-black text-black dark:text-white p-6 rounded-xl border-lime-500 border-2 shadow-lg max-w-full sm:max-w-md">
         <DialogHeader>
           <DialogTitle
             id="time-machine-dialog-title"
@@ -101,8 +100,7 @@ const TimeMachinePopup = () => {
           Current Date: {format(currentDate, "yyyy-MM-dd HH:mm:ss")}
         </p>
 
-        {/* Layout a due colonne */}
-        <div className="grid grid-cols-2 gap-4 mb-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-4">
           <div>
             <Label htmlFor="years" className="text-sm text-lime-500">
               Years
@@ -151,9 +149,21 @@ const TimeMachinePopup = () => {
               className="border-2 border-lime-500 rounded-lg p-2 text-black dark:text-white bg-white dark:bg-black"
             />
           </div>
+          <div className="col-span-2 sm:col-span-1">
+            <Label htmlFor="minutes" className="text-sm text-lime-500">
+              Minutes
+            </Label>
+            <Input
+              id="minutes"
+              type="number"
+              value={minutes}
+              onChange={(e) => setMinutes(Number(e.target.value))}
+              className="border-2 border-lime-500 rounded-lg p-2 text-black dark:text-white bg-white dark:bg-black"
+            />
+          </div>
         </div>
 
-        <div className="flex justify-between gap-2 mt-4">
+        <div className="flex flex-col sm:flex-row justify-between gap-2 mt-4">
           <Button
             onClick={handleTravelBackward}
             className="bg-lime-600 text-black hover:bg-lime-700"
