@@ -137,12 +137,22 @@ export default function EventDetails({
         </DialogHeader>
         <div className="flex justify-between items-start">
           <div>
+           {event.isRecurring ?  (
             <div>
+              Start Date:{" "}
+              <span className="base-semibold">
+                {format(new Date(event.date), "dd/MM/yyyy HH:mm")}
+              </span>
+            </div>
+            ) : (
+              <div>
               Date:{" "}
               <span className="base-semibold">
                 {format(new Date(event.date), "dd/MM/yyyy HH:mm")}
               </span>
             </div>
+            )
+            }
             {event.itsPomodoro ? (
               <>
                 <div>
