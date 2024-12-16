@@ -8,6 +8,8 @@ import { useAuth } from '@/context/AuthContext';
 import { marked } from 'marked';
 import { useNavigate } from 'react-router-dom';
 
+
+
 interface NoteCardProps {
   id: string;
   title: string;
@@ -33,6 +35,7 @@ export default function NoteCard({
   const { deleteNote, duplicateNote } = useNotes();
   const [isPopupOpen, setIsPopupOpen] = useState(false);
 
+
   const navigate = useNavigate();
 
   const markdownContent = marked(content);
@@ -49,7 +52,7 @@ export default function NoteCard({
 
   const handleDelete = async () => {
     if (user) {
-      await deleteNote(id);
+      deleteNote(id);
     } else {
       console.warn('User not authorized to delete the note.');
     }
@@ -57,7 +60,7 @@ export default function NoteCard({
 
   const handleDuplicate = async () => {
     if (user) {
-      await duplicateNote(id);
+      duplicateNote(id);
     } else {
       console.warn('User not authorized to duplicate the note.');
     }

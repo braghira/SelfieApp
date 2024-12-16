@@ -2,6 +2,7 @@ import useAxiosPrivate from './useAxiosPrivate';
 import { NoteType, client_log } from '@/lib/utils';
 import { isAxiosError } from 'axios';
 import { useNoteContext } from "@/context/NoteContext"; // Assumendo che tu abbia un NotesContext
+import { useTimeMachineContext } from '@/context/TimeMachine';
 
 interface UseNotesReturn {
   addNote: (note: NoteType) => void;
@@ -15,6 +16,7 @@ interface UseNotesReturn {
 const useNotes = (): UseNotesReturn => {
   const private_api = useAxiosPrivate();
   const { dispatch } = useNoteContext(); // Dispatcher del contesto
+  const { currentDate } = useTimeMachineContext();
 
   // Funzione per recuperare le note dal server
   const fetchNotes = async (): Promise<NoteType[]> => {
@@ -80,19 +82,21 @@ const useNotes = (): UseNotesReturn => {
     }
   };
 
-  // Duplica una nota
   const duplicateNote = async (id: string) => {
     try {
-      const response = await private_api.post(`/api/notes/${id}/duplicate`);
-      dispatch({ type: 'ADD_NOTE', payload: response.data }); // Aggiorna lo stato con la nuova nota duplicata
+      const response = await private_api.post(`/api/notes/${id}/duplicate`, { currentDate });
+
+      // Supponendo che la risposta contenga la nuova nota duplicata
+      dispatch({ type: 'DUPLICATE_NOTE', payload: response.data });
     } catch (error) {
       if (isAxiosError(error)) {
         console.error('An error occurred while duplicating note:', error.message);
       } else {
-        console.error('Uncaught error');
+        console.error('Uncaught error during note duplication');
       }
     }
   };
+  
 
   // Elimina tutte le note create dall'utente corrente
   const deleteAllNotes = async () => {

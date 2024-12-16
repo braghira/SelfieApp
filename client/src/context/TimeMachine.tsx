@@ -42,7 +42,7 @@ type TimeStateType = {
 // Context
 type TimeMachineContextType = {
   currentDate: Date;
-  currentTime: Date; // Separato per solo orario
+  currentTime: Date; 
   dispatch: React.Dispatch<ActionType>;
 };
 
