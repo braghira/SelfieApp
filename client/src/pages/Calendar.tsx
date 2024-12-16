@@ -324,11 +324,14 @@ export default function CalendarPage() {
 
     if (userID && activities) {
       const updatedActivityStatus = { ...notificationActivitiesStatus };
+
       activities.forEach((activity) => {
         const activityId = activity._id;
+
         if (activityId && activity.endDate && !activity.completed) {
           const endDate = moment(activity.endDate);
           const daysOverdue = now.diff(endDate, "days");
+
           if (endDate.isBefore(now, "day")) {
             const activityName = activity.title;
             sendActivityNotification(
