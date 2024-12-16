@@ -2,6 +2,7 @@ import useAxiosPrivate from "@/hooks/useAxiosPrivate";
 import { useEffect, useState } from "react";
 import { UserType } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
+//import {  X } from 'lucide-react';
 
 type PropsType = {
   onUserSelect: (username: string) => void; // Funzione callback per passare l'username selezionato

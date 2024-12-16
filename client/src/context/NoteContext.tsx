@@ -6,13 +6,14 @@ import React, {
 } from "react";
 import { NoteType } from "@/lib/utils";
 
+
 // Tipi per le azioni
 type ActionType =
   | { type: 'SET_NOTES'; payload: NoteType[] }
   | { type: "ADD_NOTE"; payload: NoteType }
   | { type: "UPDATE_NOTE"; payload: NoteType }
   | { type: "DELETE_NOTE"; payload: string }
-  | { type: "DUPLICATE_NOTE"; payload: string }
+  | { type: "DUPLICATE_NOTE"; payload: { id: string; currentDate: Date }}
   | { type: "DELETE_ALL_NOTES" };
 
 // Tipo per lo stato del contesto delle note
@@ -23,7 +24,6 @@ type NoteContextType = {
   notes: NoteStateType;
   dispatch: React.Dispatch<ActionType>;
 };
-
 // Reducer per gestire lo stato delle note
 function noteReducer(state: NoteStateType, action: ActionType): NoteStateType {
   switch (action.type) {
@@ -37,18 +37,21 @@ function noteReducer(state: NoteStateType, action: ActionType): NoteStateType {
       );
     case "DELETE_NOTE":
       return state.filter((note) => note._id !== action.payload);
-    case "DUPLICATE_NOTE": {
-      const noteToDuplicate = state.find((note) => note._id === action.payload);
-      if (noteToDuplicate) {
-        const duplicatedNote = {
-          ...noteToDuplicate,
-          _id: `${Date.now()}`,
-          title: `Copy of ${noteToDuplicate.title}`,
-        };
-        return [...state, duplicatedNote];
+      case "DUPLICATE_NOTE": {
+        const { id, currentDate } = action.payload;
+        const noteToDuplicate = state.find((note) => note._id === id);
+        if (noteToDuplicate) {
+          const duplicatedNote = {
+            ...noteToDuplicate,
+            _id: `${Date.now()}`, 
+            title: `Copy of ${noteToDuplicate.title}`,
+            createdAt: currentDate,
+            updatedAt: currentDate,
+          };
+          return [...state, duplicatedNote];
+        }
+        return state;
       }
-      return state;
-    }
     case "DELETE_ALL_NOTES":
       return [];
     default:

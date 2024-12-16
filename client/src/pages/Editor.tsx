@@ -26,7 +26,7 @@ function NoteEditor() {
   const { addNote, updateNote, fetchNotes } = useNotes(); 
   const { id } = useParams(); 
   const { user } = useAuth();
-  const { currentDate } = useTimeMachineContext(); // Usa la data simulata
+  const { currentDate } = useTimeMachineContext();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -37,16 +37,14 @@ function NoteEditor() {
     title: '',
     content: '',
     categories: [],
-    author: user?.name || '', // Popola con il nome dell'utente loggato
+    author: user?.name || '',
     accessType: 'private',
     specificAccess: [],
-    createdAt: currentDate,  // Usa la data simulata per la creazione
-    updatedAt: currentDate,  // Usa la data simulata per l'aggiornamento
+    createdAt: currentDate,
+    updatedAt: currentDate,
   });
 
   useEffect(() => {
-    console.log('Current date from TimeMachineContext:', currentDate); // Debug: verifica la data
-
     const fetchNote = async () => {
       if (!id || initialFetch) return;
       setLoading(true);
@@ -60,13 +58,11 @@ function NoteEditor() {
             updatedAt: note.updatedAt as Date,
           });
           setInitialFetch(true);
-          console.log('Nota caricata:', note); // Debug
         } else {
           setError('Nota non trovata.');
         }
       } catch (err) {
         setError('Errore nel caricamento della nota.');
-        console.error('Errore fetching nota:', err);
       } finally {
         setLoading(false);
       }
@@ -92,25 +88,22 @@ function NoteEditor() {
       if (id) {
         const updatedNoteData: NoteData = {
           ...noteData,
-          updatedAt: currentDate,  // Usa la data simulata per l'aggiornamento
+          updatedAt: currentDate,
         };
         await updateNote(updatedNoteData);
         dispatch({ type: 'UPDATE_NOTE', payload: updatedNoteData });
-        console.log('Nota aggiornata:', updatedNoteData); // Debug
       } else {
         const newNoteData: NoteData = {
           ...noteData,
-          createdAt: currentDate,  // Usa la data simulata per la creazione
-          updatedAt: currentDate,  // Usa la data simulata per l'aggiornamento
+          createdAt: currentDate,
+          updatedAt: currentDate,
         };
         await addNote(newNoteData);
         dispatch({ type: 'ADD_NOTE', payload: newNoteData });
-        console.log('Nuova nota creata:', newNoteData); // Debug
       }
       setShowPopup(true);
     } catch (err) {
       setError('Errore nel salvataggio della nota.');
-      console.error('Errore nel salvataggio della nota:', err);
     } finally {
       setLoading(false);
     }
@@ -228,10 +221,8 @@ function NoteEditor() {
       className="w-full p-4 text-lg text-gray-900 dark:text-gray-100 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-4 focus:ring-red-500 transition"
     />
     
-    {/* Integrazione di UserFinder */}
     <UserFinder 
       onUserSelect={(username: string) => {
-        // Aggiungi l'username selezionato a specificAccess se non è già presente
         if (!noteData.specificAccess.includes(username)) {
           setNoteData({
             ...noteData,
@@ -241,7 +232,6 @@ function NoteEditor() {
       }}
     />
     
-    {/* Visualizza gli utenti con accesso specifico */}
     <div className="mt-4">
       {noteData.specificAccess.map((user, index) => (
         <span key={index} className="inline-block bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-100 px-3 py-1 rounded-lg mr-2 mb-2">
@@ -252,7 +242,6 @@ function NoteEditor() {
   </div>
 )}
 
-  
       <div className="flex items-center justify-between">
         <Button
           type="submit"
