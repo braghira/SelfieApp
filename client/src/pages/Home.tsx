@@ -26,7 +26,7 @@ import {
 import { format } from "date-fns";
 import { useEvents } from "@/context/EventContext";
 import { useNoteContext } from "@/context/NoteContext";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { DataTable } from "@/components/ui/data-table";
 import { ColumnDef, FilterFn, Row } from "@tanstack/react-table";
 import { EventType, RecurrenceType } from "@/lib/utils";
@@ -125,69 +125,72 @@ export default function Home() {
     },
   ];
 
-  const eventColumns: ColumnDef<EventType>[] = [
-    {
-      accessorKey: "title",
-      header: "Title",
-    },
-    {
-      accessorKey: "date",
-      header: "Date",
-      cell: ({ cell }) => {
-        const date = new Date(cell.getValue<string>());
-        const formatted = format(date, "dd/MM/yy");
-        return <div>{formatted}</div>;
+  const eventColumns: ColumnDef<EventType>[] = useMemo(
+    () => [
+      {
+        accessorKey: "title",
+        header: "Title",
       },
-    },
-    {
-      accessorKey: "duration",
-      header: "Duration",
-      cell: ({ cell }) => {
-        return <div>{cell.getValue<string>()} h</div>;
+      {
+        accessorKey: "date",
+        header: "Date",
+        cell: ({ cell }) => {
+          const date = new Date(cell.getValue<string>());
+          const formatted = format(date, "dd/MM/yy");
+          return <div>{formatted}</div>;
+        },
       },
-    },
-    {
-      accessorKey: "recurrencePattern",
-      header: "Recurrence Type",
-      cell: ({ cell }) => {
-        if (cell.getValue()) {
-          const pattern = cell.getValue<RecurrenceType>();
-          return <div>{pattern.frequency}</div>;
-        } else {
-          return <div>none</div>;
-        }
+      {
+        accessorKey: "duration",
+        header: "Duration",
+        cell: ({ cell }) => {
+          return <div>{cell.getValue<string>()} h</div>;
+        },
       },
-      filterFn: eventFilter,
-    },
-    {
-      id: "actions",
-      cell: ({ row }) => {
-        const data = row.original;
-        return (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-8 w-8 p-0">
-                <span className="sr-only">Open menu</span>
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => navigate("/calendar")}>
-                Open Calendar
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => navigator.clipboard.writeText(data.title)}
-              >
-                Copy Event Title
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        );
+      {
+        accessorKey: "recurrencePattern",
+        header: "Recurrence Type",
+        cell: ({ cell }) => {
+          if (cell.getValue()) {
+            const pattern = cell.getValue<RecurrenceType>();
+            return <div>{pattern.frequency}</div>;
+          } else {
+            return <div>none</div>;
+          }
+        },
+        filterFn: eventFilter,
       },
-    },
-  ];
+      {
+        id: "actions",
+        cell: ({ row }) => {
+          const data = row.original;
+          return (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="h-8 w-8 p-0">
+                  <span className="sr-only">Open menu</span>
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => navigate("/calendar")}>
+                  Open Calendar
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => navigator.clipboard.writeText(data.title)}
+                >
+                  Copy Event Title
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          );
+        },
+      },
+    ],
+    [events]
+  );
 
   useEffect(() => {
     // Find pomodoro of the day with same session

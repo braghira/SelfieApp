@@ -376,8 +376,10 @@ export default function CalendarPage() {
     if (userID && activities) {
      if(notificationActivitiesStatus){
       const updatedActivityStatus = { ...notificationActivitiesStatus };
+
       activities.forEach((activity) => {
         const activityId = activity._id;
+
         if (activityId && activity.endDate && !activity.completed) {
           
           const endDate = moment(activity.endDate);
