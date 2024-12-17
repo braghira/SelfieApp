@@ -209,6 +209,7 @@ export default function usePushNotification() {
         break;
 
       case "granted":
+        registerServiceWorker();
         callback();
 
         break;
