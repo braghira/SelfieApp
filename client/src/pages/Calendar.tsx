@@ -437,19 +437,19 @@ export default function CalendarPage() {
       </div>
       <div className="md:hidden flex gap-4 items-center justify-around mt-4">
         <button
-          className="bg-primary rounded-md text-primary-foreground border-primary hover:bg-primary/90 shadow-none p-1"
+          className="bg-primary rounded-md text-primary-foreground border-primary hover:bg-primary/90 shadow-none p-1 mb-3"
           onClick={() => handleToggle("eventForm")}
         >
           Add Event
         </button>
         <button
-          className="bg-primary rounded-md text-primary-foreground border-primary hover:bg-primary/90 shadow-none p-1"
+          className="bg-primary rounded-md text-primary-foreground border-primary hover:bg-primary/90 shadow-none p-1 mb-3"
           onClick={() => handleToggle("activityForm")}
         >
           Add Activity
         </button>
         <button
-          className="bg-primary rounded-md text-primary-foreground border-primary hover:bg-primary/90 shadow-none p-1"
+          className="bg-primary rounded-md text-primary-foreground border-primary hover:bg-primary/90 shadow-none p-1 mb-3"
           onClick={() => handleToggle("activityList")}
         >
           Activities List
