@@ -111,6 +111,7 @@ const updateNote = async (req, res) => {
 const duplicateNote = async (req, res) => {
   const { id } = req.params;
   const { user } = req;
+  const { currentDate } = req.body;
 
   if (!mongoose.Types.ObjectId.isValid(id)) {
     return res.status(404).json({ error: "No such note" });
@@ -135,8 +136,9 @@ const duplicateNote = async (req, res) => {
       ...note.toObject(),
       _id: undefined,
       title: `Copy of ${note.title}`,
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
+      createdAt: currentDate ? new Date(currentDate) : Date.now(),
+      updatedAt: currentDate ? new Date(currentDate) : Date.now(),
+      author: user.username,
     });
 
     const savedNote = await duplicatedNote.save();

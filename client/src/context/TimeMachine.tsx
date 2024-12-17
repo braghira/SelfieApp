@@ -30,7 +30,7 @@ type ActionType =
       };
     }
   | { type: "RESET_TO_REAL_TIME" }
-  | { type: "TICK" }; // Aggiungiamo l'azione per ogni tick dell'orologio
+  | { type: "TICK" }; // simulazione del tick dell'orologio
 
 // Stato del Time Machine
 type TimeStateType = {
@@ -42,7 +42,7 @@ type TimeStateType = {
 // Context
 type TimeMachineContextType = {
   currentDate: Date;
-  currentTime: Date; // Separato per solo orario
+  currentTime: Date; 
   dispatch: React.Dispatch<ActionType>;
 };
 
@@ -58,50 +58,50 @@ function timeMachineReducer(
         offsetInMilliseconds:
           action.payload.getTime() - state.realDate.getTime(),
       };
-    case "TRAVEL_FORWARD": {
-      const {
-        days,
-        hours = 0,
-        months = 0,
-        years = 0,
-        minutes = 0,
-      } = action.payload;
-      const newDate = new Date(state.currentDate);
-
-      // Aggiungi anni, mesi, giorni, ore e minuti
-      newDate.setFullYear(newDate.getFullYear() + years);
-      newDate.setMonth(newDate.getMonth() + months);
-      newDate.setDate(newDate.getDate() + days);
-      newDate.setHours(newDate.getHours() + hours);
-      newDate.setMinutes(newDate.getMinutes() + minutes);
-
-      return {
-        ...state,
-        offsetInMilliseconds: newDate.getTime() - state.realDate.getTime(),
-      };
-    }
-    case "TRAVEL_BACKWARD": {
-      const {
-        days,
-        hours = 0,
-        months = 0,
-        years = 0,
-        minutes = 0,
-      } = action.payload;
-      const newDate = new Date(state.currentDate);
-
-      // Sottrai anni, mesi, giorni, ore e minuti
-      newDate.setFullYear(newDate.getFullYear() - years);
-      newDate.setMonth(newDate.getMonth() - months);
-      newDate.setDate(newDate.getDate() - days);
-      newDate.setHours(newDate.getHours() - hours);
-      newDate.setMinutes(newDate.getMinutes() - minutes);
-
-      return {
-        ...state,
-        offsetInMilliseconds: newDate.getTime() - state.realDate.getTime(),
-      };
-    }
+      case "TRAVEL_FORWARD": {
+        const { days, hours = 0, months = 0, years = 0, minutes = 0 } = action.payload;
+      
+        // Normalizza la data eliminando secondi e millisecondi
+        const normalizedDate = new Date(state.currentDate);
+        normalizedDate.setSeconds(0, 0);
+      
+        // Applica le modifiche alla data
+        normalizedDate.setDate(normalizedDate.getDate() + days);
+        normalizedDate.setHours(normalizedDate.getHours() + hours);
+        normalizedDate.setMinutes(normalizedDate.getMinutes() + minutes);
+        normalizedDate.setMonth(normalizedDate.getMonth() + months);
+        normalizedDate.setFullYear(normalizedDate.getFullYear() + years);
+      
+        const totalOffset = normalizedDate.getTime() - state.realDate.getTime();
+      
+        return {
+          ...state,
+          offsetInMilliseconds: totalOffset,
+          currentDate: normalizedDate,
+        };
+      }
+      case "TRAVEL_BACKWARD": {
+        const { days, hours = 0, months = 0, years = 0, minutes = 0 } = action.payload;
+      
+        // Normalizza la data eliminando secondi e millisecondi
+        const normalizedDate = new Date(state.currentDate);
+        normalizedDate.setSeconds(0, 0);
+      
+        // Applica le modifiche alla data
+        normalizedDate.setDate(normalizedDate.getDate() - days);
+        normalizedDate.setHours(normalizedDate.getHours() - hours);
+        normalizedDate.setMinutes(normalizedDate.getMinutes() - minutes);
+        normalizedDate.setMonth(normalizedDate.getMonth() - months);
+        normalizedDate.setFullYear(normalizedDate.getFullYear() - years);
+      
+        const totalOffset = normalizedDate.getTime() - state.realDate.getTime();
+      
+        return {
+          ...state,
+          offsetInMilliseconds: totalOffset,
+          currentDate: normalizedDate,
+        };
+      }      
     case "RESET_TO_REAL_TIME":
       return { ...state, offsetInMilliseconds: 0 };
     case "TICK": {

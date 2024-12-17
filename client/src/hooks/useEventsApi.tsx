@@ -18,7 +18,7 @@ export default function useEventsApi() {
       const response = await private_api.get("/api/events");
 
       if (response.status === 200) {
-        const json: EventType[] = response.data; // Assicurati che json sia un array di eventi
+        const json: EventType[] = response.data; //ensure that json is an event array
 
         const parsed = EventSchema.array().safeParse(json);
 

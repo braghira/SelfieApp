@@ -73,7 +73,7 @@ export default function ActivityForm() {
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
-          className="flex flex-col gap-2 mt-4 w-full max-w-sm md:max-w-md"
+          className="flex flex-col gap-2 mt-2 w-full max-w-sm md:max-w-md"
         >
           <FormField
             control={form.control}

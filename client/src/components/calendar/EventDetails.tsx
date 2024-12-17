@@ -230,10 +230,13 @@ export default function EventDetails({
                     <div>
                       <Button className="mt-2 " onClick={handleUpdate}>
                         Refuse event
-                      </Button>
+                      </Button>    
+                      <div>
+                        Shared by:{" "} {event.author}
+                      </div>
                     </div>
                   )}
-                {event.groupList.length > 0 && (
+                {event.groupList.length > 0 && event.author === user?.username && (
                   <div>
                     Shared with:{" "}
                     <span className="base-semibold">
