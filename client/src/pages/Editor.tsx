@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { useNoteContext } from "@/context/NoteContext";
-import useNotes from "@/hooks/useNote";
-import { useParams, useNavigate } from "react-router-dom";
-import { useAuth } from "@/context/AuthContext";
-import { marked } from "marked";
-import { useTimeMachineContext } from "@/context/TimeMachine";
-import Loader from "@/components/Loader";
+import { useNoteContext } from '@/context/NoteContext';
+import useNotes from '@/hooks/useNote';
+import { useParams, useNavigate } from 'react-router-dom';
+import { useAuth } from '@/context/AuthContext';
+//import { marked } from 'marked'; 
+import { useTimeMachineContext } from '@/context/TimeMachine';
+import Loader from '@/components/Loader';
 import UserFinder from "@/components/UserFinder";
+import ReactMarkdown from 'react-markdown';
 
 interface NoteData {
   title: string;
@@ -115,83 +116,128 @@ function NoteEditor() {
     setShowPopup(false);
   };
 
-  const containsMarkdown = (text: string) => {
-    return /[#*_-]/.test(text);
-  };
 
-  const renderMarkdown = (markdown: string) => {
-    return { __html: marked(markdown) };
-  };
 
   if (loading) return <Loader />;
   if (error) return <div>{error}</div>;
 
   return (
     <div>
-      <form
-        onSubmit={handleSubmit}
-        className="p-8 bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-3xl mx-auto"
-      >
-        <div className="mb-8">
-          <label className="block text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4">
-            Title
-          </label>
-          <input
-            type="text"
-            name="title"
-            value={noteData.title}
-            onChange={handleChange}
-            className="w-full p-4 text-lg text-gray-900 dark:text-gray-100 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-4 focus:ring-red-500 transition"
-            required
-          />
-        </div>
-
-        <div className="mb-8">
-          <label className="block text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4">
-            Content
-          </label>
-          <textarea
-            name="content"
-            value={noteData.content}
-            onChange={handleChange}
-            className="w-full p-4 text-lg text-gray-900 dark:text-gray-100 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-4 focus:ring-red-500 transition"
-            rows={10}
-            required
-          ></textarea>
-          <div className="text-sm text-gray-500 mt-2">
-            You can use Markdown syntax in the content.
-          </div>
-        </div>
-
-        {containsMarkdown(noteData.content) && (
+    <form onSubmit={handleSubmit} className="p-8 bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-3xl mx-auto">
+      <div className="mb-8">
+        <label className="block text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4">Title</label>
+        <input
+          type="text"
+          name="title"
+          value={noteData.title}
+          onChange={handleChange}
+          className="w-full p-4 text-lg text-gray-900 dark:text-gray-100 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-4 focus:ring-red-500 transition"
+          required
+        />
+      </div>
+  
+      <div className="mb-8">
+        <label className="block text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4">Content</label>
+        <textarea
+          name="content"
+          value={noteData.content}
+          onChange={handleChange}
+          className="w-full p-4 text-lg text-gray-900 dark:text-gray-100 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-4 focus:ring-red-500 transition"
+          rows={10}
+          required
+        ></textarea>
+        <div className="text-sm text-gray-500 mt-2">You can use Markdown syntax in the content.</div>
+      </div>
+  
+     {/* Anteprima Markdown */}
+     {noteData.content && (
           <div className="mb-8">
-            <label className="block text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4">
-              Preview
-            </label>
-            <div
-              className="p-4 text-lg text-gray-900 dark:text-gray-100 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg"
-              dangerouslySetInnerHTML={renderMarkdown(noteData.content)}
-            />
+            <label className="block text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4">Preview</label>
+            <div className="p-4 text-lg text-gray-900 dark:text-gray-100 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg">
+              <ReactMarkdown>{noteData.content}</ReactMarkdown>
+            </div>
           </div>
         )}
-
-        <div className="mb-8">
-          <label className="block text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4">
-            Categories
-          </label>
-          <input
-            type="text"
-            name="categories"
-            value={noteData.categories.join(", ")}
-            onChange={(e) =>
-              setNoteData({
-                ...noteData,
-                categories: e.target.value.split(",").map((cat) => cat.trim()),
-              })
-            }
-            className="w-full p-4 text-lg text-gray-900 dark:text-gray-100 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-4 focus:ring-red-500 transition"
-          />
-        </div>
+  
+      <div className="mb-8">
+        <label className="block text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4">Categories</label>
+        <input
+          type="text"
+          name="categories"
+          value={noteData.categories.join(', ')}
+          onChange={(e) =>
+            setNoteData({
+              ...noteData,
+              categories: e.target.value.split(',').map((cat) => cat.trim()),
+            })
+          }
+          className="w-full p-4 text-lg text-gray-900 dark:text-gray-100 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-4 focus:ring-red-500 transition"
+        />
+      </div>
+  
+      <div className="mb-8">
+        <label className="block text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4">Author</label>
+        <input
+          type="text"
+          name="author"
+          value={noteData.author}
+          onChange={handleChange}
+          className="w-full p-4 text-lg text-gray-900 dark:text-gray-100 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-4 focus:ring-red-500 transition"
+          required
+          disabled
+        />
+      </div>
+  
+      <div className="mb-8">
+        <label className="block text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4">Access Type</label>
+        <select
+          name="accessType"
+          value={noteData.accessType}
+          onChange={handleChange}
+          className="w-full p-4 text-lg text-gray-900 dark:text-gray-100 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-4 focus:ring-red-500 transition"
+        >
+          <option value="private">Private</option>
+          <option value="public">Public</option>
+          <option value="restricted">Restricted</option>
+        </select>
+      </div>
+  
+      {noteData.accessType === 'restricted' && (
+  <div className="mb-8">
+    <label className="block text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4">Specific Access</label>
+    <input
+      type="text"
+      name="specificAccess"
+      value={noteData.specificAccess.join(', ')}
+      onChange={(e) =>
+        setNoteData({
+          ...noteData,
+          specificAccess: e.target.value.split(',').map((username) => username.trim()),
+        })
+      }
+      className="w-full p-4 text-lg text-gray-900 dark:text-gray-100 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-4 focus:ring-red-500 transition"
+    />
+    
+    <UserFinder 
+      onUserSelect={(username: string) => {
+        if (!noteData.specificAccess.includes(username)) {
+          setNoteData({
+            ...noteData,
+            specificAccess: [...noteData.specificAccess, username],
+          });
+        }
+      }}
+    />
+    
+    <div className="mt-4">
+      {noteData.specificAccess.map((user, index) => (
+        <span key={index} className="inline-block bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-100 px-3 py-1 rounded-lg mr-2 mb-2">
+          {user}
+        </span>
+      ))}
+    </div>
+  </div>
+)}
 
         <div className="mb-8">
           <label className="block text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4">
