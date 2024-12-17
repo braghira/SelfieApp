@@ -137,12 +137,22 @@ export default function EventDetails({
         </DialogHeader>
         <div className="flex justify-between items-start">
           <div>
+           {event.isRecurring ?  (
             <div>
+              Start Date:{" "}
+              <span className="base-semibold">
+                {format(new Date(event.date), "dd/MM/yyyy HH:mm")}
+              </span>
+            </div>
+            ) : (
+              <div>
               Date:{" "}
               <span className="base-semibold">
                 {format(new Date(event.date), "dd/MM/yyyy HH:mm")}
               </span>
             </div>
+            )
+            }
             {event.itsPomodoro ? (
               <>
                 <div>
@@ -220,10 +230,13 @@ export default function EventDetails({
                     <div>
                       <Button className="mt-2 " onClick={handleUpdate}>
                         Refuse event
-                      </Button>
+                      </Button>    
+                      <div>
+                        Shared by:{" "} {event.author}
+                      </div>
                     </div>
                   )}
-                {event.groupList.length > 0 && (
+                {event.groupList.length > 0 && event.author === user?.username && (
                   <div>
                     Shared with:{" "}
                     <span className="base-semibold">
