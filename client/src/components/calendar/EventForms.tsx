@@ -223,7 +223,7 @@ export default function EventForm() {
     const parsedData = ical.parseICS(data);
 
     Object.values(parsedData).forEach((component) => {
-      if (component.type === "VEVENT") {
+      if (component.type === "VEVENT") {  //eventi nei file iCalendar
         const startDate = component.start
           ? new Date(component.start)
           : new Date();
@@ -261,8 +261,11 @@ export default function EventForm() {
           endT = "until";
           occurrences = undefined;
         }
-        if (component.rrule && component.rrule.options.until instanceof Date) {
+        if (component.rrule && component.rrule.options.until) {
           untilDate = new Date(component.rrule.options.until);
+          if (isNaN(untilDate.getTime())) {
+            untilDate = new Date();
+          }
         } else {
           untilDate = new Date();
         }
@@ -318,7 +321,7 @@ export default function EventForm() {
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(onSubmit)}
-        className="flex flex-col gap-2 mt-4 w-full max-w-sm md:max-w-md"
+        className="flex flex-col gap-2 mt-2 w-full max-w-sm md:max-w-md"
       >
         {/* Campi normali dell'evento */}
         <div className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 mt-2">

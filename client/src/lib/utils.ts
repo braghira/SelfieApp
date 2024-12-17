@@ -103,7 +103,7 @@ export const AccountSchema = z
 export type AccountType = z.infer<typeof AccountSchema>;
 
 export function client_log(message: unknown, ...options: unknown[]) {
-  if (import.meta.env.DEV) console.log(message, ...options);
+  if (import.meta.env.DEV) console.log(message, ...options);  //available in DEV, not i PROD for debugging
 }
 
 /**
