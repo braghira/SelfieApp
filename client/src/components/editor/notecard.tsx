@@ -5,10 +5,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { format } from 'date-fns';
 import useNotes from '@/hooks/useNote';
 import { useAuth } from '@/context/AuthContext';
-import { marked } from 'marked';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { useNavigate } from 'react-router-dom';
-
-
 
 interface NoteCardProps {
   id: string;
@@ -34,11 +33,7 @@ export default function NoteCard({
   const { user } = useAuth();
   const { deleteNote, duplicateNote } = useNotes();
   const [isPopupOpen, setIsPopupOpen] = useState(false);
-
-
   const navigate = useNavigate();
-
-  const markdownContent = marked(content);
 
   const previewContent = content.length > 200 ? `${content.slice(0, 200)}...` : content;
 
@@ -140,11 +135,9 @@ export default function NoteCard({
           </CardTitle>
         </CardHeader>
         <CardContent className="text-gray-600 dark:text-white">
-          <div
-            className="mb-2 text-ellipsis overflow-hidden whitespace-normal break-words"
-            dangerouslySetInnerHTML={{ __html: marked(previewContent) }}
-            role="document"
-          />
+          <div className="mb-2 text-ellipsis overflow-hidden whitespace-normal break-words">
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>{previewContent}</ReactMarkdown>
+          </div>
           {!simplified && content.length > 200 && !isPopupOpen && (
             <span
               onClick={handleSeeMore}
@@ -196,11 +189,9 @@ export default function NoteCard({
             >
               {title}
             </h2>
-            <div
-              className="mb-4 text-gray-600 dark:text-gray-300"
-              dangerouslySetInnerHTML={{ __html: markdownContent }}
-              role="document"
-            />
+            <div className="mb-4 text-gray-600 dark:text-gray-300">
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
+            </div>
             <p className="text-sm text-gray-500 dark:text-gray-400">
               <strong>Author:</strong> {author}
             </p>
@@ -210,4 +201,3 @@ export default function NoteCard({
     </>
   );
 }
-

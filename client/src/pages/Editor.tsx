@@ -4,10 +4,11 @@ import { useNoteContext } from '@/context/NoteContext';
 import useNotes from '@/hooks/useNote';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
-import { marked } from 'marked'; 
+//import { marked } from 'marked'; 
 import { useTimeMachineContext } from '@/context/TimeMachine';
 import Loader from '@/components/Loader';
 import UserFinder from "@/components/UserFinder";
+import ReactMarkdown from 'react-markdown';
 
 interface NoteData {
   title: string;
@@ -113,13 +114,7 @@ function NoteEditor() {
     setShowPopup(false);
   };
 
-  const containsMarkdown = (text: string) => {
-    return /[#*_-]/.test(text);
-  };
 
-  const renderMarkdown = (markdown: string) => {
-    return { __html: marked(markdown) };
-  };
 
   if (loading) return  <Loader />;
   if (error) return <div>{error}</div>;
@@ -152,15 +147,15 @@ function NoteEditor() {
         <div className="text-sm text-gray-500 mt-2">You can use Markdown syntax in the content.</div>
       </div>
   
-      {containsMarkdown(noteData.content) && (
-        <div className="mb-8">
-          <label className="block text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4">Preview</label>
-          <div 
-            className="p-4 text-lg text-gray-900 dark:text-gray-100 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg"
-            dangerouslySetInnerHTML={renderMarkdown(noteData.content)} 
-          />
-        </div>
-      )}
+     {/* Anteprima Markdown */}
+     {noteData.content && (
+          <div className="mb-8">
+            <label className="block text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4">Preview</label>
+            <div className="p-4 text-lg text-gray-900 dark:text-gray-100 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg">
+              <ReactMarkdown>{noteData.content}</ReactMarkdown>
+            </div>
+          </div>
+        )}
   
       <div className="mb-8">
         <label className="block text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4">Categories</label>
