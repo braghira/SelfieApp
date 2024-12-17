@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { format } from "date-fns";
 import useNotes from "@/hooks/useNote";
 import { useAuth } from "@/context/AuthContext";
-// import { marked } from "marked";
+import { marked } from "marked";
 import { useNavigate } from "react-router-dom";
 
 
@@ -38,10 +38,10 @@ export default function NoteCard({
 
   const navigate = useNavigate();
 
-  // const markdownContent = marked(content);
+  const markdownContent = marked(content);
 
-  // const previewContent =
-  //   content.length > 200 ? `${content.slice(0, 200)}...` : content;
+  const previewContent =
+    content.length > 200 ? `${content.slice(0, 200)}...` : content;
 
   const handleEdit = () => {
     if (user) {
@@ -164,7 +164,7 @@ export default function NoteCard({
         <CardContent className="text-gray-600 dark:text-white">
           <div
             className="mb-2 text-ellipsis overflow-hidden whitespace-normal break-words"
-            // dangerouslySetInnerHTML={{ __html: marked(previewContent) }}
+            dangerouslySetInnerHTML={{ __html: marked(previewContent) }}
             role="document"
           />
           {!simplified && content.length > 200 && !isPopupOpen && (
@@ -223,7 +223,7 @@ export default function NoteCard({
             </h2>
             <div
               className="mb-4 text-gray-600 dark:text-gray-300"
-              // dangerouslySetInnerHTML={{ __html: markdownContent }}
+              dangerouslySetInnerHTML={{ __html: markdownContent }}
               role="document"
             />
             <p className="text-sm text-gray-500 dark:text-gray-400">
