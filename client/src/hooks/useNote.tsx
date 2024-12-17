@@ -68,6 +68,7 @@ const useNotes = (): UseNotesReturn => {
     try {
       await private_api.delete(`/api/notes/${id}`);
       dispatch({ type: 'DELETE_NOTE', payload: id }); // Aggiorna lo stato rimuovendo la nota eliminata
+      await fetchNotes(); // Ricarica le note 
       client_log(`Note with ID ${id} successfully deleted`);
     } catch (error) {
       if (isAxiosError(error)) {
@@ -88,6 +89,7 @@ const useNotes = (): UseNotesReturn => {
 
       // Supponendo che la risposta contenga la nuova nota duplicata
       dispatch({ type: 'DUPLICATE_NOTE', payload: response.data });
+      await fetchNotes(); // Ricarica le note 
     } catch (error) {
       if (isAxiosError(error)) {
         console.error('An error occurred while duplicating note:', error.message);
@@ -103,6 +105,7 @@ const useNotes = (): UseNotesReturn => {
     try {
       await private_api.delete('/api/notes');
       dispatch({ type: 'DELETE_ALL_NOTES' }); // Aggiorna lo stato rimuovendo tutte le note
+      await fetchNotes(); // Ricarica le note 
       client_log('All notes successfully deleted');
     } catch (error) {
       if (isAxiosError(error)) {
