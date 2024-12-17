@@ -47,8 +47,13 @@ app.use((req, res, next) => {
 });
 
 if (node_env === "production") {
-  // serve static react files after building the app
+  // Serve static React files after building the app
   app.use(express.static(appPath));
+
+  // Serve the manifest and service worker
+  app.use("/manifest.webmanifest", express.static(path.join(appPath, "manifest.webmanifest")));
+  app.use("/service-worker.js", express.static(path.join(appPath, "service-worker.js")));
+  app.use("/sw.js", express.static(path.join(appPath, "sw.js")));
 }
 
 // routes
