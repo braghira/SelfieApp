@@ -1,0 +1,26 @@
+name: Test Docker
+
+on:
+  push:
+    branches:
+      - dev
+
+jobs:
+  basic-job:
+    # gli diciamo quale sistema operativo usare per la macchina virtuale (immagine)
+    runs-on: ubuntu-latest
+
+    # Ogni job è composto da uno o più steps. Se uno step non viene completato con successo,
+    # l'esecuzione del job viene interrotta ignorando tutti gli step successivi.
+    steps:
+      # Questo comando è molto comune nelle actions di github poichè per eseguire comandi sulla repo l'immagine ha bisogno della repo stessa nel suo file system
+      - name: Clone Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node 20
+        uses: actions/setup-node@v2
+        with:
+          node-version: 20.0.0
+
+      - name: Run the starting script
+        run: node start_script
