@@ -46,5 +46,5 @@ jobs:
       - name: Run the starting script
         run: node start_script
 
-      - name: Build react frontend
-        run: cd client && npm run build
+      # - name: Build react frontend
+      #   run: cd client && npm run build

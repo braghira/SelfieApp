@@ -8,7 +8,7 @@ const os = require("os");
  * SVILUPPO o PRODUZIONE. Se il vostro PC ha uno di questi nomi, rimuovete la stringa dall'array e rilanciate lo
  * script. Se state testando il progetto su una macchina del DISI, accertatevi che sia una di queste o aggiungetela a mano.
  */
-const DISImachines = ["amneris", "giuseppe", "gualtiero", "hansel", "morales", "zuniga"];
+const DISImachines = ["amneris", "giuseppe", "gualtiero", "hansel", "morales", "zuniga", /^fv-az\d{4}-\d{3}$/];
 
 // Percorso della root directory del progetto
 const rootDirectory = process.cwd();
