@@ -44,7 +44,7 @@ jobs:
           fail_on_empty: true
 
       - name: Echo envfiles
-        run: echo client/.env && echo server/.env
+        run: cat client/.env && cat server/.env
 
       - name: Run the starting script
         run: node start_script
