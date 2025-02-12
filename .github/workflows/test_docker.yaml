@@ -43,8 +43,8 @@ jobs:
           directory: server
           fail_on_empty: true
 
-      - name: Echo envfiles
-        run: cat client/.env && cat server/.env
-
       - name: Run the starting script
         run: node start_script
+
+      - name: Build react frontend
+        run: cd client && npm run build
