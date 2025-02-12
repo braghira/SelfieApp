@@ -2,7 +2,6 @@ import {
   createContext,
   PropsWithChildren,
   useContext,
-  useEffect,
   useReducer,
 } from "react";
 
@@ -57,23 +56,6 @@ export function usePushContext() {
  */
 export function NotificationContextProvider({ children }: PropsWithChildren) {
   const [state, dispatch] = useReducer(pushReducer, null);
-
-  useEffect(() => {
-    // Check if Notification API and Service Worker are supported
-    if ("Notification" in window && navigator.serviceWorker) {
-      // Check if the user is already subscribed
-      navigator.serviceWorker.ready
-        .then((registration) => {
-          registration.pushManager.getSubscription().then((subscription) => {
-            if (subscription) dispatch({ type: "SUB", payload: subscription });
-            else dispatch({ type: "UNSUB", payload: null });
-          });
-        })
-        .catch(() => {
-          dispatch({ type: "UNSUB", payload: null });
-        });
-    }
-  }, []);
 
   return (
     <PushContext.Provider value={{ subscription: state, dispatch }}>

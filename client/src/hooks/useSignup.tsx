@@ -1,8 +1,8 @@
 import { useState } from "react";
-import axios from "axios";
 import { useAuth } from "@/context/AuthContext";
 import api from "@/lib/axios";
 import { UserType } from "@/lib/utils";
+import { isAxiosError } from "axios";
 
 export default function useSignup() {
   const [error, setError] = useState<string>("");
@@ -12,21 +12,15 @@ export default function useSignup() {
     try {
       const response = await api.post("/auth/signup", { ...user });
 
-      if (response.status === 200) {
-        // update the auth context
-        dispatch({ type: "LOGIN", payload: response.data });
+      // update the auth context
+      dispatch({ type: "LOGIN", payload: response.data });
 
-        setError("");
-      } else {
-        const errorMessage = response.data.error || "Unknown error occurred";
-        setError(errorMessage);
-        onError(errorMessage);
-      }
+      setError("");
     } catch (error) {
-      if (axios.isAxiosError(error) && error.response) {
+      if (isAxiosError(error) && error.response) {
         const errorMessage = error.response.data;
-        setError(errorMessage);
-        onError(errorMessage);
+        setError(errorMessage.error);
+        onError(errorMessage.error);
       } else {
         setError("Unknown error occurred");
         onError("Unknown error occurred");

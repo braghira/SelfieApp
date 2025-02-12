@@ -35,7 +35,7 @@ function HomeNote() {
 
   useEffect(() => {
     loadNotes();
-  }, [loadNotes]);
+  }, []);
 
   const sortedNotes = useMemo(() => {
     const sortNotes = (notes: NoteType[], option: string): NoteType[] => {

@@ -70,56 +70,59 @@ export default function usePushNotification() {
 
         // Send the subscription to the server
         const response = await private_api.post(
-          "/auth/subscribe",
+          "/api/notifications/subscribe",
           JSON.stringify(payload)
         );
 
         // update push context
-        if (response.status === 201) {
-          dispatch({ type: "SUB", payload: newSubscription });
-          client_log("Successfully subscribed to push service");
-        } else {
-          client_log("Push response code: ", response.status);
-        }
+        dispatch({ type: "SUB", payload: newSubscription });
+        client_log("SUBSCRIBE: ", response.data.message);
       } catch (err) {
-        console.error("Error", err);
+        // Remove subscription from client since we couldn't save it on DB
+        const unsaved_to_server_sub = await getPushSub();
+        await unsaved_to_server_sub?.unsubscribe();
+
+        console.error("Couldn't save subscription to server: ", err);
       } finally {
         setSubLoading(false);
       }
     }
-    // }
   }
 
   /**
    * Unsubscribe this user device from Push Notification service
    * @param _id ID of current user
    */
-  async function unsubscribe(_id: string) {
+  async function unsubscribe(_id: string | undefined) {
     try {
       setUnsubLoading(true);
 
       // get current Push Manager subscription
       const subscription = await getPushSub();
 
+      // little check since _id property of user can be undefined
+      if (_id === undefined) throw Error("User id provided is undefined");
+
       if (subscription) {
+        // Notify server to update the push subscriptions of this user
+        const response = await private_api.post(
+          "/api/notifications/unsubscribe",
+          {
+            _id,
+            subscription: subscription.toJSON(),
+          }
+        );
+
         // update local state
         await subscription.unsubscribe();
 
-        // Notify server to update the push subscriptions of this user
-        const response = await private_api.post("/auth/unsubscribe", {
-          _id,
-          subscription: subscription.toJSON(),
-        });
-
-        if (response.status === 200) {
-          dispatch({ type: "UNSUB", payload: null });
-          console.log(response.data);
-        }
+        dispatch({ type: "UNSUB", payload: null });
+        client_log("UNSUBSCRIBE: ", response.data.message);
       } else {
-        console.log("No subscription found for this user");
+        client_log("No subscription found for this user");
       }
     } catch (error) {
-      console.error("Failed to unsubscribe:", error);
+      console.error("Failed to UNsubscribe:", error);
     } finally {
       setUnsubLoading(false);
     }
@@ -134,23 +137,33 @@ export default function usePushNotification() {
     try {
       setSendLoading(true);
 
+      if (!(await getPushSub())) {
+        window.alert(
+          "Go to Account Settings page and enable Push Notifications to use this feature properly."
+        );
+      }
+
       // Send notification to server
-      const response = await private_api.post("/auth/sendNotification", {
-        ...payload,
-        _id,
-      });
+      const response = await private_api.post(
+        "/api/notifications/sendNotification",
+        {
+          ...payload,
+          _id,
+        }
+      );
 
       if (response.status === 202) {
-        console.log(response.data);
-        subscribe(_id);
-        sendNotification(_id, payload);
+        client_log(response.data.message);
+
+        // subscribe(_id);
+        // sendNotification(_id, payload);
       } else if (response.status === 200) {
-        console.log(response.data);
+        client_log(response.data.message);
       } else {
         throw new Error("Failed to send notification");
       }
     } catch (err) {
-      console.log(err);
+      console.error(err);
     } finally {
       setSendLoading(false);
     }
@@ -178,8 +191,10 @@ export default function usePushNotification() {
             });
           }
 
-          if (Notification.permission === "denied") {
-            window.alert("Allow push Notifications to use this feature.");
+          if (permission === "denied") {
+            window.alert(
+              "Allow push Notifications to use this app features properly."
+            );
           }
         });
 
@@ -187,13 +202,14 @@ export default function usePushNotification() {
 
       case "denied":
         window.alert(
-          "Allow push Notifications to use this feature properly. Notifications will be sent anyway."
+          "Allow push Notifications to use this app features properly."
         );
         callback();
 
         break;
 
       case "granted":
+        registerServiceWorker();
         callback();
 
         break;

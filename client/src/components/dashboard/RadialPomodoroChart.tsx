@@ -15,16 +15,14 @@ interface RadialPomodoroChartProps {
 }
 
 export function RadialPomodoroChart({ progress }: RadialPomodoroChartProps) {
-  const chartData = [
-    { color: "primary", progress, fill: "var(--color-primary)" },
-  ];
+  const chartData = [{ progress, fill: "var(--color-primary)" }];
 
   const chartConfig = {
     progress: {
       label: "Pomodoro Progress",
     },
     primary: {
-      label: "primary",
+      label: "progress",
       color: "hsl(var(--primary))",
     },
   } satisfies ChartConfig;

@@ -1,5 +1,7 @@
-require("dotenv").config();
+const path = require("path");
+require("dotenv").config({ path: path.resolve(__dirname, "..", ".env") }); // config method will attach .env variables to the "process" global variable
 
+// Environment variables
 const port = process.env.PORT;
 const mongouri = process.env.DB_URI;
 const node_env = process.env.NODE_ENV;

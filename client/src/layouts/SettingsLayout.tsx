@@ -50,7 +50,7 @@ export default function SettingsLayout() {
                 )
               }
             >
-              Take a Selfie!
+              Take a Selfie
             </NavLink>
           </nav>
         </aside>

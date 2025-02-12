@@ -58,7 +58,6 @@ export const UserSchema = z.object({
   password: z
     .string()
     .min(8, { message: "Password must be at least 8 characters." }),
-  email: z.string().email().optional(),
   name: z.string().trim().optional(),
   surname: z.string().trim().optional(),
   birthday: z.date().optional(),
@@ -85,8 +84,26 @@ export const NoteSchema = z.object({
 });
 export type NoteType = z.infer<typeof NoteSchema>;
 
+export const AccountSchema = z
+  .object({
+    currPassword: z
+      .string()
+      .min(8, { message: "Password must be at least 8 characters." }),
+    newPassword: z
+      .string()
+      .min(8, { message: "Password must be at least 8 characters." }),
+    confirmPassword: z
+      .string()
+      .min(8, { message: "Password must be at least 8 characters." }),
+  })
+  .refine((data) => data.newPassword === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ["confirmPassword"],
+  });
+export type AccountType = z.infer<typeof AccountSchema>;
+
 export function client_log(message: unknown, ...options: unknown[]) {
-  if (import.meta.env.DEV) console.log(message, ...options);
+  if (import.meta.env.DEV) console.log(message, ...options);  //available in DEV, not i PROD for debugging
 }
 
 /**

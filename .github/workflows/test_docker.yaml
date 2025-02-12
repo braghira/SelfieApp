@@ -1,0 +1,50 @@
+name: Test Deployment
+
+on:
+  push:
+    branches:
+      - dev
+
+jobs:
+  deployment:
+    # gli diciamo quale sistema operativo usare per la macchina virtuale (immagine)
+    runs-on: ubuntu-latest
+
+    # Ogni job è composto da uno o più steps. Se uno step non viene completato con successo,
+    # l'esecuzione del job viene interrotta ignorando tutti gli step successivi.
+    steps:
+      # Questo comando è molto comune nelle actions di github poichè per eseguire comandi sulla repo l'immagine ha bisogno della repo stessa nel suo file system
+      - name: Clone Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node 20
+        uses: actions/setup-node@v2
+        with:
+          node-version: 20.0.0
+
+      - name: Make frontend envfile
+        uses: SpicyPizza/create-envfile@v2.0
+        with:
+          envkey_VITE_BASE_URL: ${{ secrets.VITE_BASE_URL }}
+          envkey_VITE_VAPID_PUBLIC_KEY: ${{ secrets.VITE_VAPID_PUBLIC_KEY }}
+          directory: client
+          fail_on_empty: true
+
+      - name: Make backend envfile
+        uses: SpicyPizza/create-envfile@v2.0
+        with:
+          envkey_PORT: ${{ secrets.PORT }}
+          envkey_DB_URI: ${{ secrets.DB_URI }}
+          envkey_NODE_ENV: ${{ secrets.NODE_ENV }}
+          envkey_ACCESS_JWT_KEY: ${{ secrets.ACCESS_JWT_KEY }}
+          envkey_REFRESH_JWT_KEY: ${{ secrets.REFRESH_JWT_KEY }}
+          envkey_VAPID_PUBLIC_KEY: ${{ secrets.VAPID_PUBLIC_KEY }}
+          envkey_VAPID_PRIVATE_KEY: ${{ secrets.VAPID_PRIVATE_KEY }}
+          directory: server
+          fail_on_empty: true
+
+      - name: Run the starting script
+        run: node start_script
+
+      # - name: Build react frontend
+      #   run: cd client && npm run build

@@ -17,21 +17,15 @@ export default function useUpdateProfile() {
       // Updates Profile fields ONLY, rest is left untouched
       const response = await private_api.patch("/api/users/profile", user);
 
-      if (response.status === 200) {
-        // update the auth context
-        dispatch({ type: "LOGIN", payload: response.data });
+      // update the auth context
+      dispatch({ type: "LOGIN", payload: response.data });
 
-        setError("");
-      } else {
-        const errorMessage = response.data.error || "Unknown error occurred";
-        setError(errorMessage);
-        onError(errorMessage);
-      }
+      setError("");
     } catch (error) {
       if (axios.isAxiosError(error) && error.response) {
         const errorMessage = error.response.data;
-        setError(errorMessage);
-        onError(errorMessage);
+        setError(errorMessage.error);
+        onError(errorMessage.error);
       } else {
         setError("Unknown error occurred");
         onError("Unknown error occurred");

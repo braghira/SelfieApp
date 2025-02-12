@@ -29,7 +29,6 @@ export default function SignupForm() {
     defaultValues: {
       name: "",
       surname: "",
-      email: "",
       username: "",
       password: "",
       birthday: new Date(),
@@ -88,23 +87,10 @@ export default function SignupForm() {
           </div>
           <FormField
             control={form.control}
-            name="email"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Email</FormLabel>
-                <FormControl>
-                  <Input type="text" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
             name="username"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Username</FormLabel>
+                <FormLabel>Username *</FormLabel>
                 <FormControl>
                   <Input type="text" {...field} />
                 </FormControl>
@@ -117,7 +103,7 @@ export default function SignupForm() {
             name="password"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Password</FormLabel>
+                <FormLabel>Password *</FormLabel>
                 <FormControl>
                   <PasswordInput {...field} />
                 </FormControl>
@@ -130,7 +116,7 @@ export default function SignupForm() {
             name="birthday"
             render={() => (
               <FormItem>
-                <FormLabel>Date of birth</FormLabel>
+                <FormLabel>Date of Birth *</FormLabel>
                 <FormControl>
                   {/* Adding Controller api to make sure the input is passed to the hook form correctly*/}
                   <Controller

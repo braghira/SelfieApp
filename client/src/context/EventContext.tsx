@@ -44,18 +44,18 @@ export function useEvents() {
     throw Error("useEventContext must be used inside an EventContextProvider");
   }
 
-  return context;
+  return context; // posso usare eventi e dispatch
 }
 
 interface EventContextProps {
-  children: ReactElement | ReactElement[] | undefined;
+  children: ReactElement | ReactElement[] | undefined;  //posso avere altri componenti come figli
 }
 
 export function EventContextProvider({ children }: EventContextProps) {
   const [state, dispatch] = useReducer(eventsReducer, []);
 
-  return (
-    <EventContext.Provider value={{ events: state, dispatch }}>
+  return (  
+    <EventContext.Provider value={{ events: state, dispatch }}> 
       {children}
     </EventContext.Provider>
   );

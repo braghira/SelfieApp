@@ -93,7 +93,7 @@ function updateDependencies(packageJsonPath, message, callback) {
 }
 
 function DevOrProd() {
-  if (DISImachines.includes(os.hostname())) {
+  if (DISImachines.includes(os.hostname()) || /^fv-az\d{4}-\d{3}$/.test(os.hostname())) {
     startProductionMode();
   } else {
     startDevelopmentMode();

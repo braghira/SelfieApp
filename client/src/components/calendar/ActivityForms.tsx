@@ -51,7 +51,6 @@ export default function ActivityForm() {
       return;
     }
     try {
-
       const response = await private_api.post("/api/activities", activity);
       // Controlliamo che lo schema sia corretto con zod
       const parsed = ActivitySchema.safeParse(response.data);
@@ -65,83 +64,86 @@ export default function ActivityForm() {
     } catch (error) {
       if (isAxiosError(error)) client_log("an error occurred:" + error.message);
     }
-//{userList[0]._id} 
+    //{userList[0]._id}
     form.reset();
   }
 
   return (
     <div>
-    <Form {...form}>
-      <form
-        onSubmit={form.handleSubmit(onSubmit)}
-        className="flex flex-col gap-2 mt-4 w-full max-w-sm md:max-w-md"
-      >
-        <FormField
-          control={form.control}
-          name="title"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Activity Name</FormLabel>
-              <FormControl>
-                <Input
-                  type="text"
-                  placeholder="Title of the activity"
-                  className="shad-input"
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="endDate"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="shad-form_label">End Date</FormLabel>
-              <FormControl>
-                <Input
-                  type="date"
-                  className="shad-input"
-                  {...field}
-                  value={field.value ?? ""}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+      <Form {...form}>
+        <form
+          onSubmit={form.handleSubmit(onSubmit)}
+          className="flex flex-col gap-2 mt-2 w-full max-w-sm md:max-w-md"
+        >
+          <FormField
+            control={form.control}
+            name="title"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Activity Name</FormLabel>
+                <FormControl>
+                  <Input
+                    type="text"
+                    placeholder="Title of the activity"
+                    className="shad-input"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="endDate"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="shad-form_label">End Date</FormLabel>
+                <FormControl>
+                  <Input
+                    type="date"
+                    className="shad-input"
+                    {...field}
+                    value={field.value ?? ""}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
           <div className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 mt-2">
-              Aggiungi utente:
+            Aggiungi utente:
           </div>
-            <UserFinder 
-              onUserSelect={(username: string) => {
-                // Aggiungi l'username selezionato a specificAccess se non è già presente
-                if (!form.getValues("groupList").includes(username)) {
-                  form.setValue("groupList", [...form.getValues("groupList"), username]);
-                }
-              }}
-            />
+          <UserFinder
+            onUserSelect={(username: string) => {
+              // Aggiungi l'username selezionato a specificAccess se non è già presente
+              if (!form.getValues("groupList").includes(username)) {
+                form.setValue("groupList", [
+                  ...form.getValues("groupList"),
+                  username,
+                ]);
+              }
+            }}
+          />
 
-                {/* Visualizza gli utenti con accesso specifico */}
-            <div className="mt-4">
-              {form.getValues("groupList").map((username, index) => (
-                  <span key={index} className="inline-block bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-100 px-3 py-1 rounded-lg mr-2 mb-2">
-                    {username}
-                  </span>
-                ))}
-            </div>
+          {/* Visualizza gli utenti con accesso specifico */}
+          <div className="mt-4">
+            {form.getValues("groupList").map((username, index) => (
+              <span
+                key={index}
+                className="inline-block bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-100 px-3 py-1 rounded-lg mr-2 mb-2"
+              >
+                {username}
+              </span>
+            ))}
+          </div>
 
- 
-        <Button type="submit" className="shad-button_primary">
-          
-          {form.formState.isSubmitting ? <Loader /> : "Add Activity"}
-        </Button>
-      </form>
-    </Form>
-
-</div>
+          <Button type="submit" className="shad-button_primary">
+            {form.formState.isSubmitting ? <Loader /> : "Add Activity"}
+          </Button>
+        </form>
+      </Form>
+    </div>
   );
 }

@@ -1,4 +1,4 @@
-const { User, updateProfile } = require("../models/userModel");
+const { User, updateProfile, updateAccount } = require("../models/userModel");
 
 async function getMatchingUsers(req, res) {
     const { string } = req.params;
@@ -39,12 +39,14 @@ async function getUser(req, res) {
  * Responds with the updated user profile
  */
 const patchProfile = async (req, res) => {
-    const { username, email, name, surname, birthday, profilePic, _id } = req.body;
+    const { username, name, surname, birthday, profilePic, _id } = req.body;
+    const { authorization } = req.headers;
+
+    const accessToken = authorization.split(" ")[1];
 
     try {
         const user = await updateProfile(
             username,
-            email,
             name,
             surname,
             birthday,
@@ -57,11 +59,36 @@ const patchProfile = async (req, res) => {
             user._doc.profilePic = `/api/media/${user.profilePic}`;
         }
 
-        res.status(200).json({ ...user._doc });
+        res.status(200).json({ ...user._doc, accessToken });
     } catch (error) {
         console.log(error.message);
-        res.status(400).json({ error: error.message });
+        res.status(401).json({ error: error.message });
     }
 };
 
-module.exports = { getMatchingUsers, getUser, patchProfile }
+const patchAccount = async (req, res) => {
+    const { currPassword, newPassword, confirmPassword, _id } = req.body;
+    const { authorization } = req.headers;
+
+    const accessToken = authorization.split(" ")[1];
+
+    try {
+        const user = await updateAccount(
+            currPassword, newPassword, confirmPassword, _id
+        );
+
+        if (user._doc.profilePic) {
+            // put media api endpoint to get the image in the frontend
+            user._doc.profilePic = `/api/media/${user.profilePic}`;
+        }
+
+        console.log("Password changed successfully");
+
+        res.status(200).json({ ...user._doc, accessToken });
+    } catch (error) {
+        console.log(error.message);
+        res.status(401).json({ error: error.message });
+    }
+}
+
+module.exports = { getMatchingUsers, getUser, patchProfile, patchAccount }

@@ -1,7 +1,4 @@
 import {
-  CheckCircle2,
-  Clock,
-  AlertCircleIcon,
   CalendarDaysIcon,
   CalendarRangeIcon,
   CalendarX2Icon,
@@ -27,14 +24,13 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { format } from "date-fns";
-import { useActivities } from "@/context/ActivityContext";
 import { useEvents } from "@/context/EventContext";
 import { useNoteContext } from "@/context/NoteContext";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { DataTable } from "@/components/ui/data-table";
 import { ColumnDef, FilterFn, Row } from "@tanstack/react-table";
-import { ActivityType, cn, EventType, RecurrenceType } from "@/lib/utils";
-import { ArrowUpDown, MoreHorizontal } from "lucide-react";
+import { EventType, RecurrenceType } from "@/lib/utils";
+import { MoreHorizontal } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -60,39 +56,16 @@ import NoteCard from "@/components/editor/notecard";
 import SendMessage from "@/components/dashboard/SendMessage";
 import moment from "moment";
 import { useTimeMachineContext } from "@/context/TimeMachine";
+import ActivityTable from "@/components/ActivityList";
 
 export default function Home() {
   const { events } = useEvents();
   const { notes } = useNoteContext();
-  const { activities } = useActivities();
   const { currentDate } = useTimeMachineContext();
   const [pomodoroEvent, setPomodoroEvent] = useState<EventType | null>(null);
   const [pomodoroSwitch, setPomodoroSwitch] = useState(false);
   const [pomodoroProgress, setPomodoroProgress] = useState(0);
   const navigate = useNavigate();
-
-  const activityFilter: FilterFn<ActivityType> = (
-    row: Row<ActivityType>,
-    columnId: string,
-    filterValue: unknown
-  ) => {
-    const filter: string[] = filterValue as string[];
-    let condition = false;
-    if (filter.includes("late")) {
-      condition ||=
-        !row.getValue(columnId) &&
-        new Date(row.getValue<string>("endDate")) < new Date();
-    }
-    if (filter.includes("in progress")) {
-      condition ||=
-        !row.getValue(columnId) &&
-        new Date(row.getValue<string>("endDate")) > new Date();
-    }
-    if (filter.includes("done")) {
-      condition ||= row.getValue(columnId);
-    }
-    return condition;
-  };
 
   const eventFilter: FilterFn<EventType> = (
     row: Row<EventType>,
@@ -124,24 +97,6 @@ export default function Home() {
     return condition;
   };
 
-  const statuses = [
-    {
-      value: "late",
-      label: "Late",
-      icon: AlertCircleIcon,
-    },
-    {
-      value: "in progress",
-      label: "In Progress",
-      icon: Clock,
-    },
-    {
-      value: "done",
-      label: "Done",
-      icon: CheckCircle2,
-    },
-  ];
-
   const frequencies = [
     {
       value: "monthly",
@@ -170,153 +125,72 @@ export default function Home() {
     },
   ];
 
-  const activityColumns: ColumnDef<ActivityType>[] = [
-    {
-      accessorKey: "title",
-      header: "Title",
-      cell: ({ cell, row }) => {
-        const date = new Date(row.getValue<string>("endDate"));
-        if (!row.getValue("completed") && date < new Date())
+  const eventColumns: ColumnDef<EventType>[] = useMemo(
+    () => [
+      {
+        accessorKey: "title",
+        header: "Title",
+      },
+      {
+        accessorKey: "date",
+        header: "Date",
+        cell: ({ cell }) => {
+          const date = new Date(cell.getValue<string>());
+          const formatted = format(date, "dd/MM/yy");
+          return <div>{formatted}</div>;
+        },
+      },
+      {
+        accessorKey: "duration",
+        header: "Duration",
+        cell: ({ cell }) => {
+          return <div>{cell.getValue<string>()} h</div>;
+        },
+      },
+      {
+        accessorKey: "recurrencePattern",
+        header: "Recurrence Type",
+        cell: ({ cell }) => {
+          if (cell.getValue()) {
+            const pattern = cell.getValue<RecurrenceType>();
+            return <div>{pattern.frequency}</div>;
+          } else {
+            return <div>none</div>;
+          }
+        },
+        filterFn: eventFilter,
+      },
+      {
+        id: "actions",
+        cell: ({ row }) => {
+          const data = row.original;
           return (
-            <div className="text-destructive">{cell.getValue<string>()}</div>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="h-8 w-8 p-0">
+                  <span className="sr-only">Open menu</span>
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => navigate("/calendar")}>
+                  Open Calendar
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => navigator.clipboard.writeText(data.title)}
+                >
+                  Copy Event Title
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           );
-        else return <div>{cell.getValue<string>()}</div>;
+        },
       },
-    },
-    {
-      accessorKey: "endDate",
-      header: ({ column }) => {
-        return (
-          <Button
-            variant={"ghost"}
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          >
-            Expiration
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        );
-      },
-      cell: ({ cell, row }) => {
-        const date = new Date(cell.getValue<string>());
-        const formatted = format(date, "dd/MM");
-        let classname = "";
-        if (!row.getValue("completed") && date < new Date())
-          classname = "text-destructive";
-        return (
-          <div className={cn("font-semibold text-center", classname)}>
-            {formatted}
-          </div>
-        );
-      },
-    },
-    {
-      accessorKey: "completed",
-      header: "Status",
-      cell: ({ row, cell }) => {
-        if (cell.getValue())
-          return <div className="text-green-700">Completed</div>;
-        else if (
-          !cell.getValue() &&
-          new Date(row.getValue("endDate")) > new Date()
-        ) {
-          return <div>In progress</div>;
-        } else return <div className="text-destructive">Late</div>;
-      },
-      filterFn: activityFilter,
-    },
-    {
-      id: "actions",
-      cell: ({ row }) => {
-        const data = row.original;
-        return (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-8 w-8 p-0">
-                <span className="sr-only">Open menu</span>
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => navigate("/calendar")}>
-                Open Calendar
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => navigator.clipboard.writeText(data.title)}
-              >
-                Copy Activity Title
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        );
-      },
-    },
-  ];
-
-  const eventColumns: ColumnDef<EventType>[] = [
-    {
-      accessorKey: "title",
-      header: "Title",
-    },
-    {
-      accessorKey: "date",
-      header: "Date",
-      cell: ({ cell }) => {
-        const date = new Date(cell.getValue<string>());
-        const formatted = format(date, "dd/MM/yy");
-        return <div>{formatted}</div>;
-      },
-    },
-    {
-      accessorKey: "duration",
-      header: "Duration",
-      cell: ({ cell }) => {
-        return <div>{cell.getValue<string>()} h</div>;
-      },
-    },
-    {
-      accessorKey: "recurrencePattern",
-      header: "Recurrence Type",
-      cell: ({ cell }) => {
-        if (cell.getValue()) {
-          const pattern = cell.getValue<RecurrenceType>();
-          return <div>{pattern.frequency}</div>;
-        } else {
-          return <div>none</div>;
-        }
-      },
-      filterFn: eventFilter,
-    },
-    {
-      id: "actions",
-      cell: ({ row }) => {
-        const data = row.original;
-        return (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-8 w-8 p-0">
-                <span className="sr-only">Open menu</span>
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => navigate("/calendar")}>
-                Open Calendar
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => navigator.clipboard.writeText(data.title)}
-              >
-                Copy Event Title
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        );
-      },
-    },
-  ];
+    ],
+    [events]
+  );
 
   useEffect(() => {
     // Find pomodoro of the day with same session
@@ -354,7 +228,7 @@ export default function Home() {
         <SendMessage />
       </div>
 
-      <div className="view-container grid grid-cols-1 md:grid-rows-3 md:grid-cols-2 gap-5">
+      <div className="view-container grid grid-cols-1 md:grid-rows-2 md:grid-cols-2 gap-5">
         <div className="row-span-1">
           <Card className="bg-background h-full">
             <CardHeader>
@@ -492,7 +366,7 @@ export default function Home() {
           </Card>
         </div>
 
-        <div className="row-span-2">
+        <div className="row-span-1">
           <Card className="bg-background">
             <CardHeader>
               <CardTitle>Events</CardTitle>
@@ -510,20 +384,13 @@ export default function Home() {
           </Card>
         </div>
 
-        <div className="row-span-2">
+        <div className="row-span-1">
           <Card className="bg-background">
             <CardHeader>
               <CardTitle>Activities</CardTitle>
             </CardHeader>
             <CardContent>
-              <DataTable
-                data={activities}
-                columns={activityColumns}
-                filterColumnID="completed"
-                filterTitleID="title"
-                filterName="Status"
-                filterOptions={statuses}
-              ></DataTable>
+              <ActivityTable isInHome={true} />
             </CardContent>
           </Card>
         </div>

@@ -17,7 +17,6 @@ import usePushNotification, {
   NotificationPayload,
 } from "@/hooks/usePushNotification";
 import { useAuth } from "@/context/AuthContext";
-import { PomodoroType } from "@/hooks/useTimer";
 import Loader from "@/components/Loader";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -97,27 +96,17 @@ export default function SendMessage() {
   }
 
   const onSubmit = (data: z.infer<typeof FormSchema>) => {
-    let parsed_timer: PomodoroType | null = null;
+    // Send Message Notification
+    const payload: NotificationPayload = {
+      title: `Message from: ${ME?.username}`,
+      body: data.message,
+      url: "/home",
+    };
 
-    const storage = localStorage.getItem("pomodoro_timer");
-
-    if (storage) {
-      parsed_timer = JSON.parse(storage);
-
-      if (parsed_timer) {
-        // Send Pomodoro Notification
-        const payload: NotificationPayload = {
-          title: `Message from: ${ME?.username}`,
-          body: data.message,
-          url: "/home",
-        };
-
-        selectedUsers.map((user) => {
-          const userID = user?._id;
-          userID && RequestPushSub(() => sendNotification(userID, payload));
-        });
-      }
-    }
+    selectedUsers.map((user) => {
+      const userID = user?._id;
+      userID && RequestPushSub(() => sendNotification(userID, payload));
+    });
   };
 
   useEffect(() => {

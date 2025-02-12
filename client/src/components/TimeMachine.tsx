@@ -12,43 +12,65 @@ import { Label } from "./ui/label";
 import { useTimeMachineContext } from "@/context/TimeMachine";
 import { format } from "date-fns";
 import useEventsApi from "@/hooks/useEventsApi";
+import useNotes from "@/hooks/useNote";
+import useActivitiesApi from "@/hooks/useActivitiesApi";
 
 const TimeMachinePopup = () => {
   const { currentDate, dispatch } = useTimeMachineContext();
   const { getEvents } = useEventsApi();
+  const { fetchNotes } = useNotes();
+  const { getActivities } = useActivitiesApi();
   const [days, setDays] = useState(0);
   const [hours, setHours] = useState(0);
   const [months, setMonths] = useState(0);
   const [years, setYears] = useState(0);
+  const [minutes, setMinutes] = useState(0);
   const [shouldFetch, setShouldFetch] = useState(false);
+
+  const validateInput = (value: number) => {
+    return !isNaN(value) && value >= 0;
+  };
 
   const handleTravelForward = () => {
     dispatch({
       type: "TRAVEL_FORWARD",
-      payload: { days, hours, months, years },
+      payload: { days, hours, months, years, minutes },
     });
     setShouldFetch(true);
+    resetInputs();
   };
 
   const handleTravelBackward = () => {
     dispatch({
       type: "TRAVEL_BACKWARD",
-      payload: { days, hours, months, years },
+      payload: { days, hours, months, years, minutes },
     });
     setShouldFetch(true);
+    resetInputs();
   };
 
   const handleReset = () => {
     dispatch({ type: "RESET_TO_REAL_TIME" });
     setShouldFetch(true);
+    resetInputs();
+  };
+
+  const resetInputs = () => {
+    setDays(0);
+    setHours(0);
+    setMonths(0);
+    setYears(0);
+    setMinutes(0);
   };
 
   useEffect(() => {
     if (shouldFetch) {
       getEvents();
+      getActivities();
+      fetchNotes();
       setShouldFetch(false);
     }
-  }, [currentDate]);
+  }, [shouldFetch, getEvents, getActivities, fetchNotes]);
 
   return (
     <Dialog
@@ -79,87 +101,119 @@ const TimeMachinePopup = () => {
         </Button>
       </DialogTrigger>
 
-      <DialogContent
-        className="bg-white dark:bg-black text-black dark:text-white p-6 rounded-xl border-lime-500 border-2 shadow-lg max-w-md"
-        aria-labelledby="time-machine-dialog-title"
-        aria-describedby="time-machine-dialog-description"
-      >
+      <DialogContent className="bg-white dark:bg-black text-black dark:text-white p-4 rounded-xl border-lime-500 border-2 shadow-lg w-[95vw] max-w-[350px] sm:max-w-md">
         <DialogHeader>
           <DialogTitle
             id="time-machine-dialog-title"
-            className="text-lime-500 text-2xl"
+            className="text-lime-500 text-xl"
           >
             Time Machine
           </DialogTitle>
         </DialogHeader>
 
-        <p id="time-machine-dialog-description" className="text-xl mb-4">
+        <p id="time-machine-dialog-description" className="text-base mb-2">
           Current Date: {format(currentDate, "yyyy-MM-dd HH:mm:ss")}
         </p>
 
-        {/* Layout a due colonne */}
-        <div className="grid grid-cols-2 gap-4 mb-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-2">
           <div>
-            <Label htmlFor="years" className="text-sm text-lime-500">
+            <Label htmlFor="years" className="text-xs text-lime-500">
               Years
             </Label>
             <Input
               id="years"
-              type="number"
+              type="text"
               value={years}
-              onChange={(e) => setYears(Number(e.target.value))}
-              className="border-2 border-lime-500 rounded-lg p-2 text-black dark:text-white bg-white dark:bg-black"
+              onChange={(e) => {
+                const value = Number(e.target.value);
+                if (validateInput(value)) {
+                  setYears(value);
+                }
+              }}
+              className="border-2 border-lime-500 rounded-lg p-1 text-black dark:text-white bg-white dark:bg-black text-sm h-9"
             />
           </div>
           <div>
-            <Label htmlFor="months" className="text-sm text-lime-500">
+            <Label htmlFor="months" className="text-xs text-lime-500">
               Months
             </Label>
             <Input
               id="months"
-              type="number"
+              type="text"
               value={months}
-              onChange={(e) => setMonths(Number(e.target.value))}
-              className="border-2 border-lime-500 rounded-lg p-2 text-black dark:text-white bg-white dark:bg-black"
+              onChange={(e) => {
+                const value = Number(e.target.value);
+                if (validateInput(value)) {
+                  setMonths(value);
+                }
+              }}
+              className="border-2 border-lime-500 rounded-lg p-1 text-black dark:text-white bg-white dark:bg-black text-sm h-9"
             />
           </div>
           <div>
-            <Label htmlFor="days" className="text-sm text-lime-500">
+            <Label htmlFor="days" className="text-xs text-lime-500">
               Days
             </Label>
             <Input
               id="days"
-              type="number"
+              type="text"
               value={days}
-              onChange={(e) => setDays(Number(e.target.value))}
-              className="border-2 border-lime-500 rounded-lg p-2 text-black dark:text-white bg-white dark:bg-black"
+              onChange={(e) => {
+                const value = Number(e.target.value);
+                if (validateInput(value)) {
+                  setDays(value);
+                }
+              }}
+              className="border-2 border-lime-500 rounded-lg p-1 text-black dark:text-white bg-white dark:bg-black text-sm h-9"
             />
           </div>
           <div>
-            <Label htmlFor="hours" className="text-sm text-lime-500">
+            <Label htmlFor="hours" className="text-xs text-lime-500">
               Hours
             </Label>
             <Input
               id="hours"
-              type="number"
+              type="text"
               value={hours}
-              onChange={(e) => setHours(Number(e.target.value))}
-              className="border-2 border-lime-500 rounded-lg p-2 text-black dark:text-white bg-white dark:bg-black"
+              onChange={(e) => {
+                const value = Number(e.target.value);
+                if (validateInput(value)) {
+                  setHours(value);
+                }
+              }}
+              className="border-2 border-lime-500 rounded-lg p-1 text-black dark:text-white bg-white dark:bg-black text-sm h-9"
+            />
+          </div>
+          <div className="col-span-2 sm:col-span-1">
+            <Label htmlFor="minutes" className="text-xs text-lime-500">
+              Minutes
+            </Label>
+            <Input
+              id="minutes"
+              type="text"
+              value={minutes}
+              onChange={(e) => {
+                const value = Number(e.target.value);
+                if (validateInput(value)) {
+                  setMinutes(value);
+                }
+              }}
+              className="border-2 border-lime-500 rounded-lg p-1 text-black dark:text-white bg-white dark:bg-black text-sm h-9"
             />
           </div>
         </div>
 
-        <div className="flex justify-between gap-2 mt-4">
+        <div className="flex flex-col sm:flex-row justify-between gap-2 mt-2">
           <Button
             onClick={handleTravelBackward}
-            className="bg-lime-600 text-black hover:bg-lime-700"
+            className="bg-lime-600 text-black hover:bg-lime-700 text-sm py-2"
             aria-label="Travel Backward"
           >
             Travel Backward
           </Button>
           <Button
             onClick={handleTravelForward}
-            className="bg-lime-600 text-black hover:bg-lime-700"
+            className="bg-lime-600 text-black hover:bg-lime-700 text-sm py-2"
             aria-label="Travel Forward"
           >
             Travel Forward
@@ -168,7 +222,7 @@ const TimeMachinePopup = () => {
 
         <Button
           onClick={handleReset}
-          className="mt-4 w-full bg-lime-600 text-black hover:bg-lime-700"
+          className="mt-2 w-full bg-lime-600 text-black hover:bg-lime-700 text-sm py-2"
           aria-label="Reset to Real Time"
         >
           Reset to Real Time
