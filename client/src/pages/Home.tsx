@@ -141,7 +141,7 @@ export default function Home() {
         },
       },
       {
-        accessorKey: "duration",
+        accessorKey: "hours",
         header: "Duration",
         cell: ({ cell }) => {
           return <div>{cell.getValue<string>()} h</div>;
