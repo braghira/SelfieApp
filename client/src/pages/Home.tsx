@@ -198,6 +198,8 @@ export default function Home() {
       (e) => moment(e.date).isBefore(currentDate, "day") && e.expiredPomodoro
     );
 
+    console.log("pomodoro: ", pomodoro);
+
     if (pomodoro) {
       setPomodoroEvent(pomodoro);
 

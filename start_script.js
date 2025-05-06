@@ -69,29 +69,6 @@ function installDependencies(packageJsonPath, message, callback) {
   );
 }
 
-// Funzione per aggiornare le dipendenze
-function updateDependencies(packageJsonPath, message, callback) {
-  // Aggiorna le dipendenze
-  exec(
-    "npm update",
-    { cwd: path.dirname(packageJsonPath) },
-    (error, stdout, stderr) => {
-      if (error) {
-        console.error(`Error during dependency update of ${message}: ${error}`);
-        return;
-      }
-      console.log(stdout);
-      console.error(stderr);
-      console.log(message + ": Updated dependencies\n");
-
-      // Richiama la callback solo se è definita
-      if (callback) {
-        callback();
-      }
-    }
-  );
-}
-
 function DevOrProd() {
   if (DISImachines.includes(os.hostname()) || /^fv-az\d{4}-\d{3}$/.test(os.hostname())) {
     startProductionMode();

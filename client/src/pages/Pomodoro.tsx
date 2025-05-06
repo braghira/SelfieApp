@@ -239,8 +239,6 @@ export default function Pomodoro() {
     if (session?._id && session?.currPomodoro?.cycles) {
       session.currPomodoro.cycles = timer.cycles;
       updateEvent(session);
-
-      console.log("cycles: ", timer.cycles);
     }
 
     const payload: NotificationPayload = {
