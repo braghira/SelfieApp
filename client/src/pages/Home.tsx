@@ -142,11 +142,11 @@ export default function Home() {
       },
       {
         accessorKey: "hours",
-        header: "Hours",
+        header: "Duration",
         cell: ({ row }) => {
           return (
             <div>
-              {row.getValue<string>("hours")} h{" "}
+              {/* {row.getValue<string>("hours")} h{" "} */}
               {row.getValue<string>("minutes")} m
             </div>
           );
