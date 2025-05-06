@@ -142,9 +142,14 @@ export default function Home() {
       },
       {
         accessorKey: "hours",
-        header: "Duration",
-        cell: ({ cell }) => {
-          return <div>{cell.getValue<string>()} h</div>;
+        header: "Hours",
+        cell: ({ row }) => {
+          return (
+            <div>
+              {row.getValue<string>("hours")} h{" "}
+              {row.getValue<string>("minutes")} m
+            </div>
+          );
         },
       },
       {
@@ -221,7 +226,7 @@ export default function Home() {
         setPomodoroProgress(percentage);
       }
     }
-  }, [events, currentDate]);
+  }, [events]);
 
   return (
     <>
