@@ -147,7 +147,7 @@ export default function Home() {
           return (
             <div>
               {/* {row.getValue<string>("hours")} h{" "} */}
-              {row.getValue<string>("minutes")} m
+              {row.original.minutes} m
             </div>
           );
         },
