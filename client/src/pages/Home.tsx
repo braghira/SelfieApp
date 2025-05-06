@@ -221,7 +221,7 @@ export default function Home() {
         setPomodoroProgress(percentage);
       }
     }
-  }, [events]);
+  }, [events, currentDate]);
 
   return (
     <>
